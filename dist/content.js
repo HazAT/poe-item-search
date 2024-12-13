@@ -23,10 +23,46 @@ function addRegexToStats(stats) {
   });
   return { result: newEntries };
 }
-function matchStats(item, stats) {
+function getSearchQuery(item, stats) {
+  const query = {};
   const regexStats = addRegexToStats(stats);
-  const matched = matchStatsOnItem(item, regexStats);
-  return matched;
+  const unique = matchUnique(item);
+  if (unique) {
+    query.term = unique;
+  } else {
+    const matched = matchStatsOnItem(item, regexStats);
+    const filters = matched.map((stat) => {
+      let value;
+      if (stat.value) {
+        value = stat.value;
+      }
+      return {
+        id: stat.id,
+        ...value && { value }
+      };
+    });
+    query.stats = // filters: {
+    //   type_filters: {
+    //     filters: {
+    //       category: {
+    //         option: "armour.helmet",
+    //       },
+    //     },
+    //   },
+    // },
+    [
+      {
+        type: "and",
+        filters
+      }
+    ];
+  }
+  return query;
+}
+function matchUnique(item) {
+  const uniqueRegex = /Rarity: Unique\n([^\n]+)/;
+  const match = item.match(uniqueRegex);
+  return match ? match[1] : void 0;
 }
 function matchStatsOnItem(item, stats) {
   const matched = [];
@@ -71,7 +107,7 @@ function waitForTradeDiv() {
         const input = document.createElement("input");
         input.type = "text";
         input.className = "multiselect__input";
-        input.placeholder = "Paste item here...";
+        input.placeholder = "Paste in-game item here...";
         input.addEventListener("keyup", (event) => {
           if (event.key === "Enter") {
             searchForItem(event.target.value);
@@ -90,9 +126,12 @@ function waitForTradeDiv() {
 }
 const version = "1.0.0";
 console.log(`PoE Item Search v${version}`);
-function getTradeVersion() {
+function getTradeInfo() {
   const currentUrl = window.location.href;
-  return currentUrl.includes("trade2") ? "trade2" : "trade";
+  const tradeVersion = currentUrl.includes("trade2") ? "trade2" : "trade";
+  const match = currentUrl.match(/\/(?:trade2?)(.+$)/);
+  const tradePath = match ? match[1] : "/search/poe2/Standard";
+  return { tradeVersion, tradePath };
 }
 waitForTradeDiv().then((input) => {
   input.addEventListener("paste", (event) => {
@@ -101,48 +140,24 @@ waitForTradeDiv().then((input) => {
       searchForItem$1(clipboardText);
     }
   });
+}).catch((error) => {
+  console.error(error);
 });
 function searchForItem$1(item) {
-  const tradeVersion = getTradeVersion();
+  const { tradeVersion, tradePath } = getTradeInfo();
   fetch(`https://www.pathofexile.com/api/${tradeVersion}/data/stats`).then((response) => response.json()).then((data) => {
-    const matchedStats = matchStats(item, data);
-    const filters = matchedStats.map((stat) => {
-      let value = void 0;
-      if (stat.value) {
-        value = stat.value;
-      }
-      return {
-        id: stat.id,
-        ...value && { value }
-      };
-    });
-    fetch(`https://www.pathofexile.com/api/${tradeVersion}/search/poe2/Standard`, {
+    const query = getSearchQuery(item, data);
+    fetch(`https://www.pathofexile.com/api/${tradeVersion}${tradePath}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        query: {
-          // filters: {
-          //   type_filters: {
-          //     filters: {
-          //       category: {
-          //         option: "armour.helmet",
-          //       },
-          //     },
-          //   },
-          // },
-          stats: [
-            {
-              type: "and",
-              filters
-            }
-          ]
-        }
+        query
       })
     }).then((response) => response.json()).then((searchResult) => {
       if (searchResult.id) {
-        window.location.href = `https://www.pathofexile.com/${tradeVersion}/search/poe2/Standard/${searchResult.id}`;
+        window.location.href = `https://www.pathofexile.com/${tradeVersion}${tradePath}/${searchResult.id}`;
       }
       return searchResult;
     });

@@ -13,6 +13,12 @@ Currently supports:
 - Click "Load unpacked".
 - Select the folder you extracted.
 
+## TODOs
+
+- Add support for implicit attributes
+- Add support for item classes
+- Add support for other languages than English
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -20,7 +26,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 [MIT License](LICENSE)
-
-
-double Armour
-double Energy shield bug

@@ -22,7 +22,7 @@ export function waitForTradeDiv() {
         const input = document.createElement("input");
         input.type = "text";
         input.className = "multiselect__input";
-        input.placeholder = "Paste item here...";
+        input.placeholder = "Paste in-game item here...";
         input.addEventListener("keyup", (event) => {
           if (event.key === "Enter") {
             searchForItem(event.target.value);
