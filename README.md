@@ -8,6 +8,7 @@ Paste your item from ingame into the input field and press enter to search for i
 - Open Chrome and go to chrome://extensions
 - Click "Load unpacked"
 - Select the folder you extracted
+- Visit https://www.pathofexile.com/trade or https://www.pathofexile.com/trade2 and paste an item into the search field
 
 ## TODOs
 
