@@ -1,0 +1,19 @@
+Item Class: Body Armours
+Rarity: Rare
+Damnation Cloak
+Advanced Altar Robe
+--------
+Energy Shield: 197 (augmented)
+--------
+Requirements:
+Level: 62
+Int: 128
+--------
+Sockets: S S
+--------
+Item Level: 69
+--------
++74 to maximum Energy Shield
++92 to maximum Life
++21% to Cold Resistance
++91 to Stun Threshold

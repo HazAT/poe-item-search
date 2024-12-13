@@ -21,3 +21,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 [MIT License](LICENSE)
 
+
+double Armour
+double Energy shield bug

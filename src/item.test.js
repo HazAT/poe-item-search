@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import { matchStats } from "./item.js";
 import lifeFlask1 from "../tests/fixtures/lifeflask1.txt?raw";
+import rings1 from "../tests/fixtures/rings1.txt?raw";
 import stats from "../tests/fixtures/stats.json";
 
 test("matchStats", () => {
@@ -21,6 +22,16 @@ test("matchStats", () => {
       type: "explicit",
       value: {
         min: "50",
+      },
+    },
+  ]);
+});
+
+test("unique", () => {
+  expect(matchStats(rings1, stats)).toStrictEqual([
+    {
+      query: {
+        term: "Polcirkeln",
       },
     },
   ]);

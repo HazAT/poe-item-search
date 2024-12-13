@@ -4,6 +4,11 @@ import { version } from "../package.json";
 
 console.log(`PoE Item Search v${version}`);
 
+function getTradeVersion() {
+  const currentUrl = window.location.href;
+  return currentUrl.includes('trade2') ? 'trade2' : 'trade';
+}
+
 waitForTradeDiv().then((input) => {
   input.addEventListener("paste", (event) => {
     const clipboardText = event.clipboardData.getData("text");
@@ -14,7 +19,9 @@ waitForTradeDiv().then((input) => {
 });
 
 function searchForItem(item) {
-  fetch("https://www.pathofexile.com/api/trade2/data/stats")
+  const tradeVersion = getTradeVersion();
+  
+  fetch(`https://www.pathofexile.com/api/${tradeVersion}/data/stats`)
     .then((response) => response.json())
     .then((data) => {
       const matchedStats = matchStats(item, data);
@@ -31,7 +38,7 @@ function searchForItem(item) {
         };
       });
 
-      fetch("https://www.pathofexile.com/api/trade2/search/poe2/Standard", {
+      fetch(`https://www.pathofexile.com/api/${tradeVersion}/search/poe2/Standard`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -59,7 +66,7 @@ function searchForItem(item) {
         .then((response) => response.json())
         .then((searchResult) => {
           if (searchResult.id) {
-            window.location.href = `https://www.pathofexile.com/trade2/search/poe2/Standard/${searchResult.id}`;
+            window.location.href = `https://www.pathofexile.com/${tradeVersion}/search/poe2/Standard/${searchResult.id}`;
           }
           return searchResult;
         });

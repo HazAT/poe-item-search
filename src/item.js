@@ -6,6 +6,22 @@ export function matchStats(item, stats) {
   return matched;
 }
 
+export function matchUnique(item, stats) {
+  const matched = [];
+  for (const category of stats.result) {
+    for (const entry of category.entries) {
+      if (entry.type !== "unique") {
+        continue;
+      }
+      const match = item.match(entry.regex);
+      if (match) {
+        entry.value = {};
+        entry.value.min = match[1];
+      }
+    }
+  }
+}
+
 export function matchStatsOnItem(item, stats) {
   const matched = [];
   for (const category of stats.result) {

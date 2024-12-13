@@ -2,12 +2,12 @@
   "manifest_version": 3,
   "name": "PoE Item Search",
   "version": "1.0",
-  "description": "",
+  "description": "Paste your item from ingame into the input field to search for it.",
   "icons": {
     "128": "assets/logo128.png"
   },
   "permissions": ["activeTab", "scripting"],
-  "host_permissions": ["https://www.pathofexile.com/*"],
+  "host_permissions": ["https://www.pathofexile.com/trade*"],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
