@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "PoE Item Search",
+  "version": "1.0",
+  "description": "",
+  "icons": {
+    "128": "assets/logo128.png"
+  },
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["https://www.pathofexile.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["dist/content.js"]
+    }
+  ]
+}

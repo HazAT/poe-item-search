@@ -1,0 +1,17 @@
+{
+  "name": "poe-item-search",
+  "version": "1.0.0",
+  "description": "Paste your item on PoE Trade website and start searching for it!",
+  "main": "dist/content.js",
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "build": "vite build",
+    "watch": "vite build --watch"
+  },
+  "author": "Daniel Griesser",
+  "license": "MIT",
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  }
+}

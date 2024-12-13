@@ -1,0 +1,21 @@
+Item Class: Belts
+Rarity: Unique
+Birthright Buckle
+Wide Belt
+--------
+Charm Slots: 1
+--------
+Requirements:
+Level: 14
+--------
+Item Level: 27
+--------
+29% increased Flask Charges gained (implicit)
+--------
++110 to Armour
+13% reduced Flask Charges used
+23% increased Flask Charges gained
+Life Flasks used while on Low Life apply Recovery Instantly
+Mana Flasks used while on Low Mana apply Recovery Instantly
+--------
+Some families have peculiar gifts...

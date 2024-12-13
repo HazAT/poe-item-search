@@ -1,0 +1,21 @@
+Item Class: Quarterstaves
+Rarity: Rare
+Phoenix Branch
+Advanced Slicing Quarterstaff
+--------
+Physical Damage: 91-194 (augmented)
+Fire Damage: 38-82 (augmented)
+Critical Hit Chance: 10.00%
+Attacks per Second: 1.40
+--------
+Requirements:
+Level: 59
+Dex: 105 (unmet)
+Int: 42
+--------
+Item Level: 67
+--------
+81% increased Physical Damage
+Adds 5 to 13 Physical Damage
+Adds 38 to 82 Fire Damage
+Gain 39 Life per Enemy Killed

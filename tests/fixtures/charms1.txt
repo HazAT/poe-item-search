@@ -1,0 +1,17 @@
+Item Class: Charms
+Rarity: Normal
+Thawing Charm
+--------
+Lasts 3 Seconds
+Consumes 80 of 80 Charges on use
+Currently has 80 Charges
+Grants Immunity to Freeze
+--------
+Requirements:
+Level: 12
+--------
+Item Level: 65
+--------
+Used when you become Frozen (implicit)
+--------
+Used automatically when condition is met. Can only hold charges while in belt. Refill at Wells or by killing monsters.

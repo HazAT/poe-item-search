@@ -1,0 +1,18 @@
+Item Class: Wands
+Rarity: Rare
+Fate Weaver
+Attuned Wand
+--------
+Quality: +1% (augmented)
+--------
+Requirements:
+Level: 66
+Int: 151
+--------
+Item Level: 68
+--------
+78% increased Spell Damage
++122 to maximum Mana
++3 to Level of all Cold Spell Skills
+23% increased Critical Spell Damage Bonus
+17% increased Cast Speed

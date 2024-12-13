@@ -1,0 +1,21 @@
+Item Class: Rings
+Rarity: Unique
+Polcirkeln
+Sapphire Ring
+--------
+Requirements:
+Level: 12
+--------
+Item Level: 66
+--------
++22% to Cold Resistance (implicit)
+--------
+24% increased Cold Damage
++53 to maximum Mana
++13 to Strength
+Enemies Chilled by your Hits can be Shattered as though Frozen
+--------
+I rule the north
+A legacy earned
+Time and time again
+Sing Meginord's song!

@@ -1,0 +1,17 @@
+Item Class: Life Flasks
+Rarity: Magic
+Compact Gargantuan Life Flask of the Sylvan
+--------
+Recovers 1065 (augmented) Life over 5 Seconds
+Consumes 10 of 75 Charges on use
+Currently has 75 Charges
+--------
+Requirements:
+Level: 40
+--------
+Item Level: 48
+--------
+50% increased Amount Recovered
+Gains 0.25 Charges per Second
+--------
+Right click to drink. Can only hold charges while in belt. Refill at Wells or by killing monsters.
