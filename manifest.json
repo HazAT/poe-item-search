@@ -6,11 +6,10 @@
   "icons": {
     "128": "assets/logo128.png"
   },
-  "permissions": ["activeTab", "scripting"],
-  "host_permissions": ["https://www.pathofexile.com/trade*"],
+  "permissions": ["scripting"],
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["https://www.pathofexile.com/trade*"],
       "js": ["dist/content.js"]
     }
   ]

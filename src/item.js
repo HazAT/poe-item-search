@@ -71,5 +71,11 @@ export function matchStatsOnItem(item, stats) {
       }
     }
   }
-  return matched;
+  
+  // Deduplicate entries based on text attribute
+  const uniqueMatched = matched.filter((entry, index, self) =>
+    index === self.findIndex((e) => e.text === entry.text)
+  );
+  
+  return uniqueMatched;
 }

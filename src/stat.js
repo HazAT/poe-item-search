@@ -1,14 +1,3 @@
-export function findStatId(stats, searchText) {
-  for (const category of stats.result) {
-    for (const entry of category.entries) {
-      if (entry.text === searchText) {
-        return entry.id;
-      }
-    }
-  }
-  return null;
-}
-
 export function addRegexToStat(stat) {
   if (stat.text.match(/\(implicit\)/) && stat.type !== "implicit") {
     return null;

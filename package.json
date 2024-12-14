@@ -7,11 +7,13 @@
   "scripts": {
     "test": "vitest",
     "build": "vite build",
-    "watch": "vite build --watch"
+    "watch": "vite build --watch",
+    "package": "vite build && node scripts/package.js"
   },
   "author": "Daniel Griesser",
   "license": "MIT",
   "devDependencies": {
+    "archiver": "^7.0.1",
     "vitest": "^2.1.8"
   }
 }

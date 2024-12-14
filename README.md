@@ -18,7 +18,7 @@ Paste your item from ingame into the input field and press enter to search for i
 
 ## Known issues
 
-- Armour and Energy Shield are added twice to the search query because they are multiple times in stats.json
+- Armour, Energy Shield, Accuracy, and probably other attributes are added twice to the search query because they are multiple times in stats.json
 
 ## Contributing
 

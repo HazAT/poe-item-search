@@ -84,7 +84,10 @@ function matchStatsOnItem(item, stats) {
       }
     }
   }
-  return matched;
+  const uniqueMatched = matched.filter(
+    (entry, index, self) => index === self.findIndex((e) => e.text === entry.text)
+  );
+  return uniqueMatched;
 }
 function waitForTradeDiv() {
   return new Promise((resolve, reject) => {
@@ -130,7 +133,7 @@ function getTradeInfo() {
   const currentUrl = window.location.href;
   const tradeVersion = currentUrl.includes("trade2") ? "trade2" : "trade";
   const match = currentUrl.match(/\/(?:trade2?)(.+$)/);
-  const tradePath = match ? match[1] : "/search/poe2/Standard";
+  let tradePath = match ? match[1] : "/search/poe2/Standard";
   return { tradeVersion, tradePath };
 }
 waitForTradeDiv().then((input) => {
@@ -144,6 +147,10 @@ waitForTradeDiv().then((input) => {
   console.error(error);
 });
 function searchForItem$1(item) {
+  const tradeButton = document.querySelector("#trade button.btn.clear-btn");
+  if (tradeButton) {
+    tradeButton.click();
+  }
   const { tradeVersion, tradePath } = getTradeInfo();
   fetch(`https://www.pathofexile.com/api/${tradeVersion}/data/stats`).then((response) => response.json()).then((data) => {
     const query = getSearchQuery(item, data);

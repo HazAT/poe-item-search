@@ -1,0 +1,24 @@
+Item Class: Gloves
+Rarity: Rare
+Blood Palm
+Advanced Stitched Gloves
+--------
+Quality: +20% (augmented)
+Energy Shield: 67 (augmented)
+--------
+Requirements:
+Level: 51
+Int: 82
+--------
+Sockets: S
+--------
+Item Level: 59
+--------
++12% to Lightning Resistance (rune)
+--------
+60% increased Energy Shield
++339 to Accuracy Rating
++113 to maximum Life
++6% to Cold Resistance
++14% to Lightning Resistance
+Gain 3 Mana per Enemy Killed

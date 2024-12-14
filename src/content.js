@@ -10,8 +10,8 @@ function getTradeInfo() {
   
   // Extract everything after trade or trade2 in the URL
   const match = currentUrl.match(/\/(?:trade2?)(.+$)/);
-  const tradePath = match ? match[1] : '/search/poe2/Standard';
-  
+  let tradePath = match ? match[1] : '/search/poe2/Standard';
+
   return { tradeVersion, tradePath };
 }
 
@@ -27,7 +27,14 @@ waitForTradeDiv().then((input) => {
 });
 
 function searchForItem(item) {
+  // Clear the trade search
+  const tradeButton = document.querySelector('#trade button.btn.clear-btn');
+  if (tradeButton) {
+    tradeButton.click();
+  }
+
   const { tradeVersion, tradePath } = getTradeInfo();
+  
   
   fetch(`https://www.pathofexile.com/api/${tradeVersion}/data/stats`)
     .then((response) => response.json())
