@@ -15,6 +15,7 @@ const excludeList = [
     'src',
     'tests',
     'vite.config.js',
+    'assets/demo.png',
     '*.zip'
 ];
 
