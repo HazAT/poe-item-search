@@ -4,47 +4,47 @@ export function getSearchQuery(item, stats) {
   const query = {};
 
   const regexStats = addRegexToStats(stats);
-  const unique = matchUnique(item);
+  const unique = matchUniqueItem(item);
+
   if (unique) {
     query.term = unique;
-  } else {
-    // TODO: match item class
-    const matched = matchStatsOnItem(item, regexStats);
-
-    const filters = matched.map((stat) => {
-      let value;
-      if (stat.value) {
-        value = stat.value;
-      }
-
-      return {
-        id: stat.id,
-        ...(value && { value }),
-      };
-    });
-
-    query.stats =
-      // filters: {
-      //   type_filters: {
-      //     filters: {
-      //       category: {
-      //         option: "armour.helmet",
-      //       },
-      //     },
-      //   },
-      // },
-      [
-        {
-          type: "and",
-          filters,
-        },
-      ];
   }
+  // TODO: match item class
+  const matched = matchStatsOnItem(item, regexStats);
+
+  const filters = matched.map((stat) => {
+    let value;
+    if (stat.value) {
+      value = stat.value;
+    }
+
+    return {
+      id: stat.id,
+      ...(value && { value }),
+    };
+  });
+
+  query.stats =
+    // filters: {
+    //   type_filters: {
+    //     filters: {
+    //       category: {
+    //         option: "armour.helmet",
+    //       },
+    //     },
+    //   },
+    // },
+    [
+      {
+        type: "and",
+        filters,
+      },
+    ];
 
   return query;
 }
 
-export function matchUnique(item) {
+export function matchUniqueItem(item) {
   const uniqueRegex = /Rarity: Unique\n([^\n]+)/;
   const match = item.match(uniqueRegex);
 
@@ -58,24 +58,35 @@ export function matchStatsOnItem(item, stats) {
       if (entry.type !== "explicit") {
         continue;
       }
-      const match = item.match(entry.regex);
-      if (match) {
-        entry.value = {};
-        if (match[1]) {
-          entry.value.min = match[1];
+      let m;
+      while ((m = entry.regex.exec(item)) !== null) {
+        // This is necessary to avoid infinite loops with zero-width matches
+        if (m.index === entry.regex.lastIndex) {
+          entry.regex.lastIndex++;
         }
-        if (match[2]) {
-          entry.value.max = match[2];
-        }
-        matched.push(entry);
+        
+        m.forEach((match, groupIndex) => {
+          if (groupIndex === 0) {
+            return;
+          }
+          
+          entry.value = {};
+          entry.value.min = match;
+          
+          // if (match) {
+          //   entry.value.max = match;
+          // }
+          matched.push(entry);
+        });
       }
     }
   }
-  
+
   // Deduplicate entries based on text attribute
-  const uniqueMatched = matched.filter((entry, index, self) =>
-    index === self.findIndex((e) => e.text === entry.text)
+  const uniqueMatched = matched.filter(
+    (entry, index, self) =>
+      index === self.findIndex((e) => e.text === entry.text)
   );
-  
+
   return uniqueMatched;
 }

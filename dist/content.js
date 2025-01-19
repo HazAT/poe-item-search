@@ -8,7 +8,7 @@ function addRegexToStat(stat) {
   });
   return {
     ...stat,
-    regex: new RegExp(`${regexPattern}`)
+    regex: new RegExp(`^${regexPattern}$`, "gm")
   };
 }
 function addRegexToStats(stats) {
@@ -26,40 +26,39 @@ function addRegexToStats(stats) {
 function getSearchQuery(item, stats) {
   const query = {};
   const regexStats = addRegexToStats(stats);
-  const unique = matchUnique(item);
+  const unique = matchUniqueItem(item);
   if (unique) {
     query.term = unique;
-  } else {
-    const matched = matchStatsOnItem(item, regexStats);
-    const filters = matched.map((stat) => {
-      let value;
-      if (stat.value) {
-        value = stat.value;
-      }
-      return {
-        id: stat.id,
-        ...value && { value }
-      };
-    });
-    query.stats = // filters: {
-    //   type_filters: {
-    //     filters: {
-    //       category: {
-    //         option: "armour.helmet",
-    //       },
-    //     },
-    //   },
-    // },
-    [
-      {
-        type: "and",
-        filters
-      }
-    ];
   }
+  const matched = matchStatsOnItem(item, regexStats);
+  const filters = matched.map((stat) => {
+    let value;
+    if (stat.value) {
+      value = stat.value;
+    }
+    return {
+      id: stat.id,
+      ...value && { value }
+    };
+  });
+  query.stats = // filters: {
+  //   type_filters: {
+  //     filters: {
+  //       category: {
+  //         option: "armour.helmet",
+  //       },
+  //     },
+  //   },
+  // },
+  [
+    {
+      type: "and",
+      filters
+    }
+  ];
   return query;
 }
-function matchUnique(item) {
+function matchUniqueItem(item) {
   const uniqueRegex = /Rarity: Unique\n([^\n]+)/;
   const match = item.match(uniqueRegex);
   return match ? match[1] : void 0;
@@ -71,16 +70,19 @@ function matchStatsOnItem(item, stats) {
       if (entry.type !== "explicit") {
         continue;
       }
-      const match = item.match(entry.regex);
-      if (match) {
-        entry.value = {};
-        if (match[1]) {
-          entry.value.min = match[1];
+      let m;
+      while ((m = entry.regex.exec(item)) !== null) {
+        if (m.index === entry.regex.lastIndex) {
+          entry.regex.lastIndex++;
         }
-        if (match[2]) {
-          entry.value.max = match[2];
-        }
-        matched.push(entry);
+        m.forEach((match, groupIndex) => {
+          if (groupIndex === 0) {
+            return;
+          }
+          entry.value = {};
+          entry.value.min = match;
+          matched.push(entry);
+        });
       }
     }
   }

@@ -10,7 +10,7 @@ test("convertStatTextToItemText", () => {
     })
   ).toStrictEqual({
     id: "explicit.stat_700317374",
-    regex: /(?:\+|-)?(\d+(?:.\d+)?)?% increased Amount Recovered/,
+    regex: /^(?:\+|-)?(\d+(?:.\d+)?)?% increased Amount Recovered$/gm,
     type: "explicit",
     text: "#% increased Amount Recovered",
   });
@@ -24,7 +24,7 @@ test("convertStatTextToItemText", () => {
   ).toStrictEqual({
     id: "explicit.stat_2254480358",
     regex:
-      /(?:\+|-)?(\d+(?:.\d+)?)? to Level of all (?:Cold|Cold) (?:Spell|Spell) Skills/,
+      /^(?:\+|-)?(\d+(?:.\d+)?)? to Level of all (?:Cold|Cold) (?:Spell|Spell) Skills$/gm,
     type: "explicit",
     text: "# to Level of all [Cold|Cold] [Spell|Spell] Skills",
   });
@@ -37,7 +37,7 @@ test("convertStatTextToItemText", () => {
     })
   ).toStrictEqual({
     id: "explicit.stat_1873752457",
-    regex: /Gains (?:\+|-)?(\d+(?:.\d+)?)? Charges per Second/,
+    regex: /^Gains (?:\+|-)?(\d+(?:.\d+)?)? Charges per Second$/gm,
     type: "explicit",
     text: "Gains # Charges per Second",
   });
@@ -50,7 +50,7 @@ test("convertStatTextToItemText", () => {
     })
   ).toStrictEqual({
     id: "explicit.stat_1054098949",
-    regex: /\+(?:\+|-)?(\d+(?:.\d+)?)?% Monster Elemental Resistances/,
+    regex: /^\+(?:\+|-)?(\d+(?:.\d+)?)?% Monster Elemental Resistances$/gm,
     type: "explicit",
     text: "+#% Monster Elemental Resistances",
   });
@@ -65,7 +65,7 @@ test("convertStatTextToItemText", () => {
     id: "explicit.stat_1940865751",
     text: "Adds # to # [Physical|Physical] Damage",
     regex:
-      /Adds (?:\+|-)?(\d+(?:.\d+)?)? to (?:\+|-)?(\d+(?:.\d+)?)? (?:Physical|Physical) Damage/,
+      /^Adds (?:\+|-)?(\d+(?:.\d+)?)? to (?:\+|-)?(\d+(?:.\d+)?)? (?:Physical|Physical) Damage$/gm,
     type: "explicit",
   });
 });

@@ -26,8 +26,6 @@ Paste your item from ingame into the input field and press enter to search for i
 
 ## Known issues
 
-- Some attributes are pasted twice
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request

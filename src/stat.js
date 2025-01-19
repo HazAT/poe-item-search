@@ -13,7 +13,7 @@ export function addRegexToStat(stat) {
   // Create the final regex with start/end anchors
   return {
     ...stat,
-    regex: new RegExp(`${regexPattern}`),
+    regex: new RegExp(`^${regexPattern}$`, 'gm'),
   };
 }
 
