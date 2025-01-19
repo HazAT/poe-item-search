@@ -6,7 +6,6 @@
   "icons": {
     "128": "assets/logo128.png"
   },
-  "permissions": ["scripting"],
   "content_scripts": [
     {
       "matches": ["https://www.pathofexile.com/trade*"],

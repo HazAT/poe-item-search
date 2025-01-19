@@ -4,7 +4,12 @@ Paste your item from ingame into the input field and press enter to search for i
 
 ![Demo](assets/demo.png)
 
-## Installation
+## Simple Installation (Chrome Web Store)
+
+- Install: https://chromewebstore.google.com/detail/poe-item-search/llckjinbnppadklomlhedpmllfjhjklh
+- Visit https://www.pathofexile.com/trade or https://www.pathofexile.com/trade2 and paste an item into the search field
+
+## Manual Installation
 
 - Download ZIP from Repo and extract (click on the green Code button on the top right)
 - Open Chrome and go to chrome://extensions
@@ -21,7 +26,7 @@ Paste your item from ingame into the input field and press enter to search for i
 
 ## Known issues
 
-
+- Some attributes are pasted twice
 
 ## Contributing
 
