@@ -1,11 +1,19 @@
 function addRegexToStat(stat) {
-  if (stat.text.match(/\(implicit\)/) && stat.type !== "implicit") {
-    return null;
-  }
+  if (!stat) return null;
   let regexPattern = stat.text.replaceAll("+", "\\+").replaceAll("#", "(?:\\+|-)?(\\d+(?:.\\d+)?)?").replace(/\[([^\]]+)\]/g, (_, group) => {
     const options = group.split("|");
     return `(?:${options.join("|")})`;
   });
+  let isImplicit = false;
+  if (stat.text.includes("(implicit)")) {
+    stat.type = "implicit";
+    isImplicit = true;
+  }
+  if (stat.type === "implicit" || isImplicit) {
+    regexPattern += " \\(implicit\\)";
+  } else {
+    regexPattern += "(?! \\(implicit\\))";
+  }
   return {
     ...stat,
     regex: new RegExp(`^${regexPattern}$`, "gm")
@@ -67,7 +75,7 @@ function matchStatsOnItem(item, stats) {
   const matched = [];
   for (const category of stats.result) {
     for (const entry of category.entries) {
-      if (entry.type !== "explicit") {
+      if (!entry || entry.type !== "explicit" && entry.type !== "implicit") {
         continue;
       }
       let m;
@@ -79,15 +87,17 @@ function matchStatsOnItem(item, stats) {
           if (groupIndex === 0) {
             return;
           }
-          entry.value = {};
-          entry.value.min = match;
-          matched.push(entry);
+          const matchedEntry = { ...entry, value: { min: match } };
+          if (entry.text.includes("(implicit)")) {
+            matchedEntry.type = "implicit";
+          }
+          matched.push(matchedEntry);
         });
       }
     }
   }
   const uniqueMatched = matched.filter(
-    (entry, index, self) => index === self.findIndex((e) => e.text === entry.text)
+    (entry, index, self) => index === self.findIndex((e) => e.text === entry.text && e.type === entry.type)
   );
   return uniqueMatched;
 }

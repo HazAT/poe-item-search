@@ -55,7 +55,7 @@ export function matchStatsOnItem(item, stats) {
   const matched = [];
   for (const category of stats.result) {
     for (const entry of category.entries) {
-      if (entry.type !== "explicit") {
+      if (!entry || (entry.type !== "explicit" && entry.type !== "implicit")) {
         continue;
       }
       let m;
@@ -64,29 +64,25 @@ export function matchStatsOnItem(item, stats) {
         if (m.index === entry.regex.lastIndex) {
           entry.regex.lastIndex++;
         }
-        
         m.forEach((match, groupIndex) => {
           if (groupIndex === 0) {
             return;
           }
-          
-          entry.value = {};
-          entry.value.min = match;
-          
-          // if (match) {
-          //   entry.value.max = match;
-          // }
-          matched.push(entry);
+          // Create a shallow copy of entry for each match
+          const matchedEntry = { ...entry, value: { min: match } };
+          // Check if the stat text contains '(implicit)' and set type accordingly
+          if (entry.text.includes("(implicit)")) {
+            matchedEntry.type = "implicit";
+          }
+          matched.push(matchedEntry);
         });
       }
     }
   }
-
-  // Deduplicate entries based on text attribute
+  // Deduplicate entries based on text and type attribute
   const uniqueMatched = matched.filter(
     (entry, index, self) =>
-      index === self.findIndex((e) => e.text === entry.text)
+      index === self.findIndex((e) => e.text === entry.text && e.type === entry.type)
   );
-
   return uniqueMatched;
 }
