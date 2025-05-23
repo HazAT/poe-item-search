@@ -5,7 +5,7 @@
   "main": "dist/content.js",
   "type": "module",
   "scripts": {
-    "test": "vitest",
+    "test": "vitest run",
     "build": "vite build",
     "watch": "vite build --watch",
     "package": "vite build && node scripts/package.js"
