@@ -214,7 +214,7 @@ function waitForTradeDiv() {
     }, 3e4);
   });
 }
-const version = "1.0.0";
+const version = "1.1.0";
 console.log(`PoE Item Search v${version}`);
 function getTradeInfo() {
   const currentUrl = window.location.href;

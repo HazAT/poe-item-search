@@ -1,6 +1,6 @@
 {
   "name": "poe-item-search",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Paste your item on PoE Trade website and start searching for it!",
   "main": "dist/content.js",
   "type": "module",
