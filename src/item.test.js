@@ -216,3 +216,75 @@ test("matchRingColdResistance", () => {
     ])
   );
 });
+
+test("getSearchQueryWithResistances", () => {
+  const query = getSearchQuery(gloves1, stats);
+  expect(query.stats).toEqual([
+    {
+      type: "and",
+      filters: expect.arrayContaining([
+        expect.objectContaining({
+          id: "explicit.stat_691932474",
+          value: { min: "339" },
+        }),
+        expect.objectContaining({
+          id: "explicit.stat_1368271171",
+          value: { min: "3" },
+        }),
+        expect.objectContaining({
+          id: "explicit.stat_4015621042",
+          value: { min: "60" },
+        }),
+        expect.objectContaining({
+          id: "explicit.stat_3299347043",
+          value: { min: "113" },
+        }),
+      ]),
+    },
+    {
+      type: "weight",
+      filters: expect.arrayContaining([
+        {
+          id: "explicit.stat_4220027924", // Cold
+          value: { weight: 1, min: 6 },
+          disabled: false,
+        },
+        {
+          id: "explicit.stat_1671376347", // Lightning
+          value: { weight: 1, min: 14 },
+          disabled: false,
+        },
+        {
+          id: "explicit.stat_3372524247", // Fire
+          value: { weight: 1 },
+          disabled: true,
+        },
+        {
+          id: "explicit.stat_2923486259", // Chaos
+          value: { weight: 1 },
+          disabled: true,
+        },
+      ]),
+      value: { min: 20 }, // 6 (Cold) + 14 (Lightning) = 20
+    },
+  ]);
+});
+
+test("getSearchQueryWithoutResistances", () => {
+  const query = getSearchQuery(lifeFlask1, stats);
+  expect(query.stats).toEqual([
+    {
+      type: "and",
+      filters: expect.arrayContaining([
+        expect.objectContaining({
+          id: "explicit.stat_1873752457",
+          value: { min: "0.25" },
+        }),
+        expect.objectContaining({
+          id: "explicit.stat_700317374",
+          value: { min: "50" },
+        }),
+      ]),
+    },
+  ]);
+});

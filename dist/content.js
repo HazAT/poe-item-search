@@ -39,31 +39,65 @@ function getSearchQuery(item, stats) {
     query.term = unique;
   }
   const matched = matchStatsOnItem(item, regexStats);
-  const filters = matched.map((stat) => {
-    let value;
-    if (stat.value) {
-      value = stat.value;
-    }
-    return {
+  const resistanceStats = matched.filter(
+    (stat) => stat.id === "explicit.stat_4220027924" || // Cold
+    stat.id === "explicit.stat_1671376347" || // Lightning
+    stat.id === "explicit.stat_3372524247" || // Fire
+    stat.id === "explicit.stat_2923486259"
+    // Chaos
+  );
+  const nonResistanceStats = matched.filter(
+    (stat) => stat.id !== "explicit.stat_4220027924" && // Cold
+    stat.id !== "explicit.stat_1671376347" && // Lightning
+    stat.id !== "explicit.stat_3372524247" && // Fire
+    stat.id !== "explicit.stat_2923486259"
+    // Chaos
+  );
+  const statsArray = [];
+  if (nonResistanceStats.length > 0) {
+    const nonResistanceFilters = nonResistanceStats.map((stat) => ({
       id: stat.id,
-      ...value && { value }
-    };
-  });
-  query.stats = // filters: {
-  //   type_filters: {
-  //     filters: {
-  //       category: {
-  //         option: "armour.helmet",
-  //       },
-  //     },
-  //   },
-  // },
-  [
-    {
+      ...stat.value && { value: stat.value }
+    }));
+    statsArray.push({
       type: "and",
-      filters
-    }
-  ];
+      filters: nonResistanceFilters
+    });
+  }
+  if (resistanceStats.length > 0) {
+    const resistanceFilters = [];
+    const resistanceIds = {
+      cold: "explicit.stat_4220027924",
+      lightning: "explicit.stat_1671376347",
+      fire: "explicit.stat_3372524247",
+      chaos: "explicit.stat_2923486259"
+    };
+    let totalWeight = 0;
+    resistanceStats.forEach((stat) => {
+      const value = parseInt(stat.value.min);
+      totalWeight += value;
+      resistanceFilters.push({
+        id: stat.id,
+        value: { weight: 1, min: value },
+        disabled: false
+      });
+    });
+    Object.entries(resistanceIds).forEach(([type, id]) => {
+      if (!resistanceStats.find((stat) => stat.id === id)) {
+        resistanceFilters.push({
+          id,
+          value: { weight: 1 },
+          disabled: true
+        });
+      }
+    });
+    statsArray.push({
+      type: "weight",
+      filters: resistanceFilters,
+      value: { min: totalWeight }
+    });
+  }
+  query.stats = statsArray;
   return query;
 }
 function matchUniqueItem(item) {

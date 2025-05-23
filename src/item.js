@@ -12,35 +12,78 @@ export function getSearchQuery(item, stats) {
   // TODO: match item class
   const matched = matchStatsOnItem(item, regexStats);
 
-  const filters = matched.map((stat) => {
-    let value;
-    if (stat.value) {
-      value = stat.value;
-    }
+  // Group resistance stats
+  const resistanceStats = matched.filter(stat => 
+    stat.id === "explicit.stat_4220027924" || // Cold
+    stat.id === "explicit.stat_1671376347" || // Lightning
+    stat.id === "explicit.stat_3372524247" || // Fire
+    stat.id === "explicit.stat_2923486259"    // Chaos
+  );
 
-    return {
+  // Get non-resistance stats
+  const nonResistanceStats = matched.filter(stat => 
+    stat.id !== "explicit.stat_4220027924" && // Cold
+    stat.id !== "explicit.stat_1671376347" && // Lightning
+    stat.id !== "explicit.stat_3372524247" && // Fire
+    stat.id !== "explicit.stat_2923486259"    // Chaos
+  );
+
+  const statsArray = [];
+
+  // Add non-resistance stats as an "and" filter
+  if (nonResistanceStats.length > 0) {
+    const nonResistanceFilters = nonResistanceStats.map((stat) => ({
       id: stat.id,
-      ...(value && { value }),
+      ...(stat.value && { value: stat.value }),
+    }));
+
+    statsArray.push({
+      type: "and",
+      filters: nonResistanceFilters,
+    });
+  }
+
+  // Add resistance stats as a weighted filter if any exist
+  if (resistanceStats.length > 0) {
+    const resistanceFilters = [];
+    const resistanceIds = {
+      cold: "explicit.stat_4220027924",
+      lightning: "explicit.stat_1671376347",
+      fire: "explicit.stat_3372524247",
+      chaos: "explicit.stat_2923486259"
     };
-  });
 
-  query.stats =
-    // filters: {
-    //   type_filters: {
-    //     filters: {
-    //       category: {
-    //         option: "armour.helmet",
-    //       },
-    //     },
-    //   },
-    // },
-    [
-      {
-        type: "and",
-        filters,
-      },
-    ];
+    // Add found resistances with their values
+    let totalWeight = 0;
+    resistanceStats.forEach(stat => {
+      const value = parseInt(stat.value.min);
+      totalWeight += value;
+      resistanceFilters.push({
+        id: stat.id,
+        value: { weight: 1, min: value },
+        disabled: false
+      });
+    });
 
+    // Add missing resistances as disabled
+    Object.entries(resistanceIds).forEach(([type, id]) => {
+      if (!resistanceStats.find(stat => stat.id === id)) {
+        resistanceFilters.push({
+          id,
+          value: { weight: 1 },
+          disabled: true
+        });
+      }
+    });
+
+    statsArray.push({
+      type: "weight",
+      filters: resistanceFilters,
+      value: { min: totalWeight },
+    });
+  }
+
+  query.stats = statsArray;
   return query;
 }
 
