@@ -9,10 +9,11 @@ Chrome extension for Path of Exile 2 that allows players to paste in-game item t
 ## Commands
 
 ```bash
-npm run build      # Build with Vite (outputs to dist/)
-npm run watch      # Build with watch mode for development
-npm test           # Run tests with Vitest
-npm run package    # Build and create extension.zip (prompts for version)
+npm run build        # Build with Vite (outputs to dist/)
+npm run watch        # Build with watch mode for development
+npm test             # Run tests with Vitest
+npm run package      # Build and create extension.zip (prompts for version)
+npm run update-stats # Fetch latest stats.json from live PoE trade APIs
 ```
 
 ## Architecture

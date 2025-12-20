@@ -64,12 +64,10 @@ test("unique", () => {
   expect(getSearchQuery(rings1, stats)).toEqual(
     expect.objectContaining({
       stats: expect.arrayContaining([
+        // Non-attribute stats in "and" filter
         expect.objectContaining({
+          type: "and",
           filters: expect.arrayContaining([
-            expect.objectContaining({
-              id: "explicit.stat_4080418644",
-              value: { min: "13" },
-            }),
             expect.objectContaining({
               id: "explicit.stat_3291658075",
               value: { min: "24" },
@@ -79,6 +77,18 @@ test("unique", () => {
               value: { min: "53" },
             }),
           ]),
+        }),
+        // Strength in weighted attribute filter
+        expect.objectContaining({
+          type: "weight",
+          filters: expect.arrayContaining([
+            expect.objectContaining({
+              id: "explicit.stat_4080418644",
+              value: { weight: 1, min: 13 },
+              disabled: false,
+            }),
+          ]),
+          value: { min: 13 },
         }),
       ]),
       term: "Polcirkeln",

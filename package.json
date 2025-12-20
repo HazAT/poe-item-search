@@ -8,7 +8,8 @@
     "test": "vitest run",
     "build": "vite build",
     "watch": "vite build --watch",
-    "package": "vite build && node scripts/package.js"
+    "package": "vite build && node scripts/package.js",
+    "update-stats": "node scripts/fetch-stats.js"
   },
   "author": "Daniel Griesser",
   "license": "MIT",
