@@ -1,13 +1,14 @@
-import { expect, test } from "vitest";
+import { expect, test } from "bun:test";
 import { getSearchQuery, matchUniqueItem, matchStatsOnItem } from "./item.js";
 import { addRegexToStats } from "./stat.js";
-import lifeFlask1 from "../tests/fixtures/lifeflask1.txt?raw";
-import rings1 from "../tests/fixtures/rings1.txt?raw";
-import charms1 from "../tests/fixtures/charms1.txt?raw";
-import gloves1 from "../tests/fixtures/gloves1.txt?raw";
-import chest2 from "../tests/fixtures/chest2.txt?raw";
 import stats from "../tests/fixtures/stats.json";
-import belts1 from "../tests/fixtures/belts1.txt?raw";
+
+const lifeFlask1 = await Bun.file("tests/fixtures/lifeflask1.txt").text();
+const rings1 = await Bun.file("tests/fixtures/rings1.txt").text();
+const charms1 = await Bun.file("tests/fixtures/charms1.txt").text();
+const gloves1 = await Bun.file("tests/fixtures/gloves1.txt").text();
+const chest2 = await Bun.file("tests/fixtures/chest2.txt").text();
+const belts1 = await Bun.file("tests/fixtures/belts1.txt").text();
 
 test("matchStats", () => {
   expect(getSearchQuery(lifeFlask1, stats)).toStrictEqual({

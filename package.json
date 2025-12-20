@@ -5,16 +5,15 @@
   "main": "dist/content.js",
   "type": "module",
   "scripts": {
-    "test": "vitest run",
-    "build": "vite build",
-    "watch": "vite build --watch",
-    "package": "vite build && node scripts/package.js",
-    "update-stats": "node scripts/fetch-stats.js"
+    "test": "bun test",
+    "build": "bun build src/content.js --outdir=dist --no-minify --target=browser",
+    "watch": "bun build src/content.js --outdir=dist --no-minify --target=browser --watch",
+    "package": "bun run build && bun scripts/package.js",
+    "update-stats": "bun scripts/fetch-stats.js"
   },
   "author": "Daniel Griesser",
   "license": "MIT",
   "devDependencies": {
-    "archiver": "^7.0.1",
-    "vitest": "^2.1.8"
+    "archiver": "^7.0.1"
   }
 }

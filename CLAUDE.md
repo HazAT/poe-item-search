@@ -9,11 +9,11 @@ Chrome extension for Path of Exile 2 that allows players to paste in-game item t
 ## Commands
 
 ```bash
-npm run build        # Build with Vite (outputs to dist/)
-npm run watch        # Build with watch mode for development
-npm test             # Run tests with Vitest
-npm run package      # Build and create extension.zip (prompts for version)
-npm run update-stats # Fetch latest stats.json from live PoE trade APIs
+bun run build        # Build with Bun bundler (outputs to dist/)
+bun run watch        # Build with watch mode for development
+bun test             # Run tests with Bun's test runner
+bun run package      # Build and create extension.zip (prompts for version)
+bun run update-stats # Fetch latest stats.json from live PoE trade APIs
 ```
 
 ## Architecture
@@ -39,7 +39,7 @@ npm run update-stats # Fetch latest stats.json from live PoE trade APIs
 ### Test Structure
 - Tests are in `src/*.test.js` (co-located with source)
 - Test fixtures in `tests/fixtures/` - raw item text dumps and stats.json from PoE API
-- Uses Vite's `?raw` import for fixture text files
+- Uses `Bun.file().text()` to load fixture text files
 
 ## PoE Trade API Notes
 

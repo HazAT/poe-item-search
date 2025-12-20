@@ -37,13 +37,12 @@ const excludeList = [
     '.git',
     '.gitignore',
     'scripts',
-    'package-lock.json',
+    'bun.lockb',
     'package.json',
     'README.md',
     '.DS_Store',
     'src',
     'tests',
-    'vite.config.js',
     'assets/demo.png',
     '*.zip'
 ];

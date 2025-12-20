@@ -1,5 +1,7 @@
+// src/stat.js
 function addRegexToStat(stat) {
-  if (!stat) return null;
+  if (!stat)
+    return null;
   let regexPattern = stat.text.replaceAll("+", "\\+").replaceAll("#", "(?:\\+|-)?(\\d+(?:.\\d+)?)?").replace(/\[([^\]]+)\]/g, (_, group) => {
     const options = group.split("|");
     return `(?:${options.join("|")})`;
@@ -31,6 +33,8 @@ function addRegexToStats(stats) {
   });
   return { result: newEntries };
 }
+
+// src/item.js
 function getSearchQuery(item, stats) {
   const query = {};
   const regexStats = addRegexToStats(stats);
@@ -39,29 +43,9 @@ function getSearchQuery(item, stats) {
     query.term = unique;
   }
   const matched = matchStatsOnItem(item, regexStats);
-  const resistanceStats = matched.filter(
-    (stat) => stat.id === "explicit.stat_4220027924" || // Cold
-    stat.id === "explicit.stat_1671376347" || // Lightning
-    stat.id === "explicit.stat_3372524247" || // Fire
-    stat.id === "explicit.stat_2923486259"
-    // Chaos
-  );
-  const attributeStats = matched.filter(
-    (stat) => stat.id === "explicit.stat_4080418644" || // Strength
-    stat.id === "explicit.stat_3261801346" || // Dexterity
-    stat.id === "explicit.stat_328541901"
-    // Intelligence
-  );
-  const nonResistanceStats = matched.filter(
-    (stat) => stat.id !== "explicit.stat_4220027924" && // Cold
-    stat.id !== "explicit.stat_1671376347" && // Lightning
-    stat.id !== "explicit.stat_3372524247" && // Fire
-    stat.id !== "explicit.stat_2923486259" && // Chaos
-    stat.id !== "explicit.stat_4080418644" && // Strength
-    stat.id !== "explicit.stat_3261801346" && // Dexterity
-    stat.id !== "explicit.stat_328541901"
-    // Intelligence
-  );
+  const resistanceStats = matched.filter((stat) => stat.id === "explicit.stat_4220027924" || stat.id === "explicit.stat_1671376347" || stat.id === "explicit.stat_3372524247" || stat.id === "explicit.stat_2923486259");
+  const attributeStats = matched.filter((stat) => stat.id === "explicit.stat_4080418644" || stat.id === "explicit.stat_3261801346" || stat.id === "explicit.stat_328541901");
+  const nonResistanceStats = matched.filter((stat) => stat.id !== "explicit.stat_4220027924" && stat.id !== "explicit.stat_1671376347" && stat.id !== "explicit.stat_3372524247" && stat.id !== "explicit.stat_2923486259" && stat.id !== "explicit.stat_4080418644" && stat.id !== "explicit.stat_3261801346" && stat.id !== "explicit.stat_328541901");
   const statsArray = [];
   if (nonResistanceStats.length > 0) {
     const nonResistanceFilters = nonResistanceStats.map((stat) => ({
@@ -144,7 +128,7 @@ function getSearchQuery(item, stats) {
 function matchUniqueItem(item) {
   const uniqueRegex = /Rarity: Unique\n([^\n]+)/;
   const match = item.match(uniqueRegex);
-  return match ? match[1] : void 0;
+  return match ? match[1] : undefined;
 }
 function matchStatsOnItem(item, stats) {
   const matched = [];
@@ -171,20 +155,18 @@ function matchStatsOnItem(item, stats) {
       }
     }
   }
-  const uniqueMatched = matched.filter(
-    (entry, index, self) => index === self.findIndex((e) => e.text === entry.text && e.type === entry.type)
-  );
+  const uniqueMatched = matched.filter((entry, index, self) => index === self.findIndex((e) => e.text === entry.text && e.type === entry.type));
   return uniqueMatched;
 }
+
+// src/ui.js
 function waitForTradeDiv() {
   return new Promise((resolve, reject) => {
     const checkInterval = setInterval(() => {
       const searchLeft = document.querySelector("#trade div.search-left");
       if (searchLeft && searchLeft.offsetParent !== null) {
         clearInterval(checkInterval);
-        const searchSelect = document.querySelector(
-          "#trade div.search-left div.multiselect.search-select"
-        );
+        const searchSelect = document.querySelector("#trade div.search-left div.multiselect.search-select");
         searchSelect.style.width = "60%";
         searchSelect.style.float = "left";
         const pasteDiv = document.createElement("div");
@@ -211,10 +193,13 @@ function waitForTradeDiv() {
     setTimeout(() => {
       clearInterval(checkInterval);
       reject("Timeout: Trade div not found");
-    }, 3e4);
+    }, 30000);
   });
 }
-const version = "1.1.0";
+// package.json
+var version = "1.1.0";
+
+// src/content.js
 console.log(`PoE Item Search v${version}`);
 function getTradeInfo() {
   const currentUrl = window.location.href;
@@ -227,13 +212,13 @@ waitForTradeDiv().then((input) => {
   input.addEventListener("paste", (event) => {
     const clipboardText = event.clipboardData.getData("text");
     if (clipboardText) {
-      searchForItem$1(clipboardText);
+      searchForItem2(clipboardText);
     }
   });
 }).catch((error) => {
   console.error(error);
 });
-function searchForItem$1(item) {
+function searchForItem2(item) {
   const tradeButton = document.querySelector("#trade button.btn.clear-btn");
   if (tradeButton) {
     tradeButton.click();

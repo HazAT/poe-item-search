@@ -1,4 +1,4 @@
-import { expect, test } from "vitest";
+import { expect, test } from "bun:test";
 import { addRegexToStat } from "./stat.js";
 
 test("convertStatTextToItemText", () => {
