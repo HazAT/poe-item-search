@@ -43,9 +43,16 @@ function getSearchQuery(item, stats) {
     query.term = unique;
   }
   const matched = matchStatsOnItem(item, regexStats);
-  const resistanceStats = matched.filter((stat) => stat.id === "explicit.stat_4220027924" || stat.id === "explicit.stat_1671376347" || stat.id === "explicit.stat_3372524247" || stat.id === "explicit.stat_2923486259");
+  const resistanceMapping = {
+    "explicit.stat_3372524247": "pseudo.pseudo_total_fire_resistance",
+    "explicit.stat_4220027924": "pseudo.pseudo_total_cold_resistance",
+    "explicit.stat_1671376347": "pseudo.pseudo_total_lightning_resistance",
+    "explicit.stat_2923486259": "pseudo.pseudo_total_chaos_resistance"
+  };
+  const resistanceExplicitIds = Object.keys(resistanceMapping);
+  const resistanceStats = matched.filter((stat) => resistanceExplicitIds.includes(stat.id));
   const attributeStats = matched.filter((stat) => stat.id === "explicit.stat_4080418644" || stat.id === "explicit.stat_3261801346" || stat.id === "explicit.stat_328541901");
-  const nonResistanceStats = matched.filter((stat) => stat.id !== "explicit.stat_4220027924" && stat.id !== "explicit.stat_1671376347" && stat.id !== "explicit.stat_3372524247" && stat.id !== "explicit.stat_2923486259" && stat.id !== "explicit.stat_4080418644" && stat.id !== "explicit.stat_3261801346" && stat.id !== "explicit.stat_328541901");
+  const nonResistanceStats = matched.filter((stat) => !resistanceExplicitIds.includes(stat.id) && stat.id !== "explicit.stat_4080418644" && stat.id !== "explicit.stat_3261801346" && stat.id !== "explicit.stat_328541901");
   const statsArray = [];
   if (nonResistanceStats.length > 0) {
     const nonResistanceFilters = nonResistanceStats.map((stat) => ({
@@ -58,36 +65,13 @@ function getSearchQuery(item, stats) {
     });
   }
   if (resistanceStats.length > 0) {
-    const resistanceFilters = [];
-    const resistanceIds = {
-      cold: "explicit.stat_4220027924",
-      lightning: "explicit.stat_1671376347",
-      fire: "explicit.stat_3372524247",
-      chaos: "explicit.stat_2923486259"
-    };
-    let totalWeight = 0;
-    resistanceStats.forEach((stat) => {
-      const value = parseInt(stat.value.min);
-      totalWeight += value;
-      resistanceFilters.push({
-        id: stat.id,
-        value: { weight: 1, min: value },
-        disabled: false
-      });
-    });
-    Object.entries(resistanceIds).forEach(([type, id]) => {
-      if (!resistanceStats.find((stat) => stat.id === id)) {
-        resistanceFilters.push({
-          id,
-          value: { weight: 1 },
-          disabled: true
-        });
-      }
-    });
+    const resistanceFilters = resistanceStats.map((stat) => ({
+      id: resistanceMapping[stat.id],
+      value: { min: parseInt(stat.value.min) }
+    }));
     statsArray.push({
-      type: "weight",
-      filters: resistanceFilters,
-      value: { min: totalWeight }
+      type: "and",
+      filters: resistanceFilters
     });
   }
   if (attributeStats.length > 0) {

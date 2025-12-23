@@ -12,13 +12,17 @@ export function getSearchQuery(item, stats) {
   // TODO: match item class
   const matched = matchStatsOnItem(item, regexStats);
 
+  // Resistance stat IDs (explicit) and their pseudo equivalents
+  const resistanceMapping = {
+    "explicit.stat_3372524247": "pseudo.pseudo_total_fire_resistance",      // Fire
+    "explicit.stat_4220027924": "pseudo.pseudo_total_cold_resistance",      // Cold
+    "explicit.stat_1671376347": "pseudo.pseudo_total_lightning_resistance", // Lightning
+    "explicit.stat_2923486259": "pseudo.pseudo_total_chaos_resistance"      // Chaos
+  };
+  const resistanceExplicitIds = Object.keys(resistanceMapping);
+
   // Group resistance stats
-  const resistanceStats = matched.filter(stat => 
-    stat.id === "explicit.stat_4220027924" || // Cold
-    stat.id === "explicit.stat_1671376347" || // Lightning
-    stat.id === "explicit.stat_3372524247" || // Fire
-    stat.id === "explicit.stat_2923486259"    // Chaos
-  );
+  const resistanceStats = matched.filter(stat => resistanceExplicitIds.includes(stat.id));
 
   // Group attribute stats
   const attributeStats = matched.filter(stat =>
@@ -28,11 +32,8 @@ export function getSearchQuery(item, stats) {
   );
 
   // Get non-resistance and non-attribute stats
-  const nonResistanceStats = matched.filter(stat => 
-    stat.id !== "explicit.stat_4220027924" && // Cold
-    stat.id !== "explicit.stat_1671376347" && // Lightning
-    stat.id !== "explicit.stat_3372524247" && // Fire
-    stat.id !== "explicit.stat_2923486259" && // Chaos
+  const nonResistanceStats = matched.filter(stat =>
+    !resistanceExplicitIds.includes(stat.id) &&
     stat.id !== "explicit.stat_4080418644" && // Strength
     stat.id !== "explicit.stat_3261801346" && // Dexterity
     stat.id !== "explicit.stat_328541901"     // Intelligence
@@ -53,43 +54,16 @@ export function getSearchQuery(item, stats) {
     });
   }
 
-  // Add resistance stats as a weighted filter if any exist
+  // Add resistance stats using pseudo stats
   if (resistanceStats.length > 0) {
-    const resistanceFilters = [];
-    const resistanceIds = {
-      cold: "explicit.stat_4220027924",
-      lightning: "explicit.stat_1671376347",
-      fire: "explicit.stat_3372524247",
-      chaos: "explicit.stat_2923486259"
-    };
-
-    // Add found resistances with their values
-    let totalWeight = 0;
-    resistanceStats.forEach(stat => {
-      const value = parseInt(stat.value.min);
-      totalWeight += value;
-      resistanceFilters.push({
-        id: stat.id,
-        value: { weight: 1, min: value },
-        disabled: false
-      });
-    });
-
-    // Add missing resistances as disabled
-    Object.entries(resistanceIds).forEach(([type, id]) => {
-      if (!resistanceStats.find(stat => stat.id === id)) {
-        resistanceFilters.push({
-          id,
-          value: { weight: 1 },
-          disabled: true
-        });
-      }
-    });
+    const resistanceFilters = resistanceStats.map(stat => ({
+      id: resistanceMapping[stat.id],
+      value: { min: parseInt(stat.value.min) }
+    }));
 
     statsArray.push({
-      type: "weight",
+      type: "and",
       filters: resistanceFilters,
-      value: { min: totalWeight },
     });
   }
 

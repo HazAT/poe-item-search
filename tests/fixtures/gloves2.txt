@@ -1,0 +1,22 @@
+Item Class: Gloves
+Rarity: Rare
+Tempest Talons
+Knightly Mitts
+--------
+Quality: +20% (augmented)
+Armour: 146 (augmented)
+--------
+Requires: Level 65, 80 Str
+--------
+Sockets: S
+--------
+Item Level: 82
+--------
+Adds 5 to 12 Physical Damage to Attacks (rune)
+--------
+Adds 10 to 20 Physical Damage to Attacks
+Adds 23 to 34 Fire damage to Attacks
+Adds 3 to 5 Cold damage to Attacks
++2 to Level of all Melee Skills
++39% to Cold Resistance
++40% to Fire Resistance (desecrated)

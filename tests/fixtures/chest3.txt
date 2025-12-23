@@ -1,0 +1,28 @@
+Item Class: Body Armours
+Rarity: Rare
+Miracle Guardian
+Sacrificial Regalia
+--------
+Quality: +20% (augmented)
+Armour: 794 (augmented)
+Evasion Rating: 723 (augmented)
+Energy Shield: 443 (augmented)
+--------
+Requires: Level 65, 72 Str, 72 Dex, 72 Int
+--------
+Sockets: S S
+--------
+Item Level: 82
+--------
+36% increased Armour, Evasion and Energy Shield (rune)
+--------
++1 to Level of all Corrupted Skill Gems (implicit)
+--------
++57 to maximum Energy Shield (desecrated)
+110% increased Armour, Evasion and Energy Shield (desecrated)
++30 to Spirit (desecrated)
++33% to Fire Resistance (desecrated)
++44% to Cold Resistance (desecrated)
++40% of Armour also applies to Elemental Damage (desecrated)
+--------
+Corrupted

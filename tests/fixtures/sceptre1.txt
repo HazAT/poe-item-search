@@ -1,0 +1,20 @@
+Item Class: Sceptres
+Rarity: Rare
+Morbid Roar
+Shrine Sceptre
+--------
+Quality: +20% (augmented)
+Spirit: 139 (augmented)
+--------
+Requires: Level 78, 42 Str, 106 Int
+--------
+Item Level: 81
+--------
+Grants Skill: Level 18 Purity of Lightning
+--------
+39% increased Spirit
++143 to maximum Mana
+Allies in your Presence deal 1 to 28 added Attack Lightning Damage
+Minions have 35% increased maximum Life
+47% increased Mana Regeneration Rate
++28 to Intelligence (desecrated)

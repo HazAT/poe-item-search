@@ -1,0 +1,30 @@
+Item Class: Talismans
+Rarity: Rare
+Bramble Scratch
+Maji Talisman
+--------
+Quality: +22% (augmented)
+Physical Damage: 297-543 (augmented)
+Lightning Damage: 4-129 (lightning)
+Critical Hit Chance: 8.00%
+Attacks per Second: 1.55 (augmented)
+--------
+Requires: Level 79, 100 Str, 67 Int
+--------
+Sockets: S S
+--------
+Item Level: 80
+--------
+18% increased Physical Damage (rune)
+Gain 5% of Damage as Extra Damage of all Elements (rune)
+--------
++10 to Maximum Rage (implicit)
+--------
+162% increased Physical Damage
+Adds 26 to 45 Physical Damage
+24% increased Attack Speed
++5 to Level of all Melee Skills
+Leeches 6.27% of Physical Damage as Mana
+Adds 4 to 129 Lightning Damage (desecrated)
+--------
+Corrupted

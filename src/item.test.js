@@ -9,6 +9,11 @@ const charms1 = await Bun.file("tests/fixtures/charms1.txt").text();
 const gloves1 = await Bun.file("tests/fixtures/gloves1.txt").text();
 const chest2 = await Bun.file("tests/fixtures/chest2.txt").text();
 const belts1 = await Bun.file("tests/fixtures/belts1.txt").text();
+const gloves2 = await Bun.file("tests/fixtures/gloves2.txt").text();
+const talisman1 = await Bun.file("tests/fixtures/talisman1.txt").text();
+const charm2 = await Bun.file("tests/fixtures/charm2.txt").text();
+const sceptre1 = await Bun.file("tests/fixtures/sceptre1.txt").text();
+const chest3 = await Bun.file("tests/fixtures/chest3.txt").text();
 
 test("matchStats", () => {
   expect(getSearchQuery(lifeFlask1, stats)).toStrictEqual({
@@ -187,30 +192,17 @@ test("getSearchQueryWithResistances", () => {
       ]),
     },
     {
-      type: "weight",
+      type: "and",
       filters: expect.arrayContaining([
         {
-          id: "explicit.stat_4220027924", // Cold
-          value: { weight: 1, min: 6 },
-          disabled: false,
+          id: "pseudo.pseudo_total_cold_resistance",
+          value: { min: 6 },
         },
         {
-          id: "explicit.stat_1671376347", // Lightning
-          value: { weight: 1, min: 14 },
-          disabled: false,
-        },
-        {
-          id: "explicit.stat_3372524247", // Fire
-          value: { weight: 1 },
-          disabled: true,
-        },
-        {
-          id: "explicit.stat_2923486259", // Chaos
-          value: { weight: 1 },
-          disabled: true,
+          id: "pseudo.pseudo_total_lightning_resistance",
+          value: { min: 14 },
         },
       ]),
-      value: { min: 20 }, // 6 (Cold) + 14 (Lightning) = 20
     },
   ]);
 });
@@ -232,4 +224,151 @@ test("getSearchQueryWithoutResistances", () => {
       ]),
     },
   ]);
+});
+
+// New fixture tests for regression prevention
+
+test("gloves2 - melee gloves with phys/fire/cold damage", () => {
+  const regexStats = addRegexToStats(stats);
+  const matched = matchStatsOnItem(gloves2, regexStats);
+
+  // Should match physical damage to attacks
+  expect(matched).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: "explicit.stat_3032590688", // Adds # to # Physical Damage to Attacks
+        value: { min: "10" },
+      }),
+    ])
+  );
+
+  // Should match melee skills level
+  expect(matched).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: "explicit.stat_9187492", // # to Level of all Melee Skills
+        value: { min: "2" },
+      }),
+    ])
+  );
+
+  // Should match cold resistance (Fire Resistance has (desecrated) suffix so won't match)
+  expect(matched).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: "explicit.stat_4220027924", // Cold Resistance
+        value: { min: "39" },
+      }),
+    ])
+  );
+
+  // Check cold resistance uses pseudo stat (fire won't be since it has desecrated suffix)
+  const query = getSearchQuery(gloves2, stats);
+  expect(query.stats).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        type: "and",
+        filters: expect.arrayContaining([
+          {
+            id: "pseudo.pseudo_total_cold_resistance",
+            value: { min: 39 },
+          },
+        ]),
+      }),
+    ])
+  );
+});
+
+test("talisman1 - physical weapon with implicit", () => {
+  const regexStats = addRegexToStats(stats);
+  const matched = matchStatsOnItem(talisman1, regexStats);
+
+  // Should match implicit max rage
+  expect(matched).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: "implicit.stat_1181501418", // # to Maximum Rage
+        value: { min: "10" },
+      }),
+    ])
+  );
+
+  // Should match increased physical damage
+  expect(matched).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: "explicit.stat_1509134228", // #% increased Physical Damage
+        value: { min: "162" },
+      }),
+    ])
+  );
+
+  // Should match attack speed
+  expect(matched).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: "explicit.stat_681332047", // #% increased Attack Speed
+        value: { min: "24" },
+      }),
+    ])
+  );
+
+  // Should match melee skills level
+  expect(matched).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: "explicit.stat_9187492", // # to Level of all Melee Skills
+        value: { min: "5" },
+      }),
+    ])
+  );
+});
+
+test("charm2 - unique charm", () => {
+  // Should identify as unique
+  expect(matchUniqueItem(charm2)).toStrictEqual("Nascent Hope");
+});
+
+test("sceptre1 - caster sceptre with spirit", () => {
+  const regexStats = addRegexToStats(stats);
+  const matched = matchStatsOnItem(sceptre1, regexStats);
+
+  // Should match increased spirit
+  expect(matched).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: "explicit.stat_3984865854", // #% increased Spirit
+        value: { min: "39" },
+      }),
+    ])
+  );
+
+  // Should match max mana
+  expect(matched).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: "explicit.stat_1050105434", // # to maximum Mana
+        value: { min: "143" },
+      }),
+    ])
+  );
+});
+
+test("chest3 - corrupted body armour with implicit", () => {
+  const regexStats = addRegexToStats(stats);
+  const matched = matchStatsOnItem(chest3, regexStats);
+
+  // Note: All explicit stats on this item have (desecrated) suffix which won't match
+  // Only the implicit stat matches
+  expect(matched).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: "implicit.stat_2251279027", // # to Level of all Corrupted Skill Gems
+        value: { min: "1" },
+      }),
+    ])
+  );
+
+  // Verify the length - only implicit should match since all explicits have (desecrated)
+  expect(matched).toHaveLength(1);
 });

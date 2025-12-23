@@ -1,0 +1,26 @@
+Item Class: Charms
+Rarity: Unique
+Nascent Hope
+Thawing Charm
+--------
+Quality: +9% (augmented)
+Lasts 3,30 (augmented) Seconds
+Consumes 40 of 40 Charges on use
+Currently has 40 Charges
+Grants Immunity to Freeze
+--------
+Requires: Level 12
+--------
+Item Level: 79
+--------
+Used when you become Frozen (implicit)
+--------
+20% Chance to gain a Charge when you kill an enemy
+Energy Shield Recharge starts on use
+--------
+"Even in the face of the Winter of the World,
+life found a way. The Spirit always provides."
+--------
+Used automatically when condition is met. Can only hold charges while in belt. Refill at Wells or by killing monsters.
+--------
+Corrupted
