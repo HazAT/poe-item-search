@@ -26,13 +26,18 @@ bun run update-stats # Fetch latest stats.json from live PoE trade APIs
 ### Core Logic
 - `src/item.js` - Item parsing and search query building
   - `getSearchQuery()` - Main function that builds the trade API query
-  - Groups resistance stats (fire/cold/lightning/chaos) into weighted filters
+  - Converts resistance stats to pseudo stats (e.g., `pseudo.pseudo_total_fire_resistance`)
   - Groups attribute stats (str/dex/int) into weighted filters
   - Other stats use "and" filters
 
 - `src/stat.js` - Stat regex generation
   - Converts PoE stat templates (with `#` placeholders and `[option|option]` syntax) into regex patterns
   - Handles implicit vs explicit stat differentiation via `(implicit)` suffix matching
+
+- `src/search.js` - Agent capability module
+  - `buildSearchQuery(itemText)` - Main function for agents to convert item text to trade query
+  - `buildTradeRequest(itemText)` - Returns complete trade API request body
+  - Auto-fetches and caches stats from PoE API
 
 - `src/ui.js` - DOM manipulation for the paste input field
 

@@ -70,7 +70,7 @@ function getSearchQuery(item, stats) {
       value: { min: parseInt(stat.value.min) }
     }));
     statsArray.push({
-      type: "and",
+      type: "weight",
       filters: resistanceFilters
     });
   }

@@ -192,7 +192,7 @@ test("getSearchQueryWithResistances", () => {
       ]),
     },
     {
-      type: "and",
+      type: "weight",
       filters: expect.arrayContaining([
         {
           id: "pseudo.pseudo_total_cold_resistance",
@@ -267,7 +267,7 @@ test("gloves2 - melee gloves with phys/fire/cold damage", () => {
   expect(query.stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        type: "and",
+        type: "weight",
         filters: expect.arrayContaining([
           {
             id: "pseudo.pseudo_total_cold_resistance",

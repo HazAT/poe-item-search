@@ -54,7 +54,7 @@ export function getSearchQuery(item, stats) {
     });
   }
 
-  // Add resistance stats using pseudo stats
+  // Add resistance stats using pseudo stats with weighted filter
   if (resistanceStats.length > 0) {
     const resistanceFilters = resistanceStats.map(stat => ({
       id: resistanceMapping[stat.id],
@@ -62,7 +62,7 @@ export function getSearchQuery(item, stats) {
     }));
 
     statsArray.push({
-      type: "and",
+      type: "weight",
       filters: resistanceFilters,
     });
   }
