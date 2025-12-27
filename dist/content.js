@@ -34,6 +34,86 @@ function addRegexToStats(stats) {
   return { result: newEntries };
 }
 
+// src/itemClass.js
+var CACHE_TTL = 1000 * 60 * 60;
+var ITEM_CLASS_TO_CATEGORY = {
+  Claws: "weapon.claw",
+  Daggers: "weapon.dagger",
+  "One Hand Swords": "weapon.onesword",
+  "One Hand Axes": "weapon.oneaxe",
+  "One Hand Maces": "weapon.onemace",
+  Spears: "weapon.spear",
+  Flails: "weapon.flail",
+  "Two Hand Swords": "weapon.twosword",
+  "Two Hand Axes": "weapon.twoaxe",
+  "Two Hand Maces": "weapon.twomace",
+  Quarterstaves: "weapon.warstaff",
+  Bows: "weapon.bow",
+  Crossbows: "weapon.crossbow",
+  Wands: "weapon.wand",
+  Sceptres: "weapon.sceptre",
+  Staves: "weapon.staff",
+  Talismans: "weapon.talisman",
+  "Fishing Rods": "weapon.rod",
+  Helmets: "armour.helmet",
+  "Body Armours": "armour.chest",
+  Gloves: "armour.gloves",
+  Boots: "armour.boots",
+  Quivers: "armour.quiver",
+  Shields: "armour.shield",
+  Foci: "armour.focus",
+  Bucklers: "armour.buckler",
+  Amulets: "accessory.amulet",
+  Belts: "accessory.belt",
+  Rings: "accessory.ring",
+  "Life Flasks": "flask.life",
+  "Mana Flasks": "flask.mana",
+  "Skill Gems": "gem.activegem",
+  "Support Gems": "gem.supportgem",
+  "Meta Gems": "gem.metagem",
+  Jewels: "jewel",
+  Waystones: "map.waystone",
+  "Map Fragments": "map.fragment",
+  "Expedition Logbooks": "map.logbook",
+  Breachstones: "map.breachstone",
+  Runes: "currency.rune",
+  "Soul Cores": "currency.soulcore",
+  "Divination Cards": "card",
+  Relics: "sanctum.relic"
+};
+function extractItemClass(itemText) {
+  if (!itemText || typeof itemText !== "string") {
+    return;
+  }
+  const match = itemText.match(/^Item Class: (.+)$/m);
+  return match ? match[1].trim() : undefined;
+}
+function getCategoryForItemClass(itemClass) {
+  if (!itemClass) {
+    return;
+  }
+  return ITEM_CLASS_TO_CATEGORY[itemClass];
+}
+function getCategoryFromItemText(itemText) {
+  const itemClass = extractItemClass(itemText);
+  return getCategoryForItemClass(itemClass);
+}
+function buildTypeFilters(itemText) {
+  const category = getCategoryFromItemText(itemText);
+  if (!category) {
+    return;
+  }
+  return {
+    type_filters: {
+      filters: {
+        category: {
+          option: category
+        }
+      }
+    }
+  };
+}
+
 // src/item.js
 function getSearchQuery(item, stats) {
   const query = {};
@@ -41,6 +121,12 @@ function getSearchQuery(item, stats) {
   const unique = matchUniqueItem(item);
   if (unique) {
     query.term = unique;
+  }
+  if (!unique) {
+    const typeFilters = buildTypeFilters(item);
+    if (typeFilters) {
+      query.filters = typeFilters;
+    }
   }
   const matched = matchStatsOnItem(item, regexStats);
   const resistanceMapping = {

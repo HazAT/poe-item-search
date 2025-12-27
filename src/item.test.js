@@ -17,6 +17,15 @@ const chest3 = await Bun.file("tests/fixtures/chest3.txt").text();
 
 test("matchStats", () => {
   expect(getSearchQuery(lifeFlask1, stats)).toStrictEqual({
+    filters: {
+      type_filters: {
+        filters: {
+          category: {
+            option: "flask.life",
+          },
+        },
+      },
+    },
     stats: [
       {
         filters: [
@@ -371,4 +380,35 @@ test("chest3 - corrupted body armour with implicit", () => {
 
   // Verify the length - only implicit should match since all explicits have (desecrated)
   expect(matched).toHaveLength(1);
+});
+
+test("quarterstaff - weapon with type filter", async () => {
+  const quarterstaff1 = await Bun.file("tests/fixtures/quaterstaff1.txt").text();
+  const query = getSearchQuery(quarterstaff1, stats);
+
+  // Should have type filter for weapon.warstaff
+  expect(query.filters).toEqual({
+    type_filters: {
+      filters: {
+        category: {
+          option: "weapon.warstaff"
+        }
+      }
+    }
+  });
+
+  // Should match increased physical damage
+  expect(query.stats).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        type: "and",
+        filters: expect.arrayContaining([
+          expect.objectContaining({
+            id: "explicit.stat_1509134228", // #% increased Physical Damage
+            value: { min: "81" },
+          }),
+        ]),
+      }),
+    ])
+  );
 });

@@ -1,4 +1,5 @@
 import { addRegexToStats } from "./stat.js";
+import { buildTypeFilters } from "./itemClass.js";
 
 export function getSearchQuery(item, stats) {
   const query = {};
@@ -9,7 +10,15 @@ export function getSearchQuery(item, stats) {
   if (unique) {
     query.term = unique;
   }
-  // TODO: match item class
+
+  // Add type filters for non-unique items
+  if (!unique) {
+    const typeFilters = buildTypeFilters(item);
+    if (typeFilters) {
+      query.filters = typeFilters;
+    }
+  }
+
   const matched = matchStatsOnItem(item, regexStats);
 
   // Resistance stat IDs (explicit) and their pseudo equivalents

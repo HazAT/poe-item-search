@@ -132,7 +132,8 @@ export async function buildTradeRequest(itemText, options = {}) {
     query: {
       status: { option: "online" },
       stats: query.stats,
-      ...(query.term && { term: query.term })
+      ...(query.term && { term: query.term }),
+      ...(query.filters && { filters: query.filters })
     },
     sort: { price: "asc" }
   };
