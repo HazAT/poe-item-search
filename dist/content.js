@@ -267,7 +267,7 @@ function waitForTradeDiv() {
   });
 }
 // package.json
-var version = "1.1.0";
+var version = "1.2.0";
 
 // src/content.js
 console.log(`PoE Item Search v${version}`);
