@@ -3,7 +3,7 @@ import { Textarea, Button, ClipboardIcon, SearchIcon } from "@/components/ui";
 import { useHistoryStore } from "@/stores/historyStore";
 import { parseTradeLocation } from "@/services/tradeLocation";
 // Import the existing search logic
-import { getSearchQuery } from "@/logic/item.js";
+import { getSearchQuery } from "@/item.js";
 
 interface PasteInputProps {
   onSearch?: (itemText: string) => void;
@@ -16,8 +16,9 @@ export function PasteInput({ onSearch }: PasteInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { addEntry } = useHistoryStore();
 
-  const handleSearch = useCallback(async () => {
-    if (!itemText.trim()) return;
+  const handleSearch = useCallback(async (textOverride?: string) => {
+    const searchText = textOverride ?? itemText;
+    if (!searchText.trim()) return;
 
     setIsSearching(true);
     setError(null);
@@ -27,8 +28,9 @@ export function PasteInput({ onSearch }: PasteInputProps) {
       const currentUrl = window.location.href;
       const tradeVersion = currentUrl.includes("trade2") ? "trade2" : "trade";
 
-      // Extract path after trade/trade2
-      const match = currentUrl.match(/\/(?:trade2?)(.+$)/);
+      // Extract path after trade/trade2, but strip any existing search ID
+      // URL format: /trade2/search/poe2/{league} or /trade2/search/poe2/{league}/{searchId}
+      const match = currentUrl.match(/\/(?:trade2?)(\/search\/[^/]+\/[^/]+)/);
       const tradePath = match ? match[1] : "/search/poe2/Standard";
 
       // Fetch stats from API
@@ -38,7 +40,7 @@ export function PasteInput({ onSearch }: PasteInputProps) {
       const statsData = await statsResponse.json();
 
       // Build the search query
-      const query = getSearchQuery(itemText, statsData);
+      const query = getSearchQuery(searchText, statsData);
 
       // Execute the search
       const searchResponse = await fetch(
@@ -56,7 +58,7 @@ export function PasteInput({ onSearch }: PasteInputProps) {
 
       if (searchResult.id) {
         // Extract title from item text (first line is usually the item name)
-        const lines = itemText.trim().split("\n");
+        const lines = searchText.trim().split("\n");
         const title = extractItemTitle(lines);
 
         // Track in history
@@ -76,7 +78,7 @@ export function PasteInput({ onSearch }: PasteInputProps) {
       setIsSearching(false);
     }
 
-    onSearch?.(itemText);
+    onSearch?.(searchText);
   }, [itemText, onSearch, addEntry]);
 
   const handlePaste = useCallback(
@@ -85,10 +87,8 @@ export function PasteInput({ onSearch }: PasteInputProps) {
       if (text) {
         setItemText(text);
         setError(null);
-        // Auto-search on paste
-        setTimeout(() => {
-          handleSearch();
-        }, 100);
+        // Auto-search on paste - pass text directly since state won't be updated yet
+        handleSearch(text);
       }
     },
     [handleSearch]
