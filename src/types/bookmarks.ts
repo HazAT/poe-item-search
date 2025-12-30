@@ -5,6 +5,7 @@ import type { TradeSiteVersion } from "./tradeLocation";
 export interface BookmarksTradeLocation {
   version: TradeSiteVersion;
   type: string;
+  league: string;
   slug: string;
 }
 

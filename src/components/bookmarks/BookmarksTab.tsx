@@ -221,8 +221,8 @@ function BookmarkTrade({ folderId, trade }: BookmarkTradeProps) {
   const tradeUrl = buildTradeUrl({
     version: trade.location.version,
     type: trade.location.type,
+    league: trade.location.league,
     slug: trade.location.slug,
-    league: null, // We don't store league in bookmark trades
   });
   const isCompleted = !!trade.completedAt;
 
