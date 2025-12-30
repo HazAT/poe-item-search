@@ -1,40 +1,41 @@
 // Trade location parsing and tracking
+// Based on better-trading's implementation
 
 import type { TradeLocationStruct, TradeSiteVersion } from "@/types/tradeLocation";
 
+// Realms that have an extra path segment (poe2, xbox, sony)
+const TRADE_REALMS = ["xbox", "sony", "poe2"];
+
 export function parseTradeLocation(url: string): TradeLocationStruct {
   const urlObj = new URL(url);
-  const pathname = urlObj.pathname;
+  const pathParts = urlObj.pathname.split("/").filter(Boolean);
 
-  // Determine trade version from path
-  let version: TradeSiteVersion = "1";
-  if (pathname.includes("/trade2/")) {
-    version = "2";
+  // pathParts for /trade2/search/poe2/Standard/ABC123 = ['trade2', 'search', 'poe2', 'Standard', 'ABC123']
+  const [versionPart, type, ...rest] = pathParts;
+
+  const version: TradeSiteVersion = versionPart === "trade2" ? "2" : "1";
+
+  let league: string | null = null;
+  let slug: string | null = null;
+
+  // Check if third segment is a realm (poe2, xbox, sony)
+  if (rest[0] && TRADE_REALMS.includes(rest[0])) {
+    // Format: /trade2/search/poe2/LeagueName/slug
+    const [realm, leagueInRealm, searchSlug] = rest;
+    league = realm && leagueInRealm ? `${realm}/${leagueInRealm}` : null;
+    slug = searchSlug || null;
+  } else {
+    // Format: /trade/search/LeagueName/slug (PoE 1)
+    const [leagueName, searchSlug] = rest;
+    league = leagueName || null;
+    slug = searchSlug || null;
   }
-
-  // Parse: /trade[2]/search/league/slug or /trade[2]/search/league
-  const tradePattern = version === "2"
-    ? /\/trade2\/([^/]+)\/([^/]+)(?:\/([^/]+))?/
-    : /\/trade\/([^/]+)\/([^/]+)(?:\/([^/]+))?/;
-
-  const match = pathname.match(tradePattern);
-
-  if (!match) {
-    return {
-      version,
-      type: null,
-      league: null,
-      slug: null,
-    };
-  }
-
-  const [, type, league, slug] = match;
 
   return {
     version,
     type: type || null,
-    league: league || null,
-    slug: slug || null,
+    league,
+    slug,
   };
 }
 
@@ -46,11 +47,14 @@ export function buildTradeUrl(location: TradeLocationStruct): string {
     return `${base}/${tradePath}`;
   }
 
-  if (!location.slug) {
-    return `${base}/${tradePath}/${location.type}/${location.league}`;
+  // League can be "poe2/Standard" or just "Standard"
+  // Join the parts: [base, tradePath, type, league, slug]
+  const parts = [base, tradePath, location.type, location.league];
+  if (location.slug) {
+    parts.push(location.slug);
   }
 
-  return `${base}/${tradePath}/${location.type}/${location.league}/${location.slug}`;
+  return parts.join("/");
 }
 
 export function compareTradeLocations(
