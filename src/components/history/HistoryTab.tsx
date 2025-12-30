@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useHistoryStore } from "@/stores/historyStore";
-import { Button, TrashIcon, RefreshIcon } from "@/components/ui";
-import type { TradeLocationHistoryStruct } from "@/types/tradeLocation";
+import { Button, TrashIcon } from "@/components/ui";
+import { SearchEntry } from "@/components/shared/SearchEntry";
 
 export function HistoryTab() {
   const { entries, isLoading, isExecuting, fetchEntries, clearEntries, deleteEntry, executeSearch } =
@@ -46,9 +46,14 @@ export function HistoryTab() {
         ) : (
           <ul className="divide-y divide-poe-gray">
             {entries.map((entry) => (
-              <HistoryEntry
+              <SearchEntry
                 key={entry.id}
-                entry={entry}
+                title={entry.title}
+                version={entry.version}
+                league={entry.league}
+                type={entry.type}
+                resultCount={entry.resultCount}
+                createdAt={entry.createdAt}
                 isExecuting={isExecuting === entry.id}
                 onExecute={() => executeSearch(entry.id)}
                 onDelete={() => deleteEntry(entry.id)}
@@ -59,87 +64,4 @@ export function HistoryTab() {
       </div>
     </div>
   );
-}
-
-interface HistoryEntryProps {
-  entry: TradeLocationHistoryStruct;
-  isExecuting: boolean;
-  onExecute: () => void;
-  onDelete: () => void;
-}
-
-function HistoryEntry({ entry, isExecuting, onExecute, onDelete }: HistoryEntryProps) {
-  const timeAgo = getRelativeTime(entry.createdAt);
-
-  const handleClick = () => {
-    if (!isExecuting) {
-      onExecute();
-    }
-  };
-
-  return (
-    <li className="group">
-      <button
-        onClick={handleClick}
-        disabled={isExecuting}
-        className="w-full flex items-start gap-3 px-3 py-2 hover:bg-poe-gray transition-colors text-left disabled:opacity-50 disabled:cursor-wait"
-      >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="font-fontin text-sm text-poe-beige truncate">
-              {entry.title || "Untitled Search"}
-            </span>
-            <span className="text-xs text-poe-gray-alt shrink-0">
-              {entry.version === "2" ? "PoE2" : "PoE1"}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-poe-gray-alt truncate">
-              {entry.league} • {entry.type}
-            </span>
-            <span className="text-xs text-poe-gold shrink-0">
-              {entry.resultCount.toLocaleString()} results
-            </span>
-            <span className="text-xs text-poe-gray-alt shrink-0">{timeAgo}</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          {isExecuting ? (
-            <RefreshIcon className="w-4 h-4 text-poe-gold animate-spin" />
-          ) : (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onDelete();
-                }}
-                title="Delete"
-              >
-                <TrashIcon className="w-4 h-4" />
-              </Button>
-              <RefreshIcon className="w-4 h-4 text-poe-gold" title="Re-execute search" />
-            </>
-          )}
-        </div>
-      </button>
-    </li>
-  );
-}
-
-function getRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffMins < 1) return "just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString();
 }

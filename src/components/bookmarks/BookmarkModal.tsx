@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { useBookmarksStore } from "@/stores/bookmarksStore";
+import { useHistoryStore } from "@/stores/historyStore";
 import { getCurrentTradeLocation } from "@/services/tradeLocation";
 import { Button, Input, Select, Modal, PlusIcon } from "@/components/ui";
-import type { TradeLocationStruct } from "@/types/tradeLocation";
+import type { TradeLocationStruct, TradeLocationHistoryStruct } from "@/types/tradeLocation";
 
 interface BookmarkModalProps {
   isOpen: boolean;
@@ -17,18 +18,26 @@ export function BookmarkModal({ isOpen, onClose }: BookmarkModalProps) {
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [newFolderTitle, setNewFolderTitle] = useState("");
   const [currentLocation, setCurrentLocation] = useState<TradeLocationStruct | null>(null);
+  const [currentHistoryEntry, setCurrentHistoryEntry] = useState<TradeLocationHistoryStruct | null>(null);
   const [error, setError] = useState("");
 
-  // Fetch folders when modal opens
+  // Fetch folders and lookup history entry when modal opens
   useEffect(() => {
     if (isOpen) {
       fetchFolders();
       const location = getCurrentTradeLocation();
       setCurrentLocation(location);
 
-      // Auto-generate title from URL slug if available
-      if (location.slug) {
-        setTitle(`Search ${location.slug.substring(0, 8)}`);
+      // Look up the history entry for this search to get title and query payload
+      const { entries } = useHistoryStore.getState();
+      const historyEntry = entries.find((e) => e.slug === location.slug) ?? null;
+      setCurrentHistoryEntry(historyEntry);
+
+      // Use history entry title if available, otherwise fallback
+      if (historyEntry?.title) {
+        setTitle(historyEntry.title);
+      } else {
+        setTitle("Custom Search");
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -50,7 +59,7 @@ export function BookmarkModal({ isOpen, onClose }: BookmarkModalProps) {
       .map(f => ({ value: f.id!, label: f.title }));
   }, [folders]);
 
-  const canBookmark = currentLocation?.slug && currentLocation?.league;
+  const canBookmark = currentLocation?.slug && currentLocation?.league && currentHistoryEntry?.queryPayload;
 
   const handleCreateFolder = async () => {
     if (!newFolderTitle.trim()) return;
@@ -89,6 +98,10 @@ export function BookmarkModal({ isOpen, onClose }: BookmarkModalProps) {
       setError("Cannot bookmark: no search active");
       return;
     }
+    if (!currentHistoryEntry?.queryPayload) {
+      setError("Cannot bookmark: search data not found in history");
+      return;
+    }
 
     await createTrade(selectedFolderId, {
       title: title.trim(),
@@ -98,7 +111,9 @@ export function BookmarkModal({ isOpen, onClose }: BookmarkModalProps) {
         league: currentLocation.league,
         slug: currentLocation.slug,
       },
-      completedAt: null,
+      createdAt: new Date().toISOString(),
+      queryPayload: currentHistoryEntry.queryPayload,
+      resultCount: currentHistoryEntry.resultCount,
     });
 
     // Reset and close
@@ -138,7 +153,9 @@ export function BookmarkModal({ isOpen, onClose }: BookmarkModalProps) {
       <div className="space-y-4">
         {!canBookmark && (
           <div className="p-3 bg-poe-red/20 border border-poe-red rounded text-sm text-poe-beige">
-            No active search to bookmark. Perform a search first.
+            {!currentLocation?.slug || !currentLocation?.league
+              ? "No active search to bookmark. Perform a search first."
+              : "Search not found in history. Try refreshing the search."}
           </div>
         )}
 

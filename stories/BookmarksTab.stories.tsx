@@ -8,8 +8,7 @@ import {
   ChevronRightIcon,
   TrashIcon,
   ArchiveIcon,
-  ExternalLinkIcon,
-  CheckIcon,
+  RefreshIcon,
   BookmarkIcon,
 } from "../src/components/ui";
 import { Modal } from "../src/components/ui/Modal";
@@ -230,41 +229,54 @@ function BookmarkFolderDisplay({
 }
 
 function BookmarkTradeDisplay({ trade }: { trade: BookmarksTradeStruct }) {
-  const isCompleted = !!trade.completedAt;
+  const timeAgo = getRelativeTime(trade.createdAt);
 
   return (
     <li className="group">
-      <a
-        href="#"
-        className={`flex items-center gap-2 px-6 py-2 hover:bg-poe-gray transition-colors ${
-          isCompleted ? "opacity-60" : ""
-        }`}
-      >
-        <button
-          onClick={(e) => e.preventDefault()}
-          className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center ${
-            isCompleted ? "bg-poe-green border-poe-green" : "border-poe-gray-alt"
-          }`}
-          title={isCompleted ? "Mark as incomplete" : "Mark as complete"}
-        >
-          {isCompleted && <CheckIcon className="w-3 h-3 text-white" />}
-        </button>
-        <span
-          className={`text-sm text-poe-beige truncate flex-1 ${
-            isCompleted ? "line-through" : ""
-          }`}
-        >
-          {trade.title}
-        </span>
+      <button className="w-full flex items-start gap-3 px-3 py-2 hover:bg-poe-gray transition-colors text-left">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="font-fontin text-sm text-poe-beige truncate">
+              {trade.title || "Untitled Search"}
+            </span>
+            <span className="text-xs text-poe-gray-alt shrink-0">
+              {trade.location.version === "2" ? "PoE2" : "PoE1"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-xs text-poe-gray-alt truncate">
+              {trade.location.league} • {trade.location.type}
+            </span>
+            <span className="text-xs text-poe-gold shrink-0">
+              {trade.resultCount.toLocaleString()} results
+            </span>
+            <span className="text-xs text-poe-gray-alt shrink-0">{timeAgo}</span>
+          </div>
+        </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button variant="ghost" size="sm" title="Delete">
             <TrashIcon className="w-4 h-4" />
           </Button>
-          <ExternalLinkIcon className="w-4 h-4 text-poe-gray-alt" />
+          <RefreshIcon className="w-4 h-4 text-poe-gold" title="Re-execute search" />
         </div>
-      </a>
+      </button>
     </li>
   );
+}
+
+function getRelativeTime(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffMins < 1) return "just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
 }
 
 const meta: Meta<typeof BookmarksTabDisplay> = {
@@ -292,19 +304,31 @@ const mockFolders: BookmarksFolderStruct[] = [
   { id: "3", title: "Archived Folder", version: "2", icon: null, archivedAt: "2024-01-01" },
 ];
 
+const mockQueryPayload = {
+  query: {
+    status: { option: "online" },
+    stats: [{ type: "and", filters: [] }],
+  },
+  sort: { price: "asc" },
+};
+
 const mockTrades: Record<string, BookmarksTradeStruct[]> = {
   "1": [
     {
       id: "t1",
       title: "Life + Res Ring",
       location: { version: "2", type: "search", league: "poe2/Standard", slug: "abc123" },
-      completedAt: null,
+      createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 mins ago
+      queryPayload: mockQueryPayload,
+      resultCount: 150,
     },
     {
       id: "t2",
       title: "Movement Speed Boots",
       location: { version: "2", type: "search", league: "poe2/Standard", slug: "def456" },
-      completedAt: "2024-01-15",
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
+      queryPayload: mockQueryPayload,
+      resultCount: 42,
     },
   ],
   "2": [
@@ -312,7 +336,9 @@ const mockTrades: Record<string, BookmarksTradeStruct[]> = {
       id: "t3",
       title: "Perfect Chaos Res Ring",
       location: { version: "2", type: "search", league: "poe2/Standard", slug: "ghi789" },
-      completedAt: null,
+      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
+      queryPayload: mockQueryPayload,
+      resultCount: 8,
     },
   ],
 };

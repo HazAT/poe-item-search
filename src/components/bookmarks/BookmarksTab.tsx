@@ -8,14 +8,13 @@ import {
   ChevronRightIcon,
   TrashIcon,
   ArchiveIcon,
-  ExternalLinkIcon,
-  CheckIcon,
   BookmarkIcon,
 } from "@/components/ui";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
-import { buildTradeUrl, getCurrentTradeLocation } from "@/services/tradeLocation";
+import { getCurrentTradeLocation } from "@/services/tradeLocation";
 import { BookmarkModal } from "./BookmarkModal";
+import { SearchEntry } from "@/components/shared/SearchEntry";
 import type { BookmarksFolderStruct, BookmarksTradeStruct } from "@/types/bookmarks";
 
 export function BookmarksTab() {
@@ -186,7 +185,7 @@ interface BookmarkFolderProps {
 
 function BookmarkFolder({ folder }: BookmarkFolderProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { trades, fetchTradesForFolder, deleteFolder, archiveFolder, unarchiveFolder } =
+  const { trades, isExecuting, fetchTradesForFolder, deleteFolder, archiveFolder, unarchiveFolder } =
     useBookmarksStore();
 
   const folderTrades = trades[folder.id!] ?? [];
@@ -248,7 +247,12 @@ function BookmarkFolder({ folder }: BookmarkFolderProps) {
             </li>
           ) : (
             folderTrades.map((trade) => (
-              <BookmarkTrade key={trade.id} folderId={folder.id!} trade={trade} />
+              <BookmarkTrade
+                key={trade.id}
+                folderId={folder.id!}
+                trade={trade}
+                isExecuting={isExecuting === trade.id}
+              />
             ))
           )}
         </ul>
@@ -260,65 +264,23 @@ function BookmarkFolder({ folder }: BookmarkFolderProps) {
 interface BookmarkTradeProps {
   folderId: string;
   trade: BookmarksTradeStruct;
+  isExecuting: boolean;
 }
 
-function BookmarkTrade({ folderId, trade }: BookmarkTradeProps) {
-  const { deleteTrade, toggleTradeCompleted } = useBookmarksStore();
-  const tradeUrl = buildTradeUrl({
-    version: trade.location.version,
-    type: trade.location.type,
-    league: trade.location.league,
-    slug: trade.location.slug,
-  });
-  const isCompleted = !!trade.completedAt;
+function BookmarkTrade({ folderId, trade, isExecuting }: BookmarkTradeProps) {
+  const { deleteTrade, executeSearch } = useBookmarksStore();
 
   return (
-    <li className="group">
-      <a
-        href={tradeUrl}
-        className={`
-          flex items-center gap-2 px-6 py-2 hover:bg-poe-gray transition-colors
-          ${isCompleted ? "opacity-60" : ""}
-        `}
-      >
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleTradeCompleted(folderId, trade.id!);
-          }}
-          className={`
-            w-4 h-4 rounded border shrink-0
-            ${isCompleted ? "bg-poe-green border-poe-green" : "border-poe-gray-alt"}
-          `}
-          title={isCompleted ? "Mark as incomplete" : "Mark as complete"}
-        >
-          {isCompleted && <CheckIcon className="w-3 h-3 text-white" />}
-        </button>
-        <span
-          className={`
-            text-sm text-poe-beige truncate flex-1
-            ${isCompleted ? "line-through" : ""}
-          `}
-        >
-          {trade.title}
-        </span>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              deleteTrade(folderId, trade.id!);
-            }}
-            title="Delete"
-          >
-            <TrashIcon className="w-4 h-4" />
-          </Button>
-          <ExternalLinkIcon className="w-4 h-4 text-poe-gray-alt" />
-        </div>
-      </a>
-    </li>
+    <SearchEntry
+      title={trade.title}
+      version={trade.location.version}
+      league={trade.location.league}
+      type={trade.location.type}
+      resultCount={trade.resultCount}
+      createdAt={trade.createdAt}
+      isExecuting={isExecuting}
+      onExecute={() => executeSearch(folderId, trade.id!)}
+      onDelete={() => deleteTrade(folderId, trade.id!)}
+    />
   );
 }

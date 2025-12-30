@@ -124,6 +124,7 @@ The overlay panel uses Shadow DOM for style isolation. Key considerations:
 - Use Playwriter to interact with Storybook components and verify behavior
 - Use Playwriter to test the extension on live PoE trade pages
 - Playwriter can take accessibility snapshots, click elements, and verify state changes
+- **IMPORTANT:** After running `bun run build`, always prompt the user to refresh the extension in Chrome (chrome://extensions → click refresh icon) before testing with Playwriter MCP
 
 ### Debug Logging
 - **Don't be shy to add debug logs** to understand what's going on

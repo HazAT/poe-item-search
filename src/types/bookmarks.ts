@@ -1,6 +1,6 @@
 // Ported from better-trading
 
-import type { TradeSiteVersion } from "./tradeLocation";
+import type { TradeSiteVersion, TradeSearchQuery } from "./tradeLocation";
 
 export interface BookmarksTradeLocation {
   version: TradeSiteVersion;
@@ -13,7 +13,10 @@ export interface BookmarksTradeStruct {
   id?: string;
   title: string;
   location: BookmarksTradeLocation;
-  completedAt: string | null;
+  // These fields are optional for backwards compatibility with legacy bookmarks
+  createdAt?: string;
+  queryPayload?: TradeSearchQuery;
+  resultCount?: number;
 }
 
 export interface BookmarksFolderStruct {
