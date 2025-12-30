@@ -7150,6 +7150,11 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
     };
   }
+  const storageLog = (msg, ...args) => {
+    if (localStorage.getItem("poe-search-debug") === "true") {
+      console.log(`[PoE Search] [Storage] ${msg}`, ...args);
+    }
+  };
   const SYNCABLE_KEY_PATTERNS = ["bookmark-folders", "bookmark-trades-", "trade-history"];
   const SYNC_ENABLED_KEY = "poe-search-sync-enabled";
   class StorageService {
@@ -7175,13 +7180,19 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       this._listeners.forEach((listener) => listener());
     }
     async initialize() {
-      if (this._initialized) return;
+      storageLog("initialize() called");
+      if (this._initialized) {
+        storageLog("initialize() - already initialized");
+        return;
+      }
       const syncEnabledValue = localStorage.getItem(SYNC_ENABLED_KEY);
       this._syncEnabled = syncEnabledValue === "true";
+      storageLog(`initialize() - syncEnabled: ${this._syncEnabled}`);
       if (this._syncEnabled) {
         await this.updateSyncQuotaInfo();
       }
       this._initialized = true;
+      storageLog("initialize() complete");
     }
     getBackendForKey(key) {
       if (!this._syncEnabled) return "local";
@@ -7198,35 +7209,58 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       const formattedKey = this.formatKey(key);
       const backend = this.getBackendForKey(key);
       const storageApi = this.getStorageApi(backend);
+      storageLog(`getValue(${key}) - backend: ${backend}`);
       return new Promise((resolve) => {
-        storageApi.get([formattedKey], (result) => {
-          const payload = result[formattedKey];
-          if (!payload) {
-            resolve(null);
-            return;
+        let resolved = false;
+        const safeResolve = (value, reason) => {
+          if (!resolved) {
+            resolved = true;
+            storageLog(`getValue(${key}) resolved: ${value !== null ? "found" : "null"}${reason ? ` (${reason})` : ""}`);
+            resolve(value);
           }
-          if (payload.expiresAt) {
-            const expired = new Date(payload.expiresAt).getTime() < Date.now();
-            if (expired) {
-              resolve(null);
-              return;
+        };
+        try {
+          storageApi.get([formattedKey], (result) => {
+            try {
+              const payload = result[formattedKey];
+              if (!payload) {
+                safeResolve(null, "no payload");
+                return;
+              }
+              if (payload.expiresAt) {
+                const expired = new Date(payload.expiresAt).getTime() < Date.now();
+                if (expired) {
+                  safeResolve(null, "expired");
+                  return;
+                }
+              }
+              safeResolve(payload.value);
+            } catch (e) {
+              console.error(`[PoE Search] [Storage] getValue(${key}) callback error:`, e);
+              safeResolve(null, "callback error");
             }
-          }
-          resolve(payload.value);
-        });
+          });
+        } catch (e) {
+          console.error(`[PoE Search] [Storage] getValue(${key}) outer error:`, e);
+          safeResolve(null, "outer error");
+        }
+        setTimeout(() => safeResolve(null, "timeout"), 500);
       });
     }
     async setValue(key, value) {
       const formattedKey = this.formatKey(key);
       const backend = this.getBackendForKey(key);
       const storageApi = this.getStorageApi(backend);
+      storageLog(`setValue(${key}) - backend: ${backend}`);
       return new Promise((resolve, reject) => {
         const payload = { value, expiresAt: null };
         storageApi.set({ [formattedKey]: payload }, () => {
           const lastError = extensionApi().runtime.lastError;
           if (lastError) {
+            storageLog(`setValue(${key}) error:`, lastError.message);
             reject(new Error(lastError.message));
           } else {
+            storageLog(`setValue(${key}) success`);
             resolve();
           }
         });
@@ -7398,9 +7432,88 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
   }
   const storageService = new StorageService();
+  const SETTINGS_KEY = "settings";
+  const useSettingsStore = create((set, get) => ({
+    debugLogging: false,
+    isLoading: true,
+    setDebugLogging: async (enabled) => {
+      console.log("[PoE Search] [Settings] setDebugLogging:", enabled);
+      set({ debugLogging: enabled });
+      const current = await storageService.getValue(SETTINGS_KEY);
+      await storageService.setValue(SETTINGS_KEY, { ...current, debugLogging: enabled });
+    },
+    initialize: async () => {
+      console.log("[PoE Search] [Settings] initialize() called");
+      try {
+        const settings = await storageService.getValue(SETTINGS_KEY);
+        const debugEnabled = (settings == null ? void 0 : settings.debugLogging) ?? false;
+        console.log("[PoE Search] [Settings] loaded debugLogging:", debugEnabled);
+        set({
+          debugLogging: debugEnabled,
+          isLoading: false
+        });
+      } catch (e) {
+        console.error("[PoE Search] [Settings] initialize() error:", e);
+        set({ isLoading: false });
+      }
+    }
+  }));
+  let cachedDebugLogging = false;
+  const getDebugLogging = () => {
+    return cachedDebugLogging;
+  };
+  useSettingsStore.subscribe((state) => {
+    cachedDebugLogging = state.debugLogging;
+  });
+  const PREFIX = "[PoE Search]";
+  function formatArgs(args) {
+    return args.map((arg) => {
+      if (typeof arg === "object" && arg !== null) {
+        try {
+          return JSON.parse(JSON.stringify(arg));
+        } catch {
+          return String(arg);
+        }
+      }
+      return arg;
+    });
+  }
+  function createLogger(level) {
+    return (category, message, ...args) => {
+      if (!getDebugLogging()) return;
+      const timestamp = (/* @__PURE__ */ new Date()).toISOString().split("T")[1].slice(0, 12);
+      const formattedArgs = formatArgs(args);
+      console[level](`${PREFIX} [${timestamp}] [${category}] ${message}`, ...formattedArgs);
+    };
+  }
+  const debug = {
+    log: createLogger("log"),
+    warn: createLogger("warn"),
+    error: createLogger("error"),
+    info: createLogger("info"),
+    // Group related logs together
+    group: (category, label, fn) => {
+      if (!getDebugLogging()) return;
+      console.group(`${PREFIX} [${category}] ${label}`);
+      fn();
+      console.groupEnd();
+    },
+    // Always log regardless of debug setting (for critical errors)
+    critical: (category, message, ...args) => {
+      console.error(`${PREFIX} [CRITICAL] [${category}] ${message}`, ...formatArgs(args));
+    },
+    // Table output for arrays/objects
+    table: (category, label, data) => {
+      if (!getDebugLogging()) return;
+      console.log(`${PREFIX} [${category}] ${label}:`);
+      console.table(data);
+    }
+  };
+  const debugPanel = (message, ...args) => debug.log("Panel", message, ...args);
+  const debugBookmarks = (message, ...args) => debug.log("Bookmarks", message, ...args);
   const COLLAPSED_KEY = "panel-collapsed";
   const ACTIVE_TAB_KEY = "panel-active-tab";
-  const usePanelStore = create((set) => ({
+  const usePanelStore = create((set, get) => ({
     isCollapsed: false,
     activeTab: "history",
     isLoading: true,
@@ -7416,21 +7529,28 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       await storageService.setValue(ACTIVE_TAB_KEY, tab);
     },
     initialize: async () => {
+      if (!get().isLoading) {
+        debugPanel("initialize() skipped - already initialized");
+        return;
+      }
+      debugPanel("initialize() called");
       const [collapsed, activeTab] = await Promise.all([
         storageService.getValue(COLLAPSED_KEY),
         storageService.getValue(ACTIVE_TAB_KEY)
       ]);
+      debugPanel(`initialize() loaded - collapsed: ${collapsed}, activeTab: ${activeTab}`);
       set({
         isCollapsed: collapsed ?? false,
         activeTab: activeTab ?? "history",
         isLoading: false
       });
+      debugPanel("initialize() complete");
     }
   }));
   const variantClasses = {
     default: "bg-poe-gray hover:bg-poe-gray-alt text-poe-beige border border-poe-gray-alt",
     primary: "bg-poe-blue hover:bg-poe-blue-alt text-poe-white border border-poe-blue-alt",
-    secondary: "bg-poe-gold/20 hover:bg-poe-gold/30 text-poe-gold border border-poe-gold/50",
+    secondary: "bg-poe-gold/30 hover:bg-poe-gold/40 text-poe-gold font-semibold border border-poe-gold",
     danger: "bg-poe-red hover:bg-poe-red-alt text-poe-white border border-poe-red-alt",
     ghost: "bg-transparent hover:bg-poe-gray text-poe-beige border border-transparent"
   };
@@ -7874,21 +7994,112 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
     );
   }
+  function SettingsIcon(props) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "svg",
+      {
+        xmlns: "http://www.w3.org/2000/svg",
+        width: "16",
+        height: "16",
+        viewBox: "0 0 24 24",
+        fill: "none",
+        stroke: "currentColor",
+        strokeWidth: "2",
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        ...props,
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { cx: "12", cy: "12", r: "3" })
+        ]
+      }
+    );
+  }
+  function SettingsModal({ isOpen, onClose }) {
+    const { debugLogging, setDebugLogging, isLoading, initialize: initialize2 } = useSettingsStore();
+    reactExports.useEffect(() => {
+      if (isOpen) {
+        initialize2();
+      }
+    }, [isOpen, initialize2]);
+    const handleToggleDebug = () => {
+      setDebugLogging(!debugLogging);
+    };
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      Modal,
+      {
+        isOpen,
+        onClose,
+        title: "Settings",
+        footer: /* @__PURE__ */ jsxRuntimeExports.jsx(Button, { variant: "primary", onClick: onClose, children: "Done" }),
+        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
+          isLoading ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-poe-gray-alt", children: "Loading..." }) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-sm text-poe-beige font-fontin", children: "Debug Logging" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs text-poe-gray-alt", children: "Enable detailed console logs for debugging" })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "button",
+              {
+                onClick: handleToggleDebug,
+                className: `
+                relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                ${debugLogging ? "bg-poe-green" : "bg-poe-gray-alt"}
+              `,
+                children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "span",
+                  {
+                    className: `
+                  inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                  ${debugLogging ? "translate-x-6" : "translate-x-1"}
+                `
+                  }
+                )
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "pt-4 border-t border-poe-gray", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs text-poe-gray-alt", children: "PoE Item Search v1.2.0" }) })
+        ] })
+      }
+    );
+  }
   function PanelHeader() {
     const { toggleCollapsed } = usePanelStore();
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "flex items-center justify-between px-4 py-3 bg-poe-gray border-b border-poe-gray-alt", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-fontin text-xl text-poe-beige tracking-wide", children: "PoE Search" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm text-poe-gray-alt", children: "v1.2.0" })
+    const [isSettingsOpen, setIsSettingsOpen] = reactExports.useState(false);
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "flex items-center justify-between px-4 py-3 bg-poe-gray border-b border-poe-gray-alt", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-fontin text-xl text-poe-beige tracking-wide", children: "PoE Search" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm text-poe-gray-alt", children: "v1.2.0" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button,
+            {
+              variant: "ghost",
+              size: "md",
+              onClick: () => setIsSettingsOpen(true),
+              title: "Settings",
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(SettingsIcon, { className: "w-4 h-4" })
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Button,
+            {
+              variant: "ghost",
+              size: "md",
+              onClick: toggleCollapsed,
+              title: "Collapse panel",
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRightIcon, { className: "w-5 h-5" })
+            }
+          )
+        ] })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
-        Button,
+        SettingsModal,
         {
-          variant: "ghost",
-          size: "md",
-          onClick: toggleCollapsed,
-          title: "Collapse panel",
-          children: /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRightIcon, { className: "w-5 h-5" })
+          isOpen: isSettingsOpen,
+          onClose: () => setIsSettingsOpen(false)
         }
       )
     ] });
@@ -7909,7 +8120,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
     );
   }
-  const styles = "@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap');\n\n*, ::before, ::after{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n::backdrop{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n/*\n! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com\n*/\n\n/*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: '';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user's configured `sans` font-family by default.\n5. Use the user's configured `sans` font-feature-settings by default.\n6. Use the user's configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user's configured `mono` font-family by default.\n2. Use the user's configured `mono` font-feature-settings by default.\n3. Use the user's configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type='button']),\ninput:where([type='reset']),\ninput:where([type='submit']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type='search'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\n\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user's configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role=\"button\"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don't get the pointer cursor.\n*/\n\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n\n[hidden]:where(:not([hidden=\"until-found\"])) {\n  display: none;\n}\n\nhtml {\n    font-size: 16px;\n  }\n\n:root {\n    --poe-black: #161616;\n    --poe-gray: #373737;\n    --poe-gray-alt: #7a7a7a;\n    --poe-white: #ffffff;\n    --poe-beige: #fff8e1;\n    --poe-blue: #0f304d;\n    --poe-blue-alt: #4c4c7d;\n    --poe-gold: #5a3806;\n    --poe-gold-alt: #8a5609;\n    --poe-red: #5a0a09;\n    --poe-red-alt: #6d2725;\n    --poe-yellow: #666521;\n    --poe-yellow-alt: #7a7921;\n    --poe-green: #4b7e42;\n    --poe-green-alt: #5e9954;\n  }\n\n.container{\n  width: 100%;\n}\n\n@media (min-width: 640px){\n\n  .container{\n    max-width: 640px;\n  }\n}\n\n@media (min-width: 768px){\n\n  .container{\n    max-width: 768px;\n  }\n}\n\n@media (min-width: 1024px){\n\n  .container{\n    max-width: 1024px;\n  }\n}\n\n@media (min-width: 1280px){\n\n  .container{\n    max-width: 1280px;\n  }\n}\n\n@media (min-width: 1536px){\n\n  .container{\n    max-width: 1536px;\n  }\n}\n\n.fixed{\n  position: fixed;\n}\n\n.absolute{\n  position: absolute;\n}\n\n.relative{\n  position: relative;\n}\n\n.inset-0{\n  inset: 0px;\n}\n\n.right-0{\n  right: 0px;\n}\n\n.top-0{\n  top: 0px;\n}\n\n.z-50{\n  z-index: 50;\n}\n\n.z-\\[9999\\]{\n  z-index: 9999;\n}\n\n.mx-4{\n  margin-left: 1rem;\n  margin-right: 1rem;\n}\n\n.mb-1{\n  margin-bottom: 0.25rem;\n}\n\n.mb-2{\n  margin-bottom: 0.5rem;\n}\n\n.mr-1{\n  margin-right: 0.25rem;\n}\n\n.mr-2{\n  margin-right: 0.5rem;\n}\n\n.mt-0\\.5{\n  margin-top: 0.125rem;\n}\n\n.mt-1{\n  margin-top: 0.25rem;\n}\n\n.mt-2{\n  margin-top: 0.5rem;\n}\n\n.block{\n  display: block;\n}\n\n.inline{\n  display: inline;\n}\n\n.flex{\n  display: flex;\n}\n\n.inline-flex{\n  display: inline-flex;\n}\n\n.h-3{\n  height: 0.75rem;\n}\n\n.h-4{\n  height: 1rem;\n}\n\n.h-5{\n  height: 1.25rem;\n}\n\n.h-8{\n  height: 2rem;\n}\n\n.h-\\[500px\\]{\n  height: 500px;\n}\n\n.h-\\[600px\\]{\n  height: 600px;\n}\n\n.h-full{\n  height: 100%;\n}\n\n.h-screen{\n  height: 100vh;\n}\n\n.w-3{\n  width: 0.75rem;\n}\n\n.w-4{\n  width: 1rem;\n}\n\n.w-5{\n  width: 1.25rem;\n}\n\n.w-8{\n  width: 2rem;\n}\n\n.w-full{\n  width: 100%;\n}\n\n.w-panel{\n  width: 400px;\n}\n\n.min-w-0{\n  min-width: 0px;\n}\n\n.max-w-md{\n  max-width: 28rem;\n}\n\n.flex-1{\n  flex: 1 1 0%;\n}\n\n.shrink-0{\n  flex-shrink: 0;\n}\n\n.translate-x-0{\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n.translate-x-full{\n  --tw-translate-x: 100%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n.transform{\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n@keyframes fadeIn{\n\n  0%{\n    opacity: 0;\n  }\n\n  100%{\n    opacity: 1;\n  }\n}\n\n.animate-fade-in{\n  animation: fadeIn 0.2s ease-in-out;\n}\n\n.cursor-pointer{\n  cursor: pointer;\n}\n\n.resize-none{\n  resize: none;\n}\n\n.flex-col{\n  flex-direction: column;\n}\n\n.items-start{\n  align-items: flex-start;\n}\n\n.items-center{\n  align-items: center;\n}\n\n.justify-end{\n  justify-content: flex-end;\n}\n\n.justify-center{\n  justify-content: center;\n}\n\n.justify-between{\n  justify-content: space-between;\n}\n\n.gap-1{\n  gap: 0.25rem;\n}\n\n.gap-2{\n  gap: 0.5rem;\n}\n\n.gap-3{\n  gap: 0.75rem;\n}\n\n.gap-4{\n  gap: 1rem;\n}\n\n.space-y-2 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\n}\n\n.space-y-4 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\n}\n\n.divide-y > :not([hidden]) ~ :not([hidden]){\n  --tw-divide-y-reverse: 0;\n  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));\n  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));\n}\n\n.divide-poe-gray > :not([hidden]) ~ :not([hidden]){\n  --tw-divide-opacity: 1;\n  border-color: rgb(55 55 55 / var(--tw-divide-opacity, 1));\n}\n\n.overflow-hidden{\n  overflow: hidden;\n}\n\n.overflow-y-auto{\n  overflow-y: auto;\n}\n\n.truncate{\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.rounded{\n  border-radius: 0.25rem;\n}\n\n.rounded-lg{\n  border-radius: 0.5rem;\n}\n\n.border{\n  border-width: 1px;\n}\n\n.border-b{\n  border-bottom-width: 1px;\n}\n\n.border-b-2{\n  border-bottom-width: 2px;\n}\n\n.border-l{\n  border-left-width: 1px;\n}\n\n.border-t{\n  border-top-width: 1px;\n}\n\n.border-poe-blue-alt{\n  --tw-border-opacity: 1;\n  border-color: rgb(76 76 125 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-gold{\n  --tw-border-opacity: 1;\n  border-color: rgb(90 56 6 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-gold\\/50{\n  border-color: rgb(90 56 6 / 0.5);\n}\n\n.border-poe-gray{\n  --tw-border-opacity: 1;\n  border-color: rgb(55 55 55 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-gray-alt{\n  --tw-border-opacity: 1;\n  border-color: rgb(122 122 122 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-green{\n  --tw-border-opacity: 1;\n  border-color: rgb(75 126 66 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-red{\n  --tw-border-opacity: 1;\n  border-color: rgb(90 10 9 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-red-alt{\n  --tw-border-opacity: 1;\n  border-color: rgb(109 39 37 / var(--tw-border-opacity, 1));\n}\n\n.border-transparent{\n  border-color: transparent;\n}\n\n.bg-black\\/70{\n  background-color: rgb(0 0 0 / 0.7);\n}\n\n.bg-poe-black{\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 22 22 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-black\\/50{\n  background-color: rgb(22 22 22 / 0.5);\n}\n\n.bg-poe-blue{\n  --tw-bg-opacity: 1;\n  background-color: rgb(15 48 77 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-gold\\/20{\n  background-color: rgb(90 56 6 / 0.2);\n}\n\n.bg-poe-gray{\n  --tw-bg-opacity: 1;\n  background-color: rgb(55 55 55 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-green{\n  --tw-bg-opacity: 1;\n  background-color: rgb(75 126 66 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-red{\n  --tw-bg-opacity: 1;\n  background-color: rgb(90 10 9 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-red\\/20{\n  background-color: rgb(90 10 9 / 0.2);\n}\n\n.bg-transparent{\n  background-color: transparent;\n}\n\n.p-3{\n  padding: 0.75rem;\n}\n\n.p-4{\n  padding: 1rem;\n}\n\n.px-2{\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n\n.px-3{\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n\n.px-4{\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n\n.px-6{\n  padding-left: 1.5rem;\n  padding-right: 1.5rem;\n}\n\n.py-1{\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n\n.py-1\\.5{\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n\n.py-2{\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n\n.py-3{\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n\n.text-left{\n  text-align: left;\n}\n\n.text-center{\n  text-align: center;\n}\n\n.font-body{\n  font-family: Verdana, Arial, Helvetica, sans-serif;\n}\n\n.font-fontin{\n  font-family: Cinzel, serif;\n}\n\n.text-base{\n  font-size: 1rem;\n  line-height: 1.5rem;\n}\n\n.text-lg{\n  font-size: 1.125rem;\n  line-height: 1.75rem;\n}\n\n.text-sm{\n  font-size: 0.875rem;\n  line-height: 1.25rem;\n}\n\n.text-xl{\n  font-size: 1.25rem;\n  line-height: 1.75rem;\n}\n\n.text-xs{\n  font-size: 0.75rem;\n  line-height: 1rem;\n}\n\n.tracking-wide{\n  letter-spacing: 0.025em;\n}\n\n.text-poe-beige{\n  --tw-text-opacity: 1;\n  color: rgb(255 248 225 / var(--tw-text-opacity, 1));\n}\n\n.text-poe-gold{\n  --tw-text-opacity: 1;\n  color: rgb(90 56 6 / var(--tw-text-opacity, 1));\n}\n\n.text-poe-gray-alt{\n  --tw-text-opacity: 1;\n  color: rgb(122 122 122 / var(--tw-text-opacity, 1));\n}\n\n.text-poe-red{\n  --tw-text-opacity: 1;\n  color: rgb(90 10 9 / var(--tw-text-opacity, 1));\n}\n\n.text-poe-white{\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n\n.text-white{\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n\n.line-through{\n  text-decoration-line: line-through;\n}\n\n.opacity-0{\n  opacity: 0;\n}\n\n.opacity-60{\n  opacity: 0.6;\n}\n\n.shadow{\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n\n.shadow-2xl{\n  --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);\n  --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n\n.filter{\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n\n.backdrop-blur-sm{\n  --tw-backdrop-blur: blur(4px);\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n\n.transition{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.transition-colors{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.transition-opacity{\n  transition-property: opacity;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.transition-transform{\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.duration-200{\n  transition-duration: 200ms;\n}\n\n.ease-in-out{\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n\n/* Custom base styles for the PoE theme */\n\n/* Panel container styles */\n\n.placeholder\\:text-poe-gray-alt::-moz-placeholder{\n  --tw-text-opacity: 1;\n  color: rgb(122 122 122 / var(--tw-text-opacity, 1));\n}\n\n.placeholder\\:text-poe-gray-alt::placeholder{\n  --tw-text-opacity: 1;\n  color: rgb(122 122 122 / var(--tw-text-opacity, 1));\n}\n\n.hover\\:bg-poe-blue-alt:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(76 76 125 / var(--tw-bg-opacity, 1));\n}\n\n.hover\\:bg-poe-gold\\/30:hover{\n  background-color: rgb(90 56 6 / 0.3);\n}\n\n.hover\\:bg-poe-gray:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(55 55 55 / var(--tw-bg-opacity, 1));\n}\n\n.hover\\:bg-poe-gray-alt:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(122 122 122 / var(--tw-bg-opacity, 1));\n}\n\n.hover\\:bg-poe-red-alt:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(109 39 37 / var(--tw-bg-opacity, 1));\n}\n\n.hover\\:text-poe-beige:hover{\n  --tw-text-opacity: 1;\n  color: rgb(255 248 225 / var(--tw-text-opacity, 1));\n}\n\n.focus\\:border-poe-gold:focus{\n  --tw-border-opacity: 1;\n  border-color: rgb(90 56 6 / var(--tw-border-opacity, 1));\n}\n\n.focus\\:outline-none:focus{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n\n.focus\\:ring-1:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n\n.focus\\:ring-2:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n\n.focus\\:ring-poe-gold:focus{\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(90 56 6 / var(--tw-ring-opacity, 1));\n}\n\n.focus\\:ring-offset-1:focus{\n  --tw-ring-offset-width: 1px;\n}\n\n.focus\\:ring-offset-poe-black:focus{\n  --tw-ring-offset-color: #161616;\n}\n\n.disabled\\:cursor-not-allowed:disabled{\n  cursor: not-allowed;\n}\n\n.disabled\\:opacity-50:disabled{\n  opacity: 0.5;\n}\n\n.group:hover .group-hover\\:opacity-100{\n  opacity: 1;\n}\n";
+  const styles = "@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap');\n\n*, ::before, ::after{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n::backdrop{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n/*\n! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com\n*/\n\n/*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: '';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user's configured `sans` font-family by default.\n5. Use the user's configured `sans` font-feature-settings by default.\n6. Use the user's configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user's configured `mono` font-family by default.\n2. Use the user's configured `mono` font-feature-settings by default.\n3. Use the user's configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type='button']),\ninput:where([type='reset']),\ninput:where([type='submit']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type='search'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\n\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user's configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role=\"button\"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don't get the pointer cursor.\n*/\n\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n\n[hidden]:where(:not([hidden=\"until-found\"])) {\n  display: none;\n}\n\nhtml {\n    font-size: 16px;\n  }\n\n:root {\n    --poe-black: #161616;\n    --poe-gray: #373737;\n    --poe-gray-alt: #7a7a7a;\n    --poe-white: #ffffff;\n    --poe-beige: #fff8e1;\n    --poe-blue: #0f304d;\n    --poe-blue-alt: #4c4c7d;\n    --poe-gold: #5a3806;\n    --poe-gold-alt: #8a5609;\n    --poe-red: #5a0a09;\n    --poe-red-alt: #6d2725;\n    --poe-yellow: #666521;\n    --poe-yellow-alt: #7a7921;\n    --poe-green: #4b7e42;\n    --poe-green-alt: #5e9954;\n  }\n\n.container{\n  width: 100%;\n}\n\n@media (min-width: 640px){\n\n  .container{\n    max-width: 640px;\n  }\n}\n\n@media (min-width: 768px){\n\n  .container{\n    max-width: 768px;\n  }\n}\n\n@media (min-width: 1024px){\n\n  .container{\n    max-width: 1024px;\n  }\n}\n\n@media (min-width: 1280px){\n\n  .container{\n    max-width: 1280px;\n  }\n}\n\n@media (min-width: 1536px){\n\n  .container{\n    max-width: 1536px;\n  }\n}\n\n.fixed{\n  position: fixed;\n}\n\n.absolute{\n  position: absolute;\n}\n\n.relative{\n  position: relative;\n}\n\n.inset-0{\n  inset: 0px;\n}\n\n.right-0{\n  right: 0px;\n}\n\n.top-0{\n  top: 0px;\n}\n\n.z-50{\n  z-index: 50;\n}\n\n.z-\\[9999\\]{\n  z-index: 9999;\n}\n\n.mx-4{\n  margin-left: 1rem;\n  margin-right: 1rem;\n}\n\n.mb-1{\n  margin-bottom: 0.25rem;\n}\n\n.mb-2{\n  margin-bottom: 0.5rem;\n}\n\n.mr-1{\n  margin-right: 0.25rem;\n}\n\n.mr-2{\n  margin-right: 0.5rem;\n}\n\n.mt-0\\.5{\n  margin-top: 0.125rem;\n}\n\n.mt-1{\n  margin-top: 0.25rem;\n}\n\n.mt-2{\n  margin-top: 0.5rem;\n}\n\n.block{\n  display: block;\n}\n\n.inline-block{\n  display: inline-block;\n}\n\n.inline{\n  display: inline;\n}\n\n.flex{\n  display: flex;\n}\n\n.inline-flex{\n  display: inline-flex;\n}\n\n.table{\n  display: table;\n}\n\n.h-3{\n  height: 0.75rem;\n}\n\n.h-4{\n  height: 1rem;\n}\n\n.h-5{\n  height: 1.25rem;\n}\n\n.h-6{\n  height: 1.5rem;\n}\n\n.h-8{\n  height: 2rem;\n}\n\n.h-\\[500px\\]{\n  height: 500px;\n}\n\n.h-\\[600px\\]{\n  height: 600px;\n}\n\n.h-full{\n  height: 100%;\n}\n\n.h-screen{\n  height: 100vh;\n}\n\n.w-11{\n  width: 2.75rem;\n}\n\n.w-3{\n  width: 0.75rem;\n}\n\n.w-4{\n  width: 1rem;\n}\n\n.w-5{\n  width: 1.25rem;\n}\n\n.w-8{\n  width: 2rem;\n}\n\n.w-full{\n  width: 100%;\n}\n\n.w-panel{\n  width: 400px;\n}\n\n.min-w-0{\n  min-width: 0px;\n}\n\n.max-w-md{\n  max-width: 28rem;\n}\n\n.flex-1{\n  flex: 1 1 0%;\n}\n\n.shrink-0{\n  flex-shrink: 0;\n}\n\n.translate-x-0{\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n.translate-x-1{\n  --tw-translate-x: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n.translate-x-6{\n  --tw-translate-x: 1.5rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n.translate-x-full{\n  --tw-translate-x: 100%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n.transform{\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n@keyframes fadeIn{\n\n  0%{\n    opacity: 0;\n  }\n\n  100%{\n    opacity: 1;\n  }\n}\n\n.animate-fade-in{\n  animation: fadeIn 0.2s ease-in-out;\n}\n\n.cursor-pointer{\n  cursor: pointer;\n}\n\n.resize-none{\n  resize: none;\n}\n\n.flex-col{\n  flex-direction: column;\n}\n\n.items-start{\n  align-items: flex-start;\n}\n\n.items-center{\n  align-items: center;\n}\n\n.justify-end{\n  justify-content: flex-end;\n}\n\n.justify-center{\n  justify-content: center;\n}\n\n.justify-between{\n  justify-content: space-between;\n}\n\n.gap-1{\n  gap: 0.25rem;\n}\n\n.gap-2{\n  gap: 0.5rem;\n}\n\n.gap-3{\n  gap: 0.75rem;\n}\n\n.gap-4{\n  gap: 1rem;\n}\n\n.space-y-2 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\n}\n\n.space-y-4 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\n}\n\n.divide-y > :not([hidden]) ~ :not([hidden]){\n  --tw-divide-y-reverse: 0;\n  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));\n  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));\n}\n\n.divide-poe-gray > :not([hidden]) ~ :not([hidden]){\n  --tw-divide-opacity: 1;\n  border-color: rgb(55 55 55 / var(--tw-divide-opacity, 1));\n}\n\n.overflow-hidden{\n  overflow: hidden;\n}\n\n.overflow-y-auto{\n  overflow-y: auto;\n}\n\n.truncate{\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.rounded{\n  border-radius: 0.25rem;\n}\n\n.rounded-full{\n  border-radius: 9999px;\n}\n\n.rounded-lg{\n  border-radius: 0.5rem;\n}\n\n.border{\n  border-width: 1px;\n}\n\n.border-b{\n  border-bottom-width: 1px;\n}\n\n.border-b-2{\n  border-bottom-width: 2px;\n}\n\n.border-l{\n  border-left-width: 1px;\n}\n\n.border-t{\n  border-top-width: 1px;\n}\n\n.border-poe-blue-alt{\n  --tw-border-opacity: 1;\n  border-color: rgb(76 76 125 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-gold{\n  --tw-border-opacity: 1;\n  border-color: rgb(90 56 6 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-gray{\n  --tw-border-opacity: 1;\n  border-color: rgb(55 55 55 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-gray-alt{\n  --tw-border-opacity: 1;\n  border-color: rgb(122 122 122 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-green{\n  --tw-border-opacity: 1;\n  border-color: rgb(75 126 66 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-red{\n  --tw-border-opacity: 1;\n  border-color: rgb(90 10 9 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-red-alt{\n  --tw-border-opacity: 1;\n  border-color: rgb(109 39 37 / var(--tw-border-opacity, 1));\n}\n\n.border-transparent{\n  border-color: transparent;\n}\n\n.bg-black\\/70{\n  background-color: rgb(0 0 0 / 0.7);\n}\n\n.bg-poe-black{\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 22 22 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-black\\/50{\n  background-color: rgb(22 22 22 / 0.5);\n}\n\n.bg-poe-blue{\n  --tw-bg-opacity: 1;\n  background-color: rgb(15 48 77 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-gold\\/30{\n  background-color: rgb(90 56 6 / 0.3);\n}\n\n.bg-poe-gray{\n  --tw-bg-opacity: 1;\n  background-color: rgb(55 55 55 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-gray-alt{\n  --tw-bg-opacity: 1;\n  background-color: rgb(122 122 122 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-green{\n  --tw-bg-opacity: 1;\n  background-color: rgb(75 126 66 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-red{\n  --tw-bg-opacity: 1;\n  background-color: rgb(90 10 9 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-red\\/20{\n  background-color: rgb(90 10 9 / 0.2);\n}\n\n.bg-transparent{\n  background-color: transparent;\n}\n\n.bg-white{\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));\n}\n\n.p-3{\n  padding: 0.75rem;\n}\n\n.p-4{\n  padding: 1rem;\n}\n\n.px-2{\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n\n.px-3{\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n\n.px-4{\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n\n.px-6{\n  padding-left: 1.5rem;\n  padding-right: 1.5rem;\n}\n\n.py-1{\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n\n.py-1\\.5{\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n\n.py-2{\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n\n.py-3{\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n\n.pt-4{\n  padding-top: 1rem;\n}\n\n.text-left{\n  text-align: left;\n}\n\n.text-center{\n  text-align: center;\n}\n\n.font-body{\n  font-family: Verdana, Arial, Helvetica, sans-serif;\n}\n\n.font-fontin{\n  font-family: Cinzel, serif;\n}\n\n.text-base{\n  font-size: 1rem;\n  line-height: 1.5rem;\n}\n\n.text-lg{\n  font-size: 1.125rem;\n  line-height: 1.75rem;\n}\n\n.text-sm{\n  font-size: 0.875rem;\n  line-height: 1.25rem;\n}\n\n.text-xl{\n  font-size: 1.25rem;\n  line-height: 1.75rem;\n}\n\n.text-xs{\n  font-size: 0.75rem;\n  line-height: 1rem;\n}\n\n.font-semibold{\n  font-weight: 600;\n}\n\n.tracking-wide{\n  letter-spacing: 0.025em;\n}\n\n.text-poe-beige{\n  --tw-text-opacity: 1;\n  color: rgb(255 248 225 / var(--tw-text-opacity, 1));\n}\n\n.text-poe-gold{\n  --tw-text-opacity: 1;\n  color: rgb(90 56 6 / var(--tw-text-opacity, 1));\n}\n\n.text-poe-gray-alt{\n  --tw-text-opacity: 1;\n  color: rgb(122 122 122 / var(--tw-text-opacity, 1));\n}\n\n.text-poe-red{\n  --tw-text-opacity: 1;\n  color: rgb(90 10 9 / var(--tw-text-opacity, 1));\n}\n\n.text-poe-white{\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n\n.text-white{\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n\n.line-through{\n  text-decoration-line: line-through;\n}\n\n.opacity-0{\n  opacity: 0;\n}\n\n.opacity-60{\n  opacity: 0.6;\n}\n\n.shadow{\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n\n.shadow-2xl{\n  --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);\n  --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n\n.filter{\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n\n.backdrop-blur-sm{\n  --tw-backdrop-blur: blur(4px);\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n\n.transition{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.transition-colors{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.transition-opacity{\n  transition-property: opacity;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.transition-transform{\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.duration-200{\n  transition-duration: 200ms;\n}\n\n.ease-in-out{\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n\n/* Custom base styles for the PoE theme */\n\n/* Panel container styles */\n\n.placeholder\\:text-poe-gray-alt::-moz-placeholder{\n  --tw-text-opacity: 1;\n  color: rgb(122 122 122 / var(--tw-text-opacity, 1));\n}\n\n.placeholder\\:text-poe-gray-alt::placeholder{\n  --tw-text-opacity: 1;\n  color: rgb(122 122 122 / var(--tw-text-opacity, 1));\n}\n\n.hover\\:bg-poe-blue-alt:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(76 76 125 / var(--tw-bg-opacity, 1));\n}\n\n.hover\\:bg-poe-gold\\/40:hover{\n  background-color: rgb(90 56 6 / 0.4);\n}\n\n.hover\\:bg-poe-gray:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(55 55 55 / var(--tw-bg-opacity, 1));\n}\n\n.hover\\:bg-poe-gray-alt:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(122 122 122 / var(--tw-bg-opacity, 1));\n}\n\n.hover\\:bg-poe-red-alt:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(109 39 37 / var(--tw-bg-opacity, 1));\n}\n\n.hover\\:text-poe-beige:hover{\n  --tw-text-opacity: 1;\n  color: rgb(255 248 225 / var(--tw-text-opacity, 1));\n}\n\n.focus\\:border-poe-gold:focus{\n  --tw-border-opacity: 1;\n  border-color: rgb(90 56 6 / var(--tw-border-opacity, 1));\n}\n\n.focus\\:outline-none:focus{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n\n.focus\\:ring-1:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n\n.focus\\:ring-2:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n\n.focus\\:ring-poe-gold:focus{\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(90 56 6 / var(--tw-ring-opacity, 1));\n}\n\n.focus\\:ring-offset-1:focus{\n  --tw-ring-offset-width: 1px;\n}\n\n.focus\\:ring-offset-poe-black:focus{\n  --tw-ring-offset-color: #161616;\n}\n\n.disabled\\:cursor-not-allowed:disabled{\n  cursor: not-allowed;\n}\n\n.disabled\\:opacity-50:disabled{\n  opacity: 0.5;\n}\n\n.group:hover .group-hover\\:opacity-100{\n  opacity: 1;\n}\n";
   function CollapsedToggle({ forceShow = false }) {
     const { isCollapsed, toggleCollapsed } = usePanelStore();
     if (!isCollapsed && !forceShow) return null;
@@ -8560,11 +8771,26 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     folders: [],
     trades: {},
     isLoading: false,
+    hasFetched: false,
     showArchived: false,
     fetchFolders: async () => {
+      const state = get();
+      if (state.isLoading || state.hasFetched) {
+        console.log("[PoE Search] [Bookmarks] fetchFolders() skipped - already fetched or loading");
+        return;
+      }
+      console.log("[PoE Search] [Bookmarks] fetchFolders() called");
+      debugBookmarks("fetchFolders() called");
       set({ isLoading: true });
-      const folders = await storageService.getValue(FOLDERS_KEY) ?? [];
-      set({ folders, isLoading: false });
+      try {
+        const folders = await storageService.getValue(FOLDERS_KEY) ?? [];
+        console.log("[PoE Search] [Bookmarks] fetchFolders() loaded", folders.length, "folders");
+        debugBookmarks(`fetchFolders() loaded ${folders.length} folders`);
+        set({ folders, isLoading: false, hasFetched: true });
+      } catch (e) {
+        console.error("[PoE Search] [Bookmarks] fetchFolders() error:", e);
+        set({ isLoading: false, hasFetched: true });
+      }
     },
     createFolder: async (folder) => {
       const { folders } = get();
@@ -8676,7 +8902,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           setTitle(`Search ${location.slug.substring(0, 8)}`);
         }
       }
-    }, [isOpen, fetchFolders]);
+    }, [isOpen]);
     reactExports.useEffect(() => {
       if (folders.length > 0 && !selectedFolderId) {
         const activeFolders = folders.filter((f) => !f.archivedAt);
@@ -8856,11 +9082,23 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const [isCreateModalOpen, setIsCreateModalOpen] = reactExports.useState(false);
     const [isBookmarkModalOpen, setIsBookmarkModalOpen] = reactExports.useState(false);
     const [newFolderTitle, setNewFolderTitle] = reactExports.useState("");
-    const currentLocation = getCurrentTradeLocation();
-    const canBookmark = !!((currentLocation == null ? void 0 : currentLocation.slug) && (currentLocation == null ? void 0 : currentLocation.league));
+    const [canBookmark, setCanBookmark] = reactExports.useState(false);
     reactExports.useEffect(() => {
       fetchFolders();
-    }, [fetchFolders]);
+    }, []);
+    reactExports.useEffect(() => {
+      const checkLocation = () => {
+        const location = getCurrentTradeLocation();
+        setCanBookmark(!!((location == null ? void 0 : location.slug) && (location == null ? void 0 : location.league)));
+      };
+      checkLocation();
+      window.addEventListener("popstate", checkLocation);
+      const interval = setInterval(checkLocation, 1e3);
+      return () => {
+        window.removeEventListener("popstate", checkLocation);
+        clearInterval(interval);
+      };
+    }, []);
     const handleCreateFolder = async () => {
       if (!newFolderTitle.trim()) return;
       await createFolder({

@@ -31,14 +31,33 @@ export function BookmarksTab() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
   const [newFolderTitle, setNewFolderTitle] = useState("");
-
-  // Check if there's an active search to bookmark
-  const currentLocation = getCurrentTradeLocation();
-  const canBookmark = !!(currentLocation?.slug && currentLocation?.league);
+  const [canBookmark, setCanBookmark] = useState(false);
 
   useEffect(() => {
     fetchFolders();
-  }, [fetchFolders]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Check if there's an active search to bookmark (update on mount and URL changes)
+  useEffect(() => {
+    const checkLocation = () => {
+      const location = getCurrentTradeLocation();
+      setCanBookmark(!!(location?.slug && location?.league));
+    };
+
+    checkLocation();
+
+    // Listen for URL changes (popstate for back/forward, custom event for SPA navigation)
+    window.addEventListener("popstate", checkLocation);
+
+    // Also check periodically in case URL changes via history.pushState
+    const interval = setInterval(checkLocation, 1000);
+
+    return () => {
+      window.removeEventListener("popstate", checkLocation);
+      clearInterval(interval);
+    };
+  }, []);
 
   const handleCreateFolder = async () => {
     if (!newFolderTitle.trim()) return;

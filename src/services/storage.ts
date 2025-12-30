@@ -3,6 +3,15 @@
 
 import { extensionApi } from "@/utils/extensionApi";
 
+// Note: Cannot import debug utility here due to circular dependency
+// (debug -> settingsStore -> storage)
+const storageLog = (msg: string, ...args: unknown[]) => {
+  // Check localStorage flag directly to avoid circular dep
+  if (localStorage.getItem("poe-search-debug") === "true") {
+    console.log(`[PoE Search] [Storage] ${msg}`, ...args);
+  }
+};
+
 // Keys that should be synced across devices when sync is enabled
 const SYNCABLE_KEY_PATTERNS = ["bookmark-folders", "bookmark-trades-", "trade-history"];
 const SYNC_ENABLED_KEY = "poe-search-sync-enabled";
@@ -55,17 +64,23 @@ class StorageService {
   }
 
   async initialize(): Promise<void> {
-    if (this._initialized) return;
+    storageLog("initialize() called");
+    if (this._initialized) {
+      storageLog("initialize() - already initialized");
+      return;
+    }
 
     // Check if sync is enabled (stored in localStorage for quick access)
     const syncEnabledValue = localStorage.getItem(SYNC_ENABLED_KEY);
     this._syncEnabled = syncEnabledValue === "true";
+    storageLog(`initialize() - syncEnabled: ${this._syncEnabled}`);
 
     if (this._syncEnabled) {
       await this.updateSyncQuotaInfo();
     }
 
     this._initialized = true;
+    storageLog("initialize() complete");
   }
 
   private getBackendForKey(key: string): StorageBackend {
@@ -86,22 +101,46 @@ class StorageService {
     const backend = this.getBackendForKey(key);
     const storageApi = this.getStorageApi(backend);
 
+    storageLog(`getValue(${key}) - backend: ${backend}`);
+
     return new Promise((resolve) => {
-      storageApi.get([formattedKey], (result) => {
-        const payload = result[formattedKey] as StoragePayload<T> | undefined;
-        if (!payload) {
-          resolve(null);
-          return;
+      let resolved = false;
+      const safeResolve = (value: T | null, reason?: string) => {
+        if (!resolved) {
+          resolved = true;
+          storageLog(`getValue(${key}) resolved: ${value !== null ? "found" : "null"}${reason ? ` (${reason})` : ""}`);
+          resolve(value);
         }
-        if (payload.expiresAt) {
-          const expired = new Date(payload.expiresAt).getTime() < Date.now();
-          if (expired) {
-            resolve(null);
-            return;
+      };
+
+      try {
+        storageApi.get([formattedKey], (result) => {
+          try {
+            const payload = result[formattedKey] as StoragePayload<T> | undefined;
+            if (!payload) {
+              safeResolve(null, "no payload");
+              return;
+            }
+            if (payload.expiresAt) {
+              const expired = new Date(payload.expiresAt).getTime() < Date.now();
+              if (expired) {
+                safeResolve(null, "expired");
+                return;
+              }
+            }
+            safeResolve(payload.value);
+          } catch (e) {
+            console.error(`[PoE Search] [Storage] getValue(${key}) callback error:`, e);
+            safeResolve(null, "callback error");
           }
-        }
-        resolve(payload.value);
-      });
+        });
+      } catch (e) {
+        console.error(`[PoE Search] [Storage] getValue(${key}) outer error:`, e);
+        safeResolve(null, "outer error");
+      }
+
+      // Timeout fallback - resolve after 500ms if callback never fires
+      setTimeout(() => safeResolve(null, "timeout"), 500);
     });
   }
 
@@ -110,13 +149,17 @@ class StorageService {
     const backend = this.getBackendForKey(key);
     const storageApi = this.getStorageApi(backend);
 
+    storageLog(`setValue(${key}) - backend: ${backend}`);
+
     return new Promise((resolve, reject) => {
       const payload: StoragePayload<T> = { value, expiresAt: null };
       storageApi.set({ [formattedKey]: payload }, () => {
         const lastError = extensionApi().runtime.lastError;
         if (lastError) {
+          storageLog(`setValue(${key}) error:`, lastError.message);
           reject(new Error(lastError.message));
         } else {
+          storageLog(`setValue(${key}) success`);
           resolve();
         }
       });

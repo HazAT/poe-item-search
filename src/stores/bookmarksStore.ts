@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { storageService } from "@/services/storage";
 import { uniqueId } from "@/utils/uniqueId";
+import { debugBookmarks } from "@/utils/debug";
 import type { BookmarksFolderStruct, BookmarksTradeStruct } from "@/types/bookmarks";
 
 const FOLDERS_KEY = "bookmark-folders";
@@ -10,6 +11,7 @@ interface BookmarksState {
   folders: BookmarksFolderStruct[];
   trades: Record<string, BookmarksTradeStruct[]>;
   isLoading: boolean;
+  hasFetched: boolean;
   showArchived: boolean;
 
   // Folder operations
@@ -35,13 +37,29 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => ({
   folders: [],
   trades: {},
   isLoading: false,
+  hasFetched: false,
   showArchived: false,
 
   fetchFolders: async () => {
+    // Prevent repeated fetches - only fetch once
+    const state = get();
+    if (state.isLoading || state.hasFetched) {
+      console.log("[PoE Search] [Bookmarks] fetchFolders() skipped - already fetched or loading");
+      return;
+    }
+    console.log("[PoE Search] [Bookmarks] fetchFolders() called");
+    debugBookmarks("fetchFolders() called");
     set({ isLoading: true });
-    const folders =
-      (await storageService.getValue<BookmarksFolderStruct[]>(FOLDERS_KEY)) ?? [];
-    set({ folders, isLoading: false });
+    try {
+      const folders =
+        (await storageService.getValue<BookmarksFolderStruct[]>(FOLDERS_KEY)) ?? [];
+      console.log("[PoE Search] [Bookmarks] fetchFolders() loaded", folders.length, "folders");
+      debugBookmarks(`fetchFolders() loaded ${folders.length} folders`);
+      set({ folders, isLoading: false, hasFetched: true });
+    } catch (e) {
+      console.error("[PoE Search] [Bookmarks] fetchFolders() error:", e);
+      set({ isLoading: false, hasFetched: true });
+    }
   },
 
   createFolder: async (folder) => {

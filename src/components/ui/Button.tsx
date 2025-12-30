@@ -11,7 +11,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const variantClasses: Record<ButtonVariant, string> = {
   default: "bg-poe-gray hover:bg-poe-gray-alt text-poe-beige border border-poe-gray-alt",
   primary: "bg-poe-blue hover:bg-poe-blue-alt text-poe-white border border-poe-blue-alt",
-  secondary: "bg-poe-gold/20 hover:bg-poe-gold/30 text-poe-gold border border-poe-gold/50",
+  secondary: "bg-poe-gold/30 hover:bg-poe-gold/40 text-poe-gold font-semibold border border-poe-gold",
   danger: "bg-poe-red hover:bg-poe-red-alt text-poe-white border border-poe-red-alt",
   ghost: "bg-transparent hover:bg-poe-gray text-poe-beige border border-transparent",
 };

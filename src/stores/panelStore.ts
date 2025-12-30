@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { storageService } from "@/services/storage";
+import { debugPanel } from "@/utils/debug";
 
 type TabType = "history" | "bookmarks" | "pinned";
 
@@ -15,7 +16,7 @@ interface PanelState {
 const COLLAPSED_KEY = "panel-collapsed";
 const ACTIVE_TAB_KEY = "panel-active-tab";
 
-export const usePanelStore = create<PanelState>((set) => ({
+export const usePanelStore = create<PanelState>((set, get) => ({
   isCollapsed: false,
   activeTab: "history",
   isLoading: true,
@@ -34,15 +35,23 @@ export const usePanelStore = create<PanelState>((set) => ({
   },
 
   initialize: async () => {
+    // Prevent re-initialization
+    if (!get().isLoading) {
+      debugPanel("initialize() skipped - already initialized");
+      return;
+    }
+    debugPanel("initialize() called");
     const [collapsed, activeTab] = await Promise.all([
       storageService.getValue<boolean>(COLLAPSED_KEY),
       storageService.getValue<TabType>(ACTIVE_TAB_KEY),
     ]);
 
+    debugPanel(`initialize() loaded - collapsed: ${collapsed}, activeTab: ${activeTab}`);
     set({
       isCollapsed: collapsed ?? false,
       activeTab: activeTab ?? "history",
       isLoading: false,
     });
+    debugPanel("initialize() complete");
   },
 }));

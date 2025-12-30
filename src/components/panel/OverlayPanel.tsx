@@ -19,7 +19,8 @@ export function OverlayPanel({ children }: OverlayPanelProps) {
   // Initialize panel state from storage
   useEffect(() => {
     initialize();
-  }, [initialize]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Set up Shadow DOM
   useEffect(() => {

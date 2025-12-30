@@ -19,7 +19,7 @@ export function BookmarkModal({ isOpen, onClose }: BookmarkModalProps) {
   const [currentLocation, setCurrentLocation] = useState<TradeLocationStruct | null>(null);
   const [error, setError] = useState("");
 
-  // Fetch folders on mount
+  // Fetch folders when modal opens
   useEffect(() => {
     if (isOpen) {
       fetchFolders();
@@ -31,7 +31,8 @@ export function BookmarkModal({ isOpen, onClose }: BookmarkModalProps) {
         setTitle(`Search ${location.slug.substring(0, 8)}`);
       }
     }
-  }, [isOpen, fetchFolders]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   // Auto-select first folder if available
   useEffect(() => {
