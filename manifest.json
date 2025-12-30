@@ -6,6 +6,9 @@
   "icons": {
     "128": "assets/logo128.png"
   },
+  "permissions": [
+    "storage"
+  ],
   "content_scripts": [
     {
       "matches": [
@@ -13,6 +16,9 @@
       ],
       "js": [
         "dist/content.js"
+      ],
+      "css": [
+        "dist/style.css"
       ]
     }
   ]

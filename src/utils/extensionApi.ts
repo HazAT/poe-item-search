@@ -1,0 +1,121 @@
+// Ported from better-trading - Chrome extension API abstraction
+
+interface StorageArea {
+  get(keys: string[] | null, callback: (result: Record<string, unknown>) => void): void;
+  set(data: Record<string, unknown>, callback: () => void): void;
+  remove(keys: string | string[], callback: () => void): void;
+  getBytesInUse(keys: string[] | null, callback: (bytesInUse: number) => void): void;
+}
+
+interface SyncStorageArea extends StorageArea {
+  QUOTA_BYTES: number;
+  QUOTA_BYTES_PER_ITEM: number;
+  MAX_ITEMS: number;
+}
+
+interface ExtensionApi {
+  runtime: {
+    getURL(path: string): string;
+    sendMessage(query: object, callback: (payload: object | null) => void): void;
+    lastError?: { message: string } | null;
+  };
+  storage: {
+    local: StorageArea;
+    sync: SyncStorageArea;
+  };
+}
+
+export const extensionApi = (): ExtensionApi => {
+  // Chrome is the primary target, but this abstraction allows for Firefox compatibility
+  if (typeof chrome !== "undefined" && chrome.storage?.local) {
+    return chrome as unknown as ExtensionApi;
+  }
+  // Firefox uses 'browser' namespace
+  if (typeof browser !== "undefined" && browser?.storage?.local) {
+    return browser as unknown as ExtensionApi;
+  }
+  // Fallback for development/testing - mock storage with localStorage
+  return {
+    runtime: {
+      getURL: (path: string) => path,
+      sendMessage: (_query: object, callback: (payload: object | null) => void) => callback(null),
+      lastError: null,
+    },
+    storage: {
+      local: createLocalStorageMock("poe-search-local"),
+      sync: {
+        ...createLocalStorageMock("poe-search-sync"),
+        QUOTA_BYTES: 102400,
+        QUOTA_BYTES_PER_ITEM: 8192,
+        MAX_ITEMS: 512,
+      },
+    },
+  };
+};
+
+function createLocalStorageMock(prefix: string): StorageArea {
+  return {
+    get(keys: string[] | null, callback: (result: Record<string, unknown>) => void) {
+      const result: Record<string, unknown> = {};
+      if (keys === null) {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key?.startsWith(prefix)) {
+            const cleanKey = key.slice(prefix.length + 1);
+            const value = localStorage.getItem(key);
+            if (value) {
+              try {
+                result[cleanKey] = JSON.parse(value);
+              } catch {
+                result[cleanKey] = value;
+              }
+            }
+          }
+        }
+      } else {
+        keys.forEach((key) => {
+          const value = localStorage.getItem(`${prefix}-${key}`);
+          if (value) {
+            try {
+              result[key] = JSON.parse(value);
+            } catch {
+              result[key] = value;
+            }
+          }
+        });
+      }
+      callback(result);
+    },
+    set(data: Record<string, unknown>, callback: () => void) {
+      Object.entries(data).forEach(([key, value]) => {
+        localStorage.setItem(`${prefix}-${key}`, JSON.stringify(value));
+      });
+      callback();
+    },
+    remove(keys: string | string[], callback: () => void) {
+      const keyArray = Array.isArray(keys) ? keys : [keys];
+      keyArray.forEach((key) => {
+        localStorage.removeItem(`${prefix}-${key}`);
+      });
+      callback();
+    },
+    getBytesInUse(_keys: string[] | null, callback: (bytesInUse: number) => void) {
+      let bytes = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith(prefix)) {
+          const value = localStorage.getItem(key);
+          if (value) {
+            bytes += key.length + value.length;
+          }
+        }
+      }
+      callback(bytes);
+    },
+  };
+}
+
+// Declare global types for browser extensions
+declare global {
+  const browser: ExtensionApi | undefined;
+}
