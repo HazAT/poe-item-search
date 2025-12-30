@@ -20,9 +20,11 @@ console.log(`PoE Item Search v${version}`);
  */
 function injectInterceptorScript(): void {
   // Use different paths for development (CRXJS) vs production builds
+  // In dev: CRXJS serves from src/injected/interceptor.ts
+  // In prod: Built file is at interceptor.js (relative to dist/)
   const interceptorPath = import.meta.env.DEV
     ? "src/injected/interceptor.ts"
-    : "dist/interceptor.js";
+    : "interceptor.js";
   const scriptUrl = getExtensionUrl(interceptorPath);
   if (!scriptUrl) {
     console.warn("[PoE Item Search] Cannot inject interceptor: not in extension context");

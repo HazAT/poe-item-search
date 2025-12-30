@@ -21,13 +21,13 @@ function productionManifestPlugin(): Plugin {
           content_scripts: [
             {
               matches: manifest.content_scripts[0].matches,
-              js: ["dist/content.js"],
+              js: ["content.js"],
               run_at: manifest.content_scripts[0].run_at,
             },
           ],
           web_accessible_resources: [
             {
-              resources: ["dist/interceptor.js"],
+              resources: ["interceptor.js"],
               matches: ["https://www.pathofexile.com/*"],
             },
           ],
@@ -37,6 +37,14 @@ function productionManifestPlugin(): Plugin {
           JSON.stringify(prodManifest, null, 2)
         );
         console.log("[vite] Production manifest written to dist/manifest.json");
+
+        // Copy assets folder
+        const assetsSource = path.resolve(__dirname, "assets");
+        const assetsDest = path.resolve(__dirname, "dist/assets");
+        if (fs.existsSync(assetsSource)) {
+          fs.cpSync(assetsSource, assetsDest, { recursive: true });
+          console.log("[vite] Assets copied to dist/assets");
+        }
       }
     },
   };

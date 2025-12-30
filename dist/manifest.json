@@ -15,7 +15,7 @@
         "https://www.pathofexile.com/trade*"
       ],
       "js": [
-        "dist/content.js"
+        "content.js"
       ],
       "run_at": "document_start"
     }
@@ -23,7 +23,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "dist/interceptor.js"
+        "interceptor.js"
       ],
       "matches": [
         "https://www.pathofexile.com/*"
