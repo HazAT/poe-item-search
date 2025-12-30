@@ -5,8 +5,9 @@
   "main": "dist/content.js",
   "type": "module",
   "scripts": {
-    "dev": "vite build --watch",
-    "build": "vite build",
+    "dev": "vite --mode development",
+    "dev:watch": "vite build --watch --mode production",
+    "build": "vite build --mode production",
     "build:legacy": "bun build src/content.js --outdir=dist --no-minify --target=browser",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -23,6 +24,7 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@crxjs/vite-plugin": "^2.3.0",
     "@storybook/addon-essentials": "^8.4.7",
     "@storybook/addon-interactions": "^8.4.7",
     "@storybook/react": "^8.4.7",

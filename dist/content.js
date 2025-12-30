@@ -9676,7 +9676,8 @@ function App() {
 const version = "1.3.0";
 console.log(`PoE Item Search v${version}`);
 function injectInterceptorScript() {
-  const scriptUrl = getExtensionUrl("dist/interceptor.js");
+  const interceptorPath = "dist/interceptor.js";
+  const scriptUrl = getExtensionUrl(interceptorPath);
   if (!scriptUrl) {
     console.warn("[PoE Item Search] Cannot inject interceptor: not in extension context");
     return;

@@ -19,7 +19,11 @@ console.log(`PoE Item Search v${version}`);
  * This must happen early to intercept all fetch/XHR requests.
  */
 function injectInterceptorScript(): void {
-  const scriptUrl = getExtensionUrl("dist/interceptor.js");
+  // Use different paths for development (CRXJS) vs production builds
+  const interceptorPath = import.meta.env.DEV
+    ? "src/injected/interceptor.ts"
+    : "dist/interceptor.js";
+  const scriptUrl = getExtensionUrl(interceptorPath);
   if (!scriptUrl) {
     console.warn("[PoE Item Search] Cannot inject interceptor: not in extension context");
     return;

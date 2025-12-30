@@ -15,15 +15,19 @@
         "https://www.pathofexile.com/trade*"
       ],
       "js": [
-        "src/content.tsx"
+        "dist/content.js"
       ],
       "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["src/injected/interceptor.ts"],
-      "matches": ["https://www.pathofexile.com/*"]
+      "resources": [
+        "dist/interceptor.js"
+      ],
+      "matches": [
+        "https://www.pathofexile.com/*"
+      ]
     }
   ]
 }
