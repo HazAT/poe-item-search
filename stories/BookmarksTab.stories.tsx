@@ -8,7 +8,6 @@ import {
   ChevronRightIcon,
   TrashIcon,
   ArchiveIcon,
-  RefreshIcon,
   BookmarkIcon,
 } from "../src/components/ui";
 import { Modal } from "../src/components/ui/Modal";
@@ -186,31 +185,40 @@ function BookmarkFolderDisplay({
 
   return (
     <li className={isArchived ? "opacity-60" : ""}>
-      <div className="flex items-center gap-2 px-3 py-2 hover:bg-poe-gray transition-colors group">
-        <button
-          onClick={onToggle}
-          className="flex items-center gap-2 flex-1 min-w-0 text-left"
-        >
-          {isExpanded ? (
-            <ChevronDownIcon className="w-4 h-4 text-poe-gray-alt shrink-0" />
-          ) : (
-            <ChevronRightIcon className="w-4 h-4 text-poe-gray-alt shrink-0" />
-          )}
-          <FolderIcon className="w-4 h-4 text-poe-gold shrink-0" />
-          <span className="font-fontin text-sm text-poe-beige truncate">
-            {folder.title}
-          </span>
-          <span className="text-xs text-poe-gray-alt shrink-0">({trades.length})</span>
-        </button>
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-poe-gray transition-colors group text-left"
+      >
+        {isExpanded ? (
+          <ChevronDownIcon className="w-4 h-4 text-poe-gray-alt shrink-0" />
+        ) : (
+          <ChevronRightIcon className="w-4 h-4 text-poe-gray-alt shrink-0" />
+        )}
+        <FolderIcon className="w-4 h-4 text-poe-gold shrink-0" />
+        <span className="font-fontin text-sm text-poe-beige truncate">
+          {folder.title}
+        </span>
+        <span className="text-xs text-poe-gray-alt shrink-0">({trades.length})</span>
+        <div className="flex-1" />
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button variant="ghost" size="sm" title={isArchived ? "Unarchive" : "Archive"}>
+          <Button
+            variant="ghost"
+            size="sm"
+            title={isArchived ? "Unarchive" : "Archive"}
+            onClick={(e) => e.stopPropagation()}
+          >
             <ArchiveIcon className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="sm" title="Delete">
+          <Button
+            variant="ghost"
+            size="sm"
+            title="Delete"
+            onClick={(e) => e.stopPropagation()}
+          >
             <TrashIcon className="w-4 h-4" />
           </Button>
         </div>
-      </div>
+      </button>
       {isExpanded && (
         <ul className="bg-poe-black/50 border-t border-poe-gray">
           {trades.length === 0 ? (
@@ -229,7 +237,7 @@ function BookmarkFolderDisplay({
 }
 
 function BookmarkTradeDisplay({ trade }: { trade: BookmarksTradeStruct }) {
-  const timeAgo = getRelativeTime(trade.createdAt);
+  const timeAgo = trade.createdAt ? getRelativeTime(trade.createdAt) : null;
 
   return (
     <li className="group">
@@ -247,17 +255,20 @@ function BookmarkTradeDisplay({ trade }: { trade: BookmarksTradeStruct }) {
             <span className="text-xs text-poe-gray-alt truncate">
               {trade.location.league} • {trade.location.type}
             </span>
-            <span className="text-xs text-poe-gold shrink-0">
-              {trade.resultCount.toLocaleString()} results
-            </span>
-            <span className="text-xs text-poe-gray-alt shrink-0">{timeAgo}</span>
+            {trade.resultCount !== undefined && (
+              <span className="text-xs text-poe-gold shrink-0">
+                {trade.resultCount.toLocaleString()} results
+              </span>
+            )}
+            {timeAgo && (
+              <span className="text-xs text-poe-gray-alt shrink-0">{timeAgo}</span>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button variant="ghost" size="sm" title="Delete">
             <TrashIcon className="w-4 h-4" />
           </Button>
-          <RefreshIcon className="w-4 h-4 text-poe-gold" title="Re-execute search" />
         </div>
       </button>
     </li>

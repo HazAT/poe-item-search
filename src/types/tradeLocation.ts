@@ -28,9 +28,12 @@ export interface TradeLocationHistoryStruct extends Required<TradeLocationStruct
 }
 
 // The search query payload structure (matches PoE API)
+// We store the full payload as-is to preserve all fields including sort
 export interface TradeSearchQuery {
   query: {
     term?: string;
+    name?: string;
+    type?: string;
     status?: { option: string };
     stats?: Array<{
       type: string;
@@ -40,8 +43,10 @@ export interface TradeSearchQuery {
         disabled?: boolean;
       }>;
       value?: { min?: number };
+      disabled?: boolean;
     }>;
     filters?: Record<string, unknown>;
   };
-  sort?: { price: string };
+  // Sort can be any field like { price: "asc" } or { "stat.implicit.stat_123": "desc" }
+  sort?: Record<string, string>;
 }

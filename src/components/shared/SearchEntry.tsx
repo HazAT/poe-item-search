@@ -66,21 +66,18 @@ export function SearchEntry({
           {isExecuting ? (
             <RefreshIcon className="w-4 h-4 text-poe-gold animate-spin" />
           ) : (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onDelete();
-                }}
-                title="Delete"
-              >
-                <TrashIcon className="w-4 h-4" />
-              </Button>
-              <RefreshIcon className="w-4 h-4 text-poe-gold" title="Re-execute search" />
-            </>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onDelete();
+              }}
+              title="Delete"
+            >
+              <TrashIcon className="w-4 h-4" />
+            </Button>
           )}
         </div>
       </button>

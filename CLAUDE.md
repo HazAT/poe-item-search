@@ -118,6 +118,7 @@ The overlay panel uses Shadow DOM for style isolation. Key considerations:
 - **Test components in Storybook first** before testing in the extension
 - Run `bun run storybook` to start the dev server on port 6006
 - Storybook provides isolated component testing without needing to load the full extension
+- **CRITICAL: Keep Storybook display components in sync with actual components** - When modifying any component styling or behavior, ALWAYS update the corresponding Storybook display component (e.g., `HistoryEntryDisplay`, `BookmarkFolderDisplay`, `BookmarkTradeDisplay`) to match. Out-of-sync stories are useless for testing.
 
 ### Validate with Playwriter
 - **Always use Playwriter MCP** to validate UI changes in the browser
@@ -131,6 +132,7 @@ The overlay panel uses Shadow DOM for style isolation. Key considerations:
 - Use the built-in debug logging functionality in the extension
 - Debug logs help trace item parsing, state changes, and API interactions
 - Enable debug mode in the settings modal to see detailed logs in the console
+- Don't remove debug logs you added at one point, they had a reason
 
 ## PoE Trade API Notes
 

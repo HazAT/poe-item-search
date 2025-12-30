@@ -1,8 +1,9 @@
 const TRADE_API_PATTERN = /\/api\/trade2?\/search\/.+/;
+const SORT_OVERRIDE_KEY = "poe-search-sort-override";
 const originalFetch = window.fetch;
 window.fetch = async function(...args) {
   var _a;
-  const [input, init] = args;
+  let [input, init] = args;
   const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
   if (((_a = init == null ? void 0 : init.method) == null ? void 0 : _a.toUpperCase()) === "POST" && TRADE_API_PATTERN.test(url)) {
     let requestBody;
@@ -13,7 +14,24 @@ window.fetch = async function(...args) {
         requestBody = init.body;
       }
     }
-    const response = await originalFetch.apply(this, args);
+    const sortOverride = localStorage.getItem(SORT_OVERRIDE_KEY);
+    console.log("[PoE Search Interceptor] Checking sort override:", {
+      hasOverride: !!sortOverride,
+      override: sortOverride,
+      currentSort: requestBody == null ? void 0 : requestBody.sort
+    });
+    if (sortOverride && requestBody && typeof requestBody === "object") {
+      try {
+        const overrideData = JSON.parse(sortOverride);
+        requestBody.sort = overrideData;
+        init = { ...init, body: JSON.stringify(requestBody) };
+        console.log("[PoE Search Interceptor] Applied sort override:", overrideData);
+        localStorage.removeItem(SORT_OVERRIDE_KEY);
+      } catch (e) {
+        console.error("[PoE Search Interceptor] Failed to apply sort override:", e);
+      }
+    }
+    const response = await originalFetch.apply(this, [input, init]);
     const clonedResponse = response.clone();
     try {
       const responseBody = await clonedResponse.json();
@@ -65,6 +83,23 @@ XMLHttpRequest.prototype.send = function(body) {
     if (body) {
       try {
         requestBody = JSON.parse(body);
+        const sortOverride = localStorage.getItem(SORT_OVERRIDE_KEY);
+        console.log("[PoE Search Interceptor XHR] Checking sort override:", {
+          hasOverride: !!sortOverride,
+          override: sortOverride,
+          currentSort: requestBody == null ? void 0 : requestBody.sort
+        });
+        if (sortOverride && requestBody && typeof requestBody === "object") {
+          try {
+            const overrideData = JSON.parse(sortOverride);
+            requestBody.sort = overrideData;
+            body = JSON.stringify(requestBody);
+            console.log("[PoE Search Interceptor XHR] Applied sort override:", overrideData);
+            localStorage.removeItem(SORT_OVERRIDE_KEY);
+          } catch (e) {
+            console.error("[PoE Search Interceptor XHR] Failed to apply sort override:", e);
+          }
+        }
       } catch {
         requestBody = body;
       }
@@ -100,4 +135,12 @@ XMLHttpRequest.prototype.send = function(body) {
   }
   return originalXHRSend.call(this, body);
 };
+window.addEventListener("message", (event) => {
+  var _a;
+  if (event.source !== window) return;
+  if (((_a = event.data) == null ? void 0 : _a.type) === "poe-search-set-sort-override" && event.data.sort) {
+    sessionStorage.setItem(SORT_OVERRIDE_KEY, JSON.stringify(event.data.sort));
+    console.log("[PoE Search Interceptor] Sort override set:", event.data.sort);
+  }
+});
 console.log("[PoE Search Interceptor] Request interceptor installed");

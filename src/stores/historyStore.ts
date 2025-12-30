@@ -55,10 +55,38 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
 
     const { entries } = get();
 
-    // Don't add duplicates based on slug
-    const lastEntry = entries[0];
-    if (lastEntry && lastEntry.slug === location.slug) {
-      debug.log("addEntry: skipping duplicate", location.slug);
+    // Check if this slug already exists
+    const existingIndex = entries.findIndex((e) => e.slug === location.slug);
+    if (existingIndex !== -1) {
+      const existingEntry = entries[existingIndex];
+
+      // Check if new sort is non-default (not just price:asc)
+      const newSort = queryPayload?.sort;
+      const isDefaultSort = !newSort || (Object.keys(newSort).length === 1 && newSort.price === "asc");
+
+      // Only update queryPayload if new sort is non-default (custom sort)
+      // This prevents the page's default sort from overwriting user's custom sort
+      const updatedEntry: TradeLocationHistoryStruct = {
+        ...existingEntry,
+        resultCount,
+        // Update queryPayload only if new sort is custom (non-default)
+        ...(isDefaultSort ? {} : { queryPayload }),
+      };
+
+      debug.log("addEntry: updating existing entry", {
+        slug: location.slug,
+        isDefaultSort,
+        updatedPayload: !isDefaultSort,
+      });
+
+      // Move updated entry to top of list
+      const newEntries = [
+        updatedEntry,
+        ...entries.slice(0, existingIndex),
+        ...entries.slice(existingIndex + 1),
+      ];
+      await storageService.setValue(HISTORY_KEY, newEntries);
+      set({ entries: newEntries });
       return;
     }
 
@@ -104,7 +132,10 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     }
 
     set({ isExecuting: id });
-    debug.log("executeSearch: re-executing query", { id, title: entry.title });
+    debug.log("executeSearch: re-executing query", {
+      id,
+      title: entry.title,
+    });
 
     try {
       const apiUrl = buildTradeApiUrl(entry);
@@ -132,6 +163,18 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
         const newEntries = entries.map((e) => (e.id === id ? updatedEntry : e));
         await storageService.setValue(HISTORY_KEY, newEntries);
         set({ entries: newEntries });
+
+        // Set sort override for the page's subsequent requests
+        // Use data attribute on documentElement (works across content script and page)
+        const sort = entry.queryPayload?.sort;
+        if (sort && Object.keys(sort).length > 0) {
+          const isDefaultSort = Object.keys(sort).length === 1 && sort.price === "asc";
+          if (!isDefaultSort) {
+            // Store in localStorage (shared between content script and page on same origin)
+            localStorage.setItem("poe-search-sort-override", JSON.stringify(sort));
+            debug.log("executeSearch: set sort override in localStorage", sort);
+          }
+        }
 
         // Navigate to fresh results
         const resultUrl = buildTradeUrl(updatedEntry);

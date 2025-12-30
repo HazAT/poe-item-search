@@ -8272,9 +8272,29 @@ const useHistoryStore = create((set, get) => ({
       return;
     }
     const { entries } = get();
-    const lastEntry = entries[0];
-    if (lastEntry && lastEntry.slug === location.slug) {
-      debug.log("addEntry: skipping duplicate", location.slug);
+    const existingIndex = entries.findIndex((e) => e.slug === location.slug);
+    if (existingIndex !== -1) {
+      const existingEntry = entries[existingIndex];
+      const newSort = queryPayload == null ? void 0 : queryPayload.sort;
+      const isDefaultSort = !newSort || Object.keys(newSort).length === 1 && newSort.price === "asc";
+      const updatedEntry = {
+        ...existingEntry,
+        resultCount,
+        // Update queryPayload only if new sort is custom (non-default)
+        ...isDefaultSort ? {} : { queryPayload }
+      };
+      debug.log("addEntry: updating existing entry", {
+        slug: location.slug,
+        isDefaultSort,
+        updatedPayload: !isDefaultSort
+      });
+      const newEntries2 = [
+        updatedEntry,
+        ...entries.slice(0, existingIndex),
+        ...entries.slice(existingIndex + 1)
+      ];
+      await storageService.setValue(HISTORY_KEY, newEntries2);
+      set({ entries: newEntries2 });
       return;
     }
     const newEntry = {
@@ -8306,6 +8326,7 @@ const useHistoryStore = create((set, get) => ({
     set({ entries: newEntries });
   },
   executeSearch: async (id) => {
+    var _a;
     const { entries } = get();
     const entry = entries.find((e) => e.id === id);
     if (!entry) {
@@ -8313,7 +8334,10 @@ const useHistoryStore = create((set, get) => ({
       return;
     }
     set({ isExecuting: id });
-    debug.log("executeSearch: re-executing query", { id, title: entry.title });
+    debug.log("executeSearch: re-executing query", {
+      id,
+      title: entry.title
+    });
     try {
       const apiUrl = buildTradeApiUrl(entry);
       debug.log("executeSearch: POSTing to", apiUrl);
@@ -8335,6 +8359,14 @@ const useHistoryStore = create((set, get) => ({
         const newEntries = entries.map((e) => e.id === id ? updatedEntry : e);
         await storageService.setValue(HISTORY_KEY, newEntries);
         set({ entries: newEntries });
+        const sort = (_a = entry.queryPayload) == null ? void 0 : _a.sort;
+        if (sort && Object.keys(sort).length > 0) {
+          const isDefaultSort = Object.keys(sort).length === 1 && sort.price === "asc";
+          if (!isDefaultSort) {
+            localStorage.setItem("poe-search-sort-override", JSON.stringify(sort));
+            debug.log("executeSearch: set sort override in localStorage", sort);
+          }
+        }
         const resultUrl = buildTradeUrl(updatedEntry);
         debug.log("executeSearch: navigating to", resultUrl);
         window.location.href = resultUrl;
@@ -8832,23 +8864,20 @@ function SearchEntry({
             timeAgo && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-poe-gray-alt shrink-0", children: timeAgo })
           ] })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity", children: isExecuting ? /* @__PURE__ */ jsxRuntimeExports.jsx(RefreshIcon, { className: "w-4 h-4 text-poe-gold animate-spin" }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Button,
-            {
-              variant: "ghost",
-              size: "sm",
-              onClick: (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onDelete();
-              },
-              title: "Delete",
-              children: /* @__PURE__ */ jsxRuntimeExports.jsx(TrashIcon, { className: "w-4 h-4" })
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(RefreshIcon, { className: "w-4 h-4 text-poe-gold", title: "Re-execute search" })
-        ] }) })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity", children: isExecuting ? /* @__PURE__ */ jsxRuntimeExports.jsx(RefreshIcon, { className: "w-4 h-4 text-poe-gold animate-spin" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Button,
+          {
+            variant: "ghost",
+            size: "sm",
+            onClick: (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete();
+            },
+            title: "Delete",
+            children: /* @__PURE__ */ jsxRuntimeExports.jsx(TrashIcon, { className: "w-4 h-4" })
+          }
+        ) })
       ]
     }
   ) });
@@ -8908,9 +8937,11 @@ function HistoryTab() {
 }
 const FOLDERS_KEY = "bookmark-folders";
 const TRADES_KEY_PREFIX = "bookmark-trades";
+const EXPANDED_FOLDERS_KEY = "expanded-folders";
 const useBookmarksStore = create((set, get) => ({
   folders: [],
   trades: {},
+  expandedFolders: [],
   isLoading: false,
   hasFetched: false,
   showArchived: false,
@@ -8925,14 +8956,27 @@ const useBookmarksStore = create((set, get) => ({
     debugBookmarks("fetchFolders() called");
     set({ isLoading: true });
     try {
-      const folders = await storageService.getValue(FOLDERS_KEY) ?? [];
-      console.log("[PoE Search] [Bookmarks] fetchFolders() loaded", folders.length, "folders");
-      debugBookmarks(`fetchFolders() loaded ${folders.length} folders`);
-      set({ folders, isLoading: false, hasFetched: true });
+      const [folders, expandedFolders] = await Promise.all([
+        storageService.getValue(FOLDERS_KEY),
+        storageService.getValue(EXPANDED_FOLDERS_KEY)
+      ]);
+      console.log("[PoE Search] [Bookmarks] fetchFolders() loaded", (folders == null ? void 0 : folders.length) ?? 0, "folders");
+      debugBookmarks(`fetchFolders() loaded ${(folders == null ? void 0 : folders.length) ?? 0} folders`);
+      set({ folders: folders ?? [], expandedFolders: expandedFolders ?? [], isLoading: false, hasFetched: true });
     } catch (e) {
       console.error("[PoE Search] [Bookmarks] fetchFolders() error:", e);
       set({ isLoading: false, hasFetched: true });
     }
+  },
+  toggleFolderExpanded: (folderId) => {
+    const { expandedFolders } = get();
+    const isExpanded = expandedFolders.includes(folderId);
+    const newExpandedFolders = isExpanded ? expandedFolders.filter((id) => id !== folderId) : [...expandedFolders, folderId];
+    set({ expandedFolders: newExpandedFolders });
+    storageService.setValue(EXPANDED_FOLDERS_KEY, newExpandedFolders);
+  },
+  isFolderExpanded: (folderId) => {
+    return get().expandedFolders.includes(folderId);
   },
   createFolder: async (folder) => {
     const { folders } = get();
@@ -9014,6 +9058,7 @@ const useBookmarksStore = create((set, get) => ({
     }));
   },
   executeSearch: async (folderId, tradeId) => {
+    var _a;
     const { trades } = get();
     const folderTrades = trades[folderId] ?? [];
     const trade = folderTrades.find((t) => t.id === tradeId);
@@ -9028,7 +9073,10 @@ const useBookmarksStore = create((set, get) => ({
       return;
     }
     set({ isExecuting: tradeId });
-    debug.log("executeSearch: re-executing query", { tradeId, title: trade.title });
+    debug.log("executeSearch: re-executing query", {
+      tradeId,
+      title: trade.title
+    });
     try {
       const apiUrl = buildTradeApiUrl(trade.location);
       debug.log("executeSearch: POSTing to", apiUrl);
@@ -9054,6 +9102,14 @@ const useBookmarksStore = create((set, get) => ({
         set((state) => ({
           trades: { ...state.trades, [folderId]: newFolderTrades }
         }));
+        const sort = (_a = trade.queryPayload) == null ? void 0 : _a.sort;
+        if (sort && Object.keys(sort).length > 0) {
+          const isDefaultSort = Object.keys(sort).length === 1 && sort.price === "asc";
+          if (!isDefaultSort) {
+            localStorage.setItem("poe-search-sort-override", JSON.stringify(sort));
+            debug.log("executeSearch: set sort override in localStorage", sort);
+          }
+        }
         const resultUrl = buildTradeUrl(updatedTrade.location);
         debug.log("executeSearch: navigating to", resultUrl);
         window.location.href = resultUrl;
@@ -9405,8 +9461,8 @@ function BookmarksTab() {
   ] });
 }
 function BookmarkFolder({ folder }) {
-  const [isExpanded, setIsExpanded] = reactExports.useState(false);
-  const { trades, isExecuting, fetchTradesForFolder, deleteFolder, archiveFolder, unarchiveFolder } = useBookmarksStore();
+  const { trades, isExecuting, expandedFolders, toggleFolderExpanded, fetchTradesForFolder, deleteFolder, archiveFolder, unarchiveFolder } = useBookmarksStore();
+  const isExpanded = expandedFolders.includes(folder.id);
   const folderTrades = trades[folder.id] ?? [];
   reactExports.useEffect(() => {
     if (isExpanded && !trades[folder.id]) {
@@ -9415,47 +9471,52 @@ function BookmarkFolder({ folder }) {
   }, [isExpanded, folder.id, trades, fetchTradesForFolder]);
   const isArchived = !!folder.archivedAt;
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { className: isArchived ? "opacity-60" : "", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 px-3 py-2 hover:bg-poe-gray transition-colors group", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        "button",
-        {
-          onClick: () => setIsExpanded(!isExpanded),
-          className: "flex items-center gap-2 flex-1 min-w-0 text-left",
-          children: [
-            isExpanded ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDownIcon, { className: "w-4 h-4 text-poe-gray-alt shrink-0" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRightIcon, { className: "w-4 h-4 text-poe-gray-alt shrink-0" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(FolderIcon, { className: "w-4 h-4 text-poe-gold shrink-0" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-fontin text-sm text-poe-beige truncate", children: folder.title }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-poe-gray-alt shrink-0", children: [
-              "(",
-              folderTrades.length,
-              ")"
-            ] })
-          ]
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Button,
-          {
-            variant: "ghost",
-            size: "sm",
-            onClick: () => isArchived ? unarchiveFolder(folder.id) : archiveFolder(folder.id),
-            title: isArchived ? "Unarchive" : "Archive",
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx(ArchiveIcon, { className: "w-4 h-4" })
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Button,
-          {
-            variant: "ghost",
-            size: "sm",
-            onClick: () => deleteFolder(folder.id),
-            title: "Delete",
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx(TrashIcon, { className: "w-4 h-4" })
-          }
-        )
-      ] })
-    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "button",
+      {
+        onClick: () => toggleFolderExpanded(folder.id),
+        className: "w-full flex items-center gap-2 px-3 py-2 hover:bg-poe-gray transition-colors group text-left",
+        children: [
+          isExpanded ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDownIcon, { className: "w-4 h-4 text-poe-gray-alt shrink-0" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRightIcon, { className: "w-4 h-4 text-poe-gray-alt shrink-0" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(FolderIcon, { className: "w-4 h-4 text-poe-gold shrink-0" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-fontin text-sm text-poe-beige truncate", children: folder.title }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-poe-gray-alt shrink-0", children: [
+            "(",
+            folderTrades.length,
+            ")"
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Button,
+              {
+                variant: "ghost",
+                size: "sm",
+                onClick: (e) => {
+                  e.stopPropagation();
+                  isArchived ? unarchiveFolder(folder.id) : archiveFolder(folder.id);
+                },
+                title: isArchived ? "Unarchive" : "Archive",
+                children: /* @__PURE__ */ jsxRuntimeExports.jsx(ArchiveIcon, { className: "w-4 h-4" })
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Button,
+              {
+                variant: "ghost",
+                size: "sm",
+                onClick: (e) => {
+                  e.stopPropagation();
+                  deleteFolder(folder.id);
+                },
+                title: "Delete",
+                children: /* @__PURE__ */ jsxRuntimeExports.jsx(TrashIcon, { className: "w-4 h-4" })
+              }
+            )
+          ] })
+        ]
+      }
+    ),
     isExpanded && /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "bg-poe-black/50 border-t border-poe-gray", children: folderTrades.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("li", { className: "px-6 py-3 text-sm text-poe-gray-alt text-center", children: "No bookmarks in this folder" }) : folderTrades.map((trade) => /* @__PURE__ */ jsxRuntimeExports.jsx(
       BookmarkTrade,
       {

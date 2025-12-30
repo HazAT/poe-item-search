@@ -194,9 +194,9 @@ interface BookmarkFolderProps {
 }
 
 function BookmarkFolder({ folder }: BookmarkFolderProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const { trades, isExecuting, fetchTradesForFolder, deleteFolder, archiveFolder, unarchiveFolder } =
+  const { trades, isExecuting, expandedFolders, toggleFolderExpanded, fetchTradesForFolder, deleteFolder, archiveFolder, unarchiveFolder } =
     useBookmarksStore();
+  const isExpanded = expandedFolders.includes(folder.id!);
 
   const folderTrades = trades[folder.id!] ?? [];
 
@@ -210,31 +210,31 @@ function BookmarkFolder({ folder }: BookmarkFolderProps) {
 
   return (
     <li className={isArchived ? "opacity-60" : ""}>
-      <div className="flex items-center gap-2 px-3 py-2 hover:bg-poe-gray transition-colors group">
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 flex-1 min-w-0 text-left"
-        >
-          {isExpanded ? (
-            <ChevronDownIcon className="w-4 h-4 text-poe-gray-alt shrink-0" />
-          ) : (
-            <ChevronRightIcon className="w-4 h-4 text-poe-gray-alt shrink-0" />
-          )}
-          <FolderIcon className="w-4 h-4 text-poe-gold shrink-0" />
-          <span className="font-fontin text-sm text-poe-beige truncate">
-            {folder.title}
-          </span>
-          <span className="text-xs text-poe-gray-alt shrink-0">
-            ({folderTrades.length})
-          </span>
-        </button>
+      <button
+        onClick={() => toggleFolderExpanded(folder.id!)}
+        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-poe-gray transition-colors group text-left"
+      >
+        {isExpanded ? (
+          <ChevronDownIcon className="w-4 h-4 text-poe-gray-alt shrink-0" />
+        ) : (
+          <ChevronRightIcon className="w-4 h-4 text-poe-gray-alt shrink-0" />
+        )}
+        <FolderIcon className="w-4 h-4 text-poe-gold shrink-0" />
+        <span className="font-fontin text-sm text-poe-beige truncate">
+          {folder.title}
+        </span>
+        <span className="text-xs text-poe-gray-alt shrink-0">
+          ({folderTrades.length})
+        </span>
+        <div className="flex-1" />
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() =>
-              isArchived ? unarchiveFolder(folder.id!) : archiveFolder(folder.id!)
-            }
+            onClick={(e) => {
+              e.stopPropagation();
+              isArchived ? unarchiveFolder(folder.id!) : archiveFolder(folder.id!);
+            }}
             title={isArchived ? "Unarchive" : "Archive"}
           >
             <ArchiveIcon className="w-4 h-4" />
@@ -242,13 +242,16 @@ function BookmarkFolder({ folder }: BookmarkFolderProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => deleteFolder(folder.id!)}
+            onClick={(e) => {
+              e.stopPropagation();
+              deleteFolder(folder.id!);
+            }}
             title="Delete"
           >
             <TrashIcon className="w-4 h-4" />
           </Button>
         </div>
-      </div>
+      </button>
       {isExpanded && (
         <ul className="bg-poe-black/50 border-t border-poe-gray">
           {folderTrades.length === 0 ? (

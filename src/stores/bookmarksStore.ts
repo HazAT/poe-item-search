@@ -8,10 +8,12 @@ import type { BookmarksFolderStruct, BookmarksTradeStruct } from "@/types/bookma
 
 const FOLDERS_KEY = "bookmark-folders";
 const TRADES_KEY_PREFIX = "bookmark-trades";
+const EXPANDED_FOLDERS_KEY = "expanded-folders";
 
 interface BookmarksState {
   folders: BookmarksFolderStruct[];
   trades: Record<string, BookmarksTradeStruct[]>;
+  expandedFolders: string[];
   isLoading: boolean;
   hasFetched: boolean;
   showArchived: boolean;
@@ -19,6 +21,8 @@ interface BookmarksState {
 
   // Folder operations
   fetchFolders: () => Promise<void>;
+  toggleFolderExpanded: (folderId: string) => void;
+  isFolderExpanded: (folderId: string) => boolean;
   createFolder: (folder: Omit<BookmarksFolderStruct, "id">) => Promise<void>;
   updateFolder: (id: string, updates: Partial<BookmarksFolderStruct>) => Promise<void>;
   deleteFolder: (id: string) => Promise<void>;
@@ -39,6 +43,7 @@ interface BookmarksState {
 export const useBookmarksStore = create<BookmarksState>((set, get) => ({
   folders: [],
   trades: {},
+  expandedFolders: [],
   isLoading: false,
   hasFetched: false,
   showArchived: false,
@@ -55,15 +60,31 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => ({
     debugBookmarks("fetchFolders() called");
     set({ isLoading: true });
     try {
-      const folders =
-        (await storageService.getValue<BookmarksFolderStruct[]>(FOLDERS_KEY)) ?? [];
-      console.log("[PoE Search] [Bookmarks] fetchFolders() loaded", folders.length, "folders");
-      debugBookmarks(`fetchFolders() loaded ${folders.length} folders`);
-      set({ folders, isLoading: false, hasFetched: true });
+      const [folders, expandedFolders] = await Promise.all([
+        storageService.getValue<BookmarksFolderStruct[]>(FOLDERS_KEY),
+        storageService.getValue<string[]>(EXPANDED_FOLDERS_KEY),
+      ]);
+      console.log("[PoE Search] [Bookmarks] fetchFolders() loaded", folders?.length ?? 0, "folders");
+      debugBookmarks(`fetchFolders() loaded ${folders?.length ?? 0} folders`);
+      set({ folders: folders ?? [], expandedFolders: expandedFolders ?? [], isLoading: false, hasFetched: true });
     } catch (e) {
       console.error("[PoE Search] [Bookmarks] fetchFolders() error:", e);
       set({ isLoading: false, hasFetched: true });
     }
+  },
+
+  toggleFolderExpanded: (folderId: string) => {
+    const { expandedFolders } = get();
+    const isExpanded = expandedFolders.includes(folderId);
+    const newExpandedFolders = isExpanded
+      ? expandedFolders.filter((id) => id !== folderId)
+      : [...expandedFolders, folderId];
+    set({ expandedFolders: newExpandedFolders });
+    storageService.setValue(EXPANDED_FOLDERS_KEY, newExpandedFolders);
+  },
+
+  isFolderExpanded: (folderId: string) => {
+    return get().expandedFolders.includes(folderId);
   },
 
   createFolder: async (folder) => {
@@ -174,7 +195,10 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => ({
     }
 
     set({ isExecuting: tradeId });
-    debug.log("executeSearch: re-executing query", { tradeId, title: trade.title });
+    debug.log("executeSearch: re-executing query", {
+      tradeId,
+      title: trade.title,
+    });
 
     try {
       const apiUrl = buildTradeApiUrl(trade.location);
@@ -206,6 +230,17 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => ({
         set((state) => ({
           trades: { ...state.trades, [folderId]: newFolderTrades },
         }));
+
+        // Set sort override for the page's subsequent requests
+        // Use localStorage (shared between content script and page on same origin)
+        const sort = trade.queryPayload?.sort;
+        if (sort && Object.keys(sort).length > 0) {
+          const isDefaultSort = Object.keys(sort).length === 1 && sort.price === "asc";
+          if (!isDefaultSort) {
+            localStorage.setItem("poe-search-sort-override", JSON.stringify(sort));
+            debug.log("executeSearch: set sort override in localStorage", sort);
+          }
+        }
 
         // Navigate to fresh results
         const resultUrl = buildTradeUrl(updatedTrade.location);
