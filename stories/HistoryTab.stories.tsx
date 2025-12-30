@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Button, TrashIcon, ExternalLinkIcon, RefreshIcon } from "../src/components/ui";
+import { Button, TrashIcon, RefreshIcon } from "../src/components/ui";
 import type { TradeLocationHistoryStruct } from "../src/types/tradeLocation";
 
 // Standalone display component for stories (doesn't use store)
@@ -53,7 +53,6 @@ function HistoryEntryDisplay({
   isExecuting: boolean;
 }) {
   const timeAgo = getRelativeTime(entry.createdAt);
-  const hasStoredQuery = !!entry.queryPayload;
 
   return (
     <li className="group">
@@ -72,18 +71,11 @@ function HistoryEntryDisplay({
             <span className="text-xs text-poe-gray-alt truncate">
               {entry.league} • {entry.type}
             </span>
-            {/* Show result count if available */}
-            {entry.resultCount !== undefined && (
-              <span className="text-xs text-poe-gold shrink-0">
-                {entry.resultCount.toLocaleString()} results
-              </span>
-            )}
+            <span className="text-xs text-poe-gold shrink-0">
+              {entry.resultCount.toLocaleString()} results
+            </span>
             <span className="text-xs text-poe-gray-alt shrink-0">{timeAgo}</span>
           </div>
-          {/* Indicator for legacy entries without stored query */}
-          {!hasStoredQuery && (
-            <span className="text-xs text-poe-gray-alt italic">(legacy - may be expired)</span>
-          )}
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {isExecuting ? (
@@ -93,11 +85,7 @@ function HistoryEntryDisplay({
               <Button variant="ghost" size="sm">
                 <TrashIcon className="w-4 h-4" />
               </Button>
-              {hasStoredQuery ? (
-                <RefreshIcon className="w-4 h-4 text-poe-gold" title="Will re-execute search" />
-              ) : (
-                <ExternalLinkIcon className="w-4 h-4 text-poe-gray-alt" title="Legacy link" />
-              )}
+              <RefreshIcon className="w-4 h-4 text-poe-gold" title="Re-execute search" />
             </>
           )}
         </div>
@@ -138,38 +126,16 @@ const meta: Meta<typeof HistoryTabDisplay> = {
 export default meta;
 type Story = StoryObj<typeof HistoryTabDisplay>;
 
-// Mock data for stories - legacy entries without queryPayload
-const mockLegacyEntries: TradeLocationHistoryStruct[] = [
+// Mock data for stories
+const mockEntries: TradeLocationHistoryStruct[] = [
   {
     id: "1",
-    version: "2",
-    slug: "abc123",
-    type: "search",
-    league: "Standard",
-    title: "Gold Ring with Fire Resistance",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "2",
-    version: "2",
-    slug: "def456",
-    type: "search",
-    league: "Standard",
-    title: "Rare Gloves",
-    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 mins ago
-  },
-];
-
-// Mock data with query payloads (new entries)
-const mockEntriesWithQuery: TradeLocationHistoryStruct[] = [
-  {
-    id: "3",
     version: "2",
     slug: "ghi789",
     type: "search",
     league: "poe2/Standard",
     title: "Unique Kaom's Heart",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
     queryPayload: {
       query: { term: "Kaom's Heart", status: { option: "online" } },
       sort: { price: "asc" },
@@ -178,13 +144,13 @@ const mockEntriesWithQuery: TradeLocationHistoryStruct[] = [
     source: "extension",
   },
   {
-    id: "4",
+    id: "2",
     version: "2",
     slug: "jkl012",
     type: "search",
     league: "poe2/Standard",
     title: "Life + Res Ring",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
     queryPayload: {
       query: {
         status: { option: "online" },
@@ -201,13 +167,13 @@ const mockEntriesWithQuery: TradeLocationHistoryStruct[] = [
     source: "page",
   },
   {
-    id: "5",
+    id: "3",
     version: "2",
     slug: "mno345",
     type: "search",
     league: "poe2/Settlers",
     title: "Custom Search",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3 days ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
     queryPayload: {
       query: {
         status: { option: "online" },
@@ -220,13 +186,6 @@ const mockEntriesWithQuery: TradeLocationHistoryStruct[] = [
   },
 ];
 
-// Mixed entries (some legacy, some with query)
-const mockMixedEntries: TradeLocationHistoryStruct[] = [
-  ...mockEntriesWithQuery.slice(0, 2),
-  ...mockLegacyEntries,
-  ...mockEntriesWithQuery.slice(2),
-];
-
 export const Empty: Story = {
   args: {
     entries: [],
@@ -234,37 +193,23 @@ export const Empty: Story = {
   },
 };
 
-export const WithLegacyEntries: Story = {
+export const WithEntries: Story = {
   args: {
-    entries: mockLegacyEntries,
-    executingId: null,
-  },
-};
-
-export const WithQueryEntries: Story = {
-  args: {
-    entries: mockEntriesWithQuery,
-    executingId: null,
-  },
-};
-
-export const MixedEntries: Story = {
-  args: {
-    entries: mockMixedEntries,
+    entries: mockEntries,
     executingId: null,
   },
 };
 
 export const ExecutingEntry: Story = {
   args: {
-    entries: mockEntriesWithQuery,
-    executingId: "3", // First entry is executing
+    entries: mockEntries,
+    executingId: "1",
   },
 };
 
 export const SingleEntry: Story = {
   args: {
-    entries: [mockEntriesWithQuery[0]],
+    entries: [mockEntries[0]],
     executingId: null,
   },
 };
@@ -272,7 +217,7 @@ export const SingleEntry: Story = {
 export const ManyEntries: Story = {
   args: {
     entries: Array.from({ length: 20 }, (_, i) => ({
-      ...mockEntriesWithQuery[i % mockEntriesWithQuery.length],
+      ...mockEntries[i % mockEntries.length],
       id: `entry-${i}`,
       title: `Search Result ${i + 1}`,
       resultCount: Math.floor(Math.random() * 5000),

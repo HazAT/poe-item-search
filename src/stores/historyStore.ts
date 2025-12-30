@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { storageService } from "@/services/storage";
 import { uniqueId } from "@/utils/uniqueId";
-import { compareTradeLocations, buildTradeUrl, buildTradeApiUrl } from "@/services/tradeLocation";
+import { buildTradeUrl, buildTradeApiUrl } from "@/services/tradeLocation";
 import { debug } from "@/utils/debug";
 import type {
   TradeLocationStruct,
@@ -18,8 +18,7 @@ interface HistoryState {
   isExecuting: string | null; // ID of entry being re-executed
   fetchEntries: () => Promise<void>;
   clearEntries: () => Promise<void>;
-  addEntry: (location: TradeLocationStruct, title: string) => Promise<void>;
-  addEntryWithQuery: (
+  addEntry: (
     location: TradeLocationStruct,
     title: string,
     queryPayload: TradeSearchQuery,
@@ -47,40 +46,10 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     set({ entries: [] });
   },
 
-  addEntry: async (location: TradeLocationStruct, title: string) => {
+  addEntry: async (location, title, queryPayload, resultCount, source) => {
     // Don't add incomplete entries
     if (!location.version || !location.league || !location.type || !location.slug) {
-      return;
-    }
-
-    const { entries } = get();
-
-    // Don't add duplicates
-    const lastEntry = entries[0];
-    if (lastEntry && compareTradeLocations(location, lastEntry)) {
-      return;
-    }
-
-    const newEntry: TradeLocationHistoryStruct = {
-      id: uniqueId(),
-      version: location.version,
-      slug: location.slug,
-      type: location.type,
-      league: location.league,
-      title,
-      createdAt: new Date().toISOString(),
-      source: "extension",
-    };
-
-    const newEntries = [newEntry, ...entries].slice(0, MAX_HISTORY_LENGTH);
-    await storageService.setValue(HISTORY_KEY, newEntries);
-    set({ entries: newEntries });
-  },
-
-  addEntryWithQuery: async (location, title, queryPayload, resultCount, source) => {
-    // Don't add incomplete entries
-    if (!location.version || !location.league || !location.type || !location.slug) {
-      debug.log("addEntryWithQuery: skipping incomplete entry", location);
+      debug.log("addEntry: skipping incomplete entry", location);
       return;
     }
 
@@ -89,7 +58,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     // Don't add duplicates based on slug
     const lastEntry = entries[0];
     if (lastEntry && lastEntry.slug === location.slug) {
-      debug.log("addEntryWithQuery: skipping duplicate", location.slug);
+      debug.log("addEntry: skipping duplicate", location.slug);
       return;
     }
 
@@ -106,7 +75,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       source,
     };
 
-    debug.log("addEntryWithQuery: adding entry", {
+    debug.log("addEntry: adding entry", {
       title,
       slug: location.slug,
       resultCount,
@@ -131,14 +100,6 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
 
     if (!entry) {
       debug.error("executeSearch: entry not found", id);
-      return;
-    }
-
-    // If no stored query, fall back to URL navigation (legacy entries)
-    if (!entry.queryPayload) {
-      debug.log("executeSearch: legacy entry, navigating to URL", entry.slug);
-      const tradeUrl = buildTradeUrl(entry);
-      window.location.href = tradeUrl;
       return;
     }
 

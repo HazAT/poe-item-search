@@ -63,12 +63,12 @@ async function handleInterceptedSearch(payload: TradeSearchInterceptedPayload) {
   const title = extractTitleFromQuery(requestBody);
 
   // Add to history with full payload
-  await useHistoryStore.getState().addEntryWithQuery(
+  await useHistoryStore.getState().addEntry(
     location,
     title,
     requestBody as TradeSearchQuery,
     responseBody.total,
-    "page" // Source: intercepted from page
+    "page"
   );
 }
 

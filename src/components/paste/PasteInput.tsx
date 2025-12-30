@@ -15,7 +15,7 @@ export function PasteInput({ onSearch }: PasteInputProps) {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { addEntryWithQuery } = useHistoryStore();
+  const { addEntry } = useHistoryStore();
 
   const handleSearch = useCallback(async (textOverride?: string) => {
     const searchText = textOverride ?? itemText;
@@ -73,10 +73,10 @@ export function PasteInput({ onSearch }: PasteInputProps) {
           total: searchResult.total,
         });
 
-        await addEntryWithQuery(
+        await addEntry(
           location,
           title,
-          { query }, // Store the full query payload
+          { query },
           searchResult.total ?? 0,
           "extension"
         );
@@ -93,7 +93,7 @@ export function PasteInput({ onSearch }: PasteInputProps) {
     }
 
     onSearch?.(searchText);
-  }, [itemText, onSearch, addEntryWithQuery]);
+  }, [itemText, onSearch, addEntry]);
 
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLTextAreaElement>) => {

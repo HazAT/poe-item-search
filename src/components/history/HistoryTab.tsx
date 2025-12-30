@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useHistoryStore } from "@/stores/historyStore";
-import { Button, TrashIcon, ExternalLinkIcon, RefreshIcon } from "@/components/ui";
+import { Button, TrashIcon, RefreshIcon } from "@/components/ui";
 import type { TradeLocationHistoryStruct } from "@/types/tradeLocation";
 
 export function HistoryTab() {
@@ -70,7 +70,6 @@ interface HistoryEntryProps {
 
 function HistoryEntry({ entry, isExecuting, onExecute, onDelete }: HistoryEntryProps) {
   const timeAgo = getRelativeTime(entry.createdAt);
-  const hasStoredQuery = !!entry.queryPayload;
 
   const handleClick = () => {
     if (!isExecuting) {
@@ -98,20 +97,11 @@ function HistoryEntry({ entry, isExecuting, onExecute, onDelete }: HistoryEntryP
             <span className="text-xs text-poe-gray-alt truncate">
               {entry.league} • {entry.type}
             </span>
-            {/* Show result count if available */}
-            {entry.resultCount !== undefined && (
-              <span className="text-xs text-poe-gold shrink-0">
-                {entry.resultCount.toLocaleString()} results
-              </span>
-            )}
+            <span className="text-xs text-poe-gold shrink-0">
+              {entry.resultCount.toLocaleString()} results
+            </span>
             <span className="text-xs text-poe-gray-alt shrink-0">{timeAgo}</span>
           </div>
-          {/* Indicator for legacy entries without stored query */}
-          {!hasStoredQuery && (
-            <span className="text-xs text-poe-gray-alt italic">
-              (legacy - may be expired)
-            </span>
-          )}
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {isExecuting ? (
@@ -130,11 +120,7 @@ function HistoryEntry({ entry, isExecuting, onExecute, onDelete }: HistoryEntryP
               >
                 <TrashIcon className="w-4 h-4" />
               </Button>
-              {hasStoredQuery ? (
-                <RefreshIcon className="w-4 h-4 text-poe-gold" title="Will re-execute search" />
-              ) : (
-                <ExternalLinkIcon className="w-4 h-4 text-poe-gray-alt" title="Legacy link" />
-              )}
+              <RefreshIcon className="w-4 h-4 text-poe-gold" title="Re-execute search" />
             </>
           )}
         </div>

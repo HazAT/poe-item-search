@@ -22,10 +22,9 @@ export interface TradeLocationHistoryStruct extends Required<TradeLocationStruct
   id: string;
   title: string;
   createdAt: string;
-  // Enhanced fields for query re-execution
-  queryPayload?: TradeSearchQuery;
-  resultCount?: number;
-  source?: "extension" | "page";
+  queryPayload: TradeSearchQuery;
+  resultCount: number;
+  source: "extension" | "page";
 }
 
 // The search query payload structure (matches PoE API)
