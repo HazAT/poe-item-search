@@ -1,7 +1,8 @@
-import { StrictMode } from "react";
+import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { CollapsedToggle } from "@/components/panel";
 import { PanelContent } from "@/components/panel/PanelContent";
+import { usePanelStore } from "@/stores/panelStore";
 import { App } from "./App";
 
 // Import CSS as string for Shadow DOM injection
@@ -10,6 +11,9 @@ import styles from "@/index.css?inline";
 // Log version
 const version = "1.2.0";
 console.log(`PoE Item Search v${version}`);
+
+// Panel width constant
+const PANEL_WIDTH = 400;
 
 // Wait for the trade page to be ready
 function waitForTradePage(): Promise<void> {
@@ -36,6 +40,30 @@ function waitForTradePage(): Promise<void> {
   });
 }
 
+// Component to manage page margin and panel visibility based on panel state
+function PageLayoutManager() {
+  const { isCollapsed } = usePanelStore();
+
+  useEffect(() => {
+    const panelContainer = document.getElementById("poe-item-search-panel");
+
+    // Add margin to body when panel is expanded to push content
+    document.body.style.marginRight = isCollapsed ? "0" : `${PANEL_WIDTH}px`;
+    document.body.style.transition = "margin-right 0.2s ease-in-out";
+
+    // Hide/show panel container
+    if (panelContainer) {
+      panelContainer.style.display = isCollapsed ? "none" : "block";
+    }
+
+    return () => {
+      document.body.style.marginRight = "0";
+    };
+  }, [isCollapsed]);
+
+  return null;
+}
+
 // Initialize the extension
 async function initialize() {
   try {
@@ -58,6 +86,7 @@ async function initialize() {
     toggleRoot.render(
       <StrictMode>
         <CollapsedToggle />
+        <PageLayoutManager />
       </StrictMode>
     );
 
@@ -69,7 +98,8 @@ async function initialize() {
       top: 0;
       right: 0;
       z-index: 9999;
-      pointer-events: auto;
+      width: ${PANEL_WIDTH}px;
+      height: 100vh;
     `;
     document.body.appendChild(panelContainer);
 

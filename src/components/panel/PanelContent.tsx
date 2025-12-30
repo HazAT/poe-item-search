@@ -23,15 +23,13 @@ export function PanelContent({ children }: PanelContentProps) {
     );
   }
 
-  // Width compensated for zoom: 400px / 1.4 = 286px, height adjusted similarly
+  // Width compensated for zoom: 400px / 1.4 = 286px, height = 100vh / 1.4 = 71.43vh
   return (
     <div
       className={`
         flex flex-col
         bg-poe-black text-poe-beige font-body
         border-l border-poe-gray
-        transition-transform duration-200 ease-in-out
-        ${isCollapsed ? "translate-x-full" : "translate-x-0"}
       `}
       style={{ width: "286px", height: "71.43vh" }}
     >
