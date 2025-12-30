@@ -13,12 +13,15 @@ export default defineConfig({
     rollupOptions: {
       input: {
         content: path.resolve(__dirname, "src/content.tsx"),
+        interceptor: path.resolve(__dirname, "src/injected/interceptor.ts"),
       },
       output: {
         entryFileNames: "[name].js",
         assetFileNames: "[name].[ext]",
-        // Bundle as IIFE for content script
-        format: "iife",
+        // Use ES for multiple entry points
+        format: "es",
+        // Inline dynamic imports to create single files
+        inlineDynamicImports: false,
       },
     },
     // Don't split CSS - we'll inject it into Shadow DOM

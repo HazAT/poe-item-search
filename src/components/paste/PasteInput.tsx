@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { Textarea, Button, ClipboardIcon, SearchIcon } from "@/components/ui";
 import { useHistoryStore } from "@/stores/historyStore";
 import { parseTradeLocation } from "@/services/tradeLocation";
+import { debug } from "@/utils/debug";
 // Import the existing search logic
 import { getSearchQuery } from "@/item.js";
 
@@ -14,7 +15,7 @@ export function PasteInput({ onSearch }: PasteInputProps) {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { addEntry } = useHistoryStore();
+  const { addEntryWithQuery } = useHistoryStore();
 
   const handleSearch = useCallback(async (textOverride?: string) => {
     const searchText = textOverride ?? itemText;
@@ -61,11 +62,24 @@ export function PasteInput({ onSearch }: PasteInputProps) {
         const lines = searchText.trim().split("\n");
         const title = extractItemTitle(lines);
 
-        // Track in history
+        // Track in history with full query payload
         const location = parseTradeLocation(
           `https://www.pathofexile.com/${tradeVersion}${tradePath}/${searchResult.id}`
         );
-        await addEntry(location, title);
+
+        debug.log("PasteInput: adding to history", {
+          title,
+          slug: searchResult.id,
+          total: searchResult.total,
+        });
+
+        await addEntryWithQuery(
+          location,
+          title,
+          { query }, // Store the full query payload
+          searchResult.total ?? 0,
+          "extension"
+        );
 
         // Redirect to results
         window.location.href = `https://www.pathofexile.com/${tradeVersion}${tradePath}/${searchResult.id}`;
@@ -79,7 +93,7 @@ export function PasteInput({ onSearch }: PasteInputProps) {
     }
 
     onSearch?.(searchText);
-  }, [itemText, onSearch, addEntry]);
+  }, [itemText, onSearch, addEntryWithQuery]);
 
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLTextAreaElement>) => {

@@ -1,11 +1,10 @@
 import { useEffect } from "react";
 import { useHistoryStore } from "@/stores/historyStore";
-import { Button, TrashIcon, ExternalLinkIcon } from "@/components/ui";
-import { buildTradeUrl } from "@/services/tradeLocation";
+import { Button, TrashIcon, ExternalLinkIcon, RefreshIcon } from "@/components/ui";
 import type { TradeLocationHistoryStruct } from "@/types/tradeLocation";
 
 export function HistoryTab() {
-  const { entries, isLoading, fetchEntries, clearEntries, deleteEntry } =
+  const { entries, isLoading, isExecuting, fetchEntries, clearEntries, deleteEntry, executeSearch } =
     useHistoryStore();
 
   useEffect(() => {
@@ -50,6 +49,8 @@ export function HistoryTab() {
               <HistoryEntry
                 key={entry.id}
                 entry={entry}
+                isExecuting={isExecuting === entry.id}
+                onExecute={() => executeSearch(entry.id)}
                 onDelete={() => deleteEntry(entry.id)}
               />
             ))}
@@ -62,18 +63,27 @@ export function HistoryTab() {
 
 interface HistoryEntryProps {
   entry: TradeLocationHistoryStruct;
+  isExecuting: boolean;
+  onExecute: () => void;
   onDelete: () => void;
 }
 
-function HistoryEntry({ entry, onDelete }: HistoryEntryProps) {
-  const tradeUrl = buildTradeUrl(entry);
+function HistoryEntry({ entry, isExecuting, onExecute, onDelete }: HistoryEntryProps) {
   const timeAgo = getRelativeTime(entry.createdAt);
+  const hasStoredQuery = !!entry.queryPayload;
+
+  const handleClick = () => {
+    if (!isExecuting) {
+      onExecute();
+    }
+  };
 
   return (
     <li className="group">
-      <a
-        href={tradeUrl}
-        className="flex items-start gap-3 px-3 py-2 hover:bg-poe-gray transition-colors"
+      <button
+        onClick={handleClick}
+        disabled={isExecuting}
+        className="w-full flex items-start gap-3 px-3 py-2 hover:bg-poe-gray transition-colors text-left disabled:opacity-50 disabled:cursor-wait"
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -88,25 +98,47 @@ function HistoryEntry({ entry, onDelete }: HistoryEntryProps) {
             <span className="text-xs text-poe-gray-alt truncate">
               {entry.league} • {entry.type}
             </span>
+            {/* Show result count if available */}
+            {entry.resultCount !== undefined && (
+              <span className="text-xs text-poe-gold shrink-0">
+                {entry.resultCount.toLocaleString()} results
+              </span>
+            )}
             <span className="text-xs text-poe-gray-alt shrink-0">{timeAgo}</span>
           </div>
+          {/* Indicator for legacy entries without stored query */}
+          {!hasStoredQuery && (
+            <span className="text-xs text-poe-gray-alt italic">
+              (legacy - may be expired)
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onDelete();
-            }}
-            title="Delete"
-          >
-            <TrashIcon className="w-4 h-4" />
-          </Button>
-          <ExternalLinkIcon className="w-4 h-4 text-poe-gray-alt" />
+          {isExecuting ? (
+            <RefreshIcon className="w-4 h-4 text-poe-gold animate-spin" />
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                title="Delete"
+              >
+                <TrashIcon className="w-4 h-4" />
+              </Button>
+              {hasStoredQuery ? (
+                <RefreshIcon className="w-4 h-4 text-poe-gold" title="Will re-execute search" />
+              ) : (
+                <ExternalLinkIcon className="w-4 h-4 text-poe-gray-alt" title="Legacy link" />
+              )}
+            </>
+          )}
         </div>
-      </a>
+      </button>
     </li>
   );
 }

@@ -1,9 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Button, TrashIcon, ExternalLinkIcon } from "../src/components/ui";
+import { Button, TrashIcon, ExternalLinkIcon, RefreshIcon } from "../src/components/ui";
 import type { TradeLocationHistoryStruct } from "../src/types/tradeLocation";
 
 // Standalone display component for stories (doesn't use store)
-function HistoryTabDisplay({ entries }: { entries: TradeLocationHistoryStruct[] }) {
+function HistoryTabDisplay({
+  entries,
+  executingId,
+}: {
+  entries: TradeLocationHistoryStruct[];
+  executingId?: string | null;
+}) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-3 py-2 border-b border-poe-gray">
@@ -26,7 +32,11 @@ function HistoryTabDisplay({ entries }: { entries: TradeLocationHistoryStruct[] 
         ) : (
           <ul className="divide-y divide-poe-gray">
             {entries.map((entry) => (
-              <HistoryEntryDisplay key={entry.id} entry={entry} />
+              <HistoryEntryDisplay
+                key={entry.id}
+                entry={entry}
+                isExecuting={executingId === entry.id}
+              />
             ))}
           </ul>
         )}
@@ -35,11 +45,22 @@ function HistoryTabDisplay({ entries }: { entries: TradeLocationHistoryStruct[] 
   );
 }
 
-function HistoryEntryDisplay({ entry }: { entry: TradeLocationHistoryStruct }) {
+function HistoryEntryDisplay({
+  entry,
+  isExecuting,
+}: {
+  entry: TradeLocationHistoryStruct;
+  isExecuting: boolean;
+}) {
   const timeAgo = getRelativeTime(entry.createdAt);
+  const hasStoredQuery = !!entry.queryPayload;
+
   return (
     <li className="group">
-      <a href="#" className="flex items-start gap-3 px-3 py-2 hover:bg-poe-gray transition-colors">
+      <button
+        disabled={isExecuting}
+        className="w-full flex items-start gap-3 px-3 py-2 hover:bg-poe-gray transition-colors text-left disabled:opacity-50 disabled:cursor-wait"
+      >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-fontin text-sm text-poe-beige truncate">{entry.title}</span>
@@ -48,15 +69,39 @@ function HistoryEntryDisplay({ entry }: { entry: TradeLocationHistoryStruct }) {
             </span>
           </div>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-poe-gray-alt truncate">{entry.league} • {entry.type}</span>
+            <span className="text-xs text-poe-gray-alt truncate">
+              {entry.league} • {entry.type}
+            </span>
+            {/* Show result count if available */}
+            {entry.resultCount !== undefined && (
+              <span className="text-xs text-poe-gold shrink-0">
+                {entry.resultCount.toLocaleString()} results
+              </span>
+            )}
             <span className="text-xs text-poe-gray-alt shrink-0">{timeAgo}</span>
           </div>
+          {/* Indicator for legacy entries without stored query */}
+          {!hasStoredQuery && (
+            <span className="text-xs text-poe-gray-alt italic">(legacy - may be expired)</span>
+          )}
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button variant="ghost" size="sm"><TrashIcon className="w-4 h-4" /></Button>
-          <ExternalLinkIcon className="w-4 h-4 text-poe-gray-alt" />
+          {isExecuting ? (
+            <RefreshIcon className="w-4 h-4 text-poe-gold animate-spin" />
+          ) : (
+            <>
+              <Button variant="ghost" size="sm">
+                <TrashIcon className="w-4 h-4" />
+              </Button>
+              {hasStoredQuery ? (
+                <RefreshIcon className="w-4 h-4 text-poe-gold" title="Will re-execute search" />
+              ) : (
+                <ExternalLinkIcon className="w-4 h-4 text-poe-gray-alt" title="Legacy link" />
+              )}
+            </>
+          )}
         </div>
-      </a>
+      </button>
     </li>
   );
 }
@@ -93,8 +138,8 @@ const meta: Meta<typeof HistoryTabDisplay> = {
 export default meta;
 type Story = StoryObj<typeof HistoryTabDisplay>;
 
-// Mock data for stories
-const mockEntries: TradeLocationHistoryStruct[] = [
+// Mock data for stories - legacy entries without queryPayload
+const mockLegacyEntries: TradeLocationHistoryStruct[] = [
   {
     id: "1",
     version: "2",
@@ -113,60 +158,126 @@ const mockEntries: TradeLocationHistoryStruct[] = [
     title: "Rare Gloves",
     createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 mins ago
   },
+];
+
+// Mock data with query payloads (new entries)
+const mockEntriesWithQuery: TradeLocationHistoryStruct[] = [
   {
     id: "3",
     version: "2",
     slug: "ghi789",
     type: "search",
-    league: "Standard",
+    league: "poe2/Standard",
     title: "Unique Kaom's Heart",
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+    queryPayload: {
+      query: { term: "Kaom's Heart", status: { option: "online" } },
+      sort: { price: "asc" },
+    },
+    resultCount: 1234,
+    source: "extension",
   },
   {
     id: "4",
-    version: "1",
+    version: "2",
     slug: "jkl012",
     type: "search",
-    league: "Standard",
-    title: "Tabula Rasa",
+    league: "poe2/Standard",
+    title: "Life + Res Ring",
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+    queryPayload: {
+      query: {
+        status: { option: "online" },
+        stats: [
+          {
+            type: "and",
+            filters: [{ id: "pseudo.pseudo_total_life", value: { min: 70 } }],
+          },
+        ],
+      },
+      sort: { price: "asc" },
+    },
+    resultCount: 567,
+    source: "page",
   },
   {
     id: "5",
     version: "2",
     slug: "mno345",
     type: "search",
-    league: "Settlers",
-    title: "Life + Res Ring",
+    league: "poe2/Settlers",
+    title: "Custom Search",
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3 days ago
+    queryPayload: {
+      query: {
+        status: { option: "online" },
+        filters: { type_filters: { filters: { category: { option: "weapon.bow" } } } },
+      },
+      sort: { price: "asc" },
+    },
+    resultCount: 89,
+    source: "page",
   },
+];
+
+// Mixed entries (some legacy, some with query)
+const mockMixedEntries: TradeLocationHistoryStruct[] = [
+  ...mockEntriesWithQuery.slice(0, 2),
+  ...mockLegacyEntries,
+  ...mockEntriesWithQuery.slice(2),
 ];
 
 export const Empty: Story = {
   args: {
     entries: [],
+    executingId: null,
   },
 };
 
-export const WithEntries: Story = {
+export const WithLegacyEntries: Story = {
   args: {
-    entries: mockEntries,
+    entries: mockLegacyEntries,
+    executingId: null,
+  },
+};
+
+export const WithQueryEntries: Story = {
+  args: {
+    entries: mockEntriesWithQuery,
+    executingId: null,
+  },
+};
+
+export const MixedEntries: Story = {
+  args: {
+    entries: mockMixedEntries,
+    executingId: null,
+  },
+};
+
+export const ExecutingEntry: Story = {
+  args: {
+    entries: mockEntriesWithQuery,
+    executingId: "3", // First entry is executing
   },
 };
 
 export const SingleEntry: Story = {
   args: {
-    entries: [mockEntries[0]],
+    entries: [mockEntriesWithQuery[0]],
+    executingId: null,
   },
 };
 
 export const ManyEntries: Story = {
   args: {
     entries: Array.from({ length: 20 }, (_, i) => ({
-      ...mockEntries[i % mockEntries.length],
+      ...mockEntriesWithQuery[i % mockEntriesWithQuery.length],
       id: `entry-${i}`,
       title: `Search Result ${i + 1}`,
+      resultCount: Math.floor(Math.random() * 5000),
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * i).toISOString(),
     })),
+    executingId: null,
   },
 };

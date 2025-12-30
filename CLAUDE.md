@@ -111,6 +111,26 @@ The overlay panel uses Shadow DOM for style isolation. Key considerations:
 - Falls back to localStorage when not in extension context (for Storybook)
 - See `src/utils/extensionApi.ts` for the abstraction
 
+## Development Workflow
+
+### Storybook First
+- **Always update Storybook stories** when creating or modifying components
+- **Test components in Storybook first** before testing in the extension
+- Run `bun run storybook` to start the dev server on port 6006
+- Storybook provides isolated component testing without needing to load the full extension
+
+### Validate with Playwriter
+- **Always use Playwriter MCP** to validate UI changes in the browser
+- Use Playwriter to interact with Storybook components and verify behavior
+- Use Playwriter to test the extension on live PoE trade pages
+- Playwriter can take accessibility snapshots, click elements, and verify state changes
+
+### Debug Logging
+- **Don't be shy to add debug logs** to understand what's going on
+- Use the built-in debug logging functionality in the extension
+- Debug logs help trace item parsing, state changes, and API interactions
+- Enable debug mode in the settings modal to see detailed logs in the console
+
 ## PoE Trade API Notes
 
 The extension works with both trade API versions:

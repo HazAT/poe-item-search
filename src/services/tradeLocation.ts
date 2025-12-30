@@ -72,3 +72,12 @@ export function compareTradeLocations(
 export function getCurrentTradeLocation(): TradeLocationStruct {
   return parseTradeLocation(window.location.href);
 }
+
+/**
+ * Build the API URL for posting a search query.
+ * Example: https://www.pathofexile.com/api/trade2/search/poe2/Standard
+ */
+export function buildTradeApiUrl(location: TradeLocationStruct): string {
+  const tradePath = location.version === "2" ? "trade2" : "trade";
+  return `https://www.pathofexile.com/api/${tradePath}/search/${location.league}`;
+}

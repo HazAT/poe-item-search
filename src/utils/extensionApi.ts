@@ -119,3 +119,18 @@ function createLocalStorageMock(prefix: string): StorageArea {
 declare global {
   const browser: ExtensionApi | undefined;
 }
+
+/**
+ * Get the URL for a resource within the extension.
+ * Returns null if not in extension context.
+ */
+export function getExtensionUrl(path: string): string | null {
+  if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
+    return chrome.runtime.getURL(path);
+  }
+  if (typeof browser !== "undefined" && browser?.runtime?.getURL) {
+    return browser.runtime.getURL(path);
+  }
+  // Not in extension context
+  return null;
+}

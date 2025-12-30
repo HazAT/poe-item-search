@@ -3,14 +3,39 @@ import { createRoot } from "react-dom/client";
 import { CollapsedToggle } from "@/components/panel";
 import { PanelContent } from "@/components/panel/PanelContent";
 import { usePanelStore } from "@/stores/panelStore";
+import { initSearchInterceptor } from "@/services/searchInterceptor";
+import { getExtensionUrl } from "@/utils/extensionApi";
 import { App } from "./App";
 
 // Import CSS as string for Shadow DOM injection
 import styles from "@/index.css?inline";
 
 // Log version
-const version = "1.2.0";
+const version = "1.3.0";
 console.log(`PoE Item Search v${version}`);
+
+/**
+ * Inject the interceptor script into the page's MAIN world.
+ * This must happen early to intercept all fetch/XHR requests.
+ */
+function injectInterceptorScript(): void {
+  const scriptUrl = getExtensionUrl("dist/interceptor.js");
+  if (!scriptUrl) {
+    console.warn("[PoE Item Search] Cannot inject interceptor: not in extension context");
+    return;
+  }
+
+  const script = document.createElement("script");
+  script.src = scriptUrl;
+  script.onload = () => {
+    console.log("[PoE Item Search] Interceptor script injected");
+    script.remove();
+  };
+  script.onerror = (e) => {
+    console.error("[PoE Item Search] Failed to inject interceptor script:", e);
+  };
+  (document.head || document.documentElement).appendChild(script);
+}
 
 // Panel width constant
 const PANEL_WIDTH = 400;
@@ -67,6 +92,12 @@ function PageLayoutManager() {
 // Initialize the extension
 async function initialize() {
   try {
+    // Inject interceptor script FIRST (before page makes any requests)
+    injectInterceptorScript();
+
+    // Initialize interceptor listener in content script
+    initSearchInterceptor();
+
     await waitForTradePage();
 
     // Create container for the collapsed toggle (outside shadow DOM)
