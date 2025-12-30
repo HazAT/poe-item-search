@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles for the PoE theme */
+@layer base {
+  html {
+    font-size: 16px;
+  }
+
+  :root {
+    --poe-black: #161616;
+    --poe-gray: #373737;
+    --poe-gray-alt: #7a7a7a;
+    --poe-white: #ffffff;
+    --poe-beige: #fff8e1;
+    --poe-blue: #0f304d;
+    --poe-blue-alt: #4c4c7d;
+    --poe-gold: #5a3806;
+    --poe-gold-alt: #8a5609;
+    --poe-red: #5a0a09;
+    --poe-red-alt: #6d2725;
+    --poe-yellow: #666521;
+    --poe-yellow-alt: #7a7921;
+    --poe-green: #4b7e42;
+    --poe-green-alt: #5e9954;
+  }
+}
+
+/* Panel container styles */
+@layer components {
+  .panel-container {
+    @apply w-panel bg-poe-black text-poe-beige font-body;
+  }
+
+  .panel-header {
+    @apply flex items-center justify-between p-panel-x bg-poe-gray;
+  }
+
+  .panel-tab {
+    @apply px-4 py-2 cursor-pointer transition-colors;
+  }
+
+  .panel-tab-active {
+    @apply bg-poe-blue text-poe-white;
+  }
+
+  .panel-tab:hover:not(.panel-tab-active) {
+    @apply bg-poe-gray-alt;
+  }
+}
