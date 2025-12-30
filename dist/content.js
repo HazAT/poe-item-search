@@ -9273,6 +9273,7 @@ function BookmarksTab() {
     isLoading,
     showArchived,
     fetchFolders,
+    fetchTradesForFolder,
     toggleShowArchived,
     createFolder
   } = useBookmarksStore();
@@ -9283,6 +9284,13 @@ function BookmarksTab() {
   reactExports.useEffect(() => {
     fetchFolders();
   }, []);
+  reactExports.useEffect(() => {
+    folders.forEach((folder) => {
+      if (folder.id) {
+        fetchTradesForFolder(folder.id);
+      }
+    });
+  }, [folders, fetchTradesForFolder]);
   reactExports.useEffect(() => {
     const checkLocation = () => {
       const location = getCurrentTradeLocation();
@@ -9346,7 +9354,7 @@ function BookmarksTab() {
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 py-2 border-b border-poe-gray", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
       Button,
       {
-        variant: "secondary",
+        variant: "default",
         size: "sm",
         className: "w-full",
         onClick: () => setIsBookmarkModalOpen(true),

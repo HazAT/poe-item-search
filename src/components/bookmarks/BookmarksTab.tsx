@@ -23,6 +23,7 @@ export function BookmarksTab() {
     isLoading,
     showArchived,
     fetchFolders,
+    fetchTradesForFolder,
     toggleShowArchived,
     createFolder,
   } = useBookmarksStore();
@@ -36,6 +37,15 @@ export function BookmarksTab() {
     fetchFolders();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Fetch trades for all folders to show counts
+  useEffect(() => {
+    folders.forEach((folder) => {
+      if (folder.id) {
+        fetchTradesForFolder(folder.id);
+      }
+    });
+  }, [folders, fetchTradesForFolder]);
 
   // Check if there's an active search to bookmark (update on mount and URL changes)
   useEffect(() => {
@@ -112,7 +122,7 @@ export function BookmarksTab() {
       {/* Bookmark current search button */}
       <div className="px-3 py-2 border-b border-poe-gray">
         <Button
-          variant="secondary"
+          variant="default"
           size="sm"
           className="w-full"
           onClick={() => setIsBookmarkModalOpen(true)}

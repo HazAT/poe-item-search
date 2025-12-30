@@ -78,7 +78,7 @@ function BookmarksTabDisplay({
       {/* Bookmark current search button */}
       <div className="px-3 py-2 border-b border-poe-gray">
         <Button
-          variant="secondary"
+          variant="default"
           size="sm"
           className="w-full"
           onClick={() => {
