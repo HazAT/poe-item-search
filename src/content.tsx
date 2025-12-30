@@ -1,8 +1,11 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { OverlayPanel, CollapsedToggle } from "@/components/panel";
+import { CollapsedToggle } from "@/components/panel";
+import { PanelContent } from "@/components/panel/PanelContent";
 import { App } from "./App";
-import "./index.css";
+
+// Import CSS as string for Shadow DOM injection
+import styles from "@/index.css?inline";
 
 // Log version
 const version = "1.2.0";
@@ -33,42 +36,71 @@ function waitForTradePage(): Promise<void> {
   });
 }
 
-// Main App wrapper that includes both toggle and panel
-function ExtensionRoot() {
-  return (
-    <>
-      <CollapsedToggle />
-      <OverlayPanel>
-        <App />
-      </OverlayPanel>
-    </>
-  );
-}
-
 // Initialize the extension
 async function initialize() {
   try {
     await waitForTradePage();
 
-    // Create container for the React app
-    const container = document.createElement("div");
-    container.id = "poe-item-search-root";
-    container.style.cssText = `
+    // Create container for the collapsed toggle (outside shadow DOM)
+    const toggleContainer = document.createElement("div");
+    toggleContainer.id = "poe-item-search-toggle";
+    toggleContainer.style.cssText = `
+      position: fixed;
+      top: 0;
+      right: 0;
+      z-index: 9998;
+      pointer-events: auto;
+    `;
+    document.body.appendChild(toggleContainer);
+
+    // Render collapsed toggle in main document
+    const toggleRoot = createRoot(toggleContainer);
+    toggleRoot.render(
+      <StrictMode>
+        <CollapsedToggle />
+      </StrictMode>
+    );
+
+    // Create shadow DOM container for the main panel
+    const panelContainer = document.createElement("div");
+    panelContainer.id = "poe-item-search-panel";
+    panelContainer.style.cssText = `
       position: fixed;
       top: 0;
       right: 0;
       z-index: 9999;
-      pointer-events: none;
+      pointer-events: auto;
     `;
-    document.body.appendChild(container);
+    document.body.appendChild(panelContainer);
 
-    // Render entire app in one React root for proper state sharing
-    const root = createRoot(container);
-    root.render(
+    // Create shadow DOM
+    const shadow = panelContainer.attachShadow({ mode: "open" });
+
+    // Inject Google Fonts link
+    const fontLink = document.createElement("link");
+    fontLink.rel = "stylesheet";
+    fontLink.href = "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap";
+    shadow.appendChild(fontLink);
+
+    // Inject styles into Shadow DOM
+    const styleSheet = document.createElement("style");
+    styleSheet.textContent = styles;
+    shadow.appendChild(styleSheet);
+
+    // Create app container with zoom to compensate for PoE's 10px root font-size
+    // (PoE trade page uses html { font-size: 10px } which breaks Tailwind rem units)
+    const appContainer = document.createElement("div");
+    appContainer.id = "poe-search-panel-root";
+    appContainer.style.zoom = "1.4";
+    shadow.appendChild(appContainer);
+
+    // Create React root INSIDE the shadow DOM for proper event handling
+    const panelRoot = createRoot(appContainer);
+    panelRoot.render(
       <StrictMode>
-        <div style={{ pointerEvents: "auto" }}>
-          <ExtensionRoot />
-        </div>
+        <PanelContent>
+          <App />
+        </PanelContent>
       </StrictMode>
     );
 

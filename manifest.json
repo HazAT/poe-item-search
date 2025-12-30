@@ -16,9 +16,6 @@
       ],
       "js": [
         "dist/content.js"
-      ],
-      "css": [
-        "dist/style.css"
       ]
     }
   ]
