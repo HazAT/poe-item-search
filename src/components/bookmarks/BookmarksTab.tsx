@@ -10,10 +10,12 @@ import {
   ArchiveIcon,
   ExternalLinkIcon,
   CheckIcon,
+  BookmarkIcon,
 } from "@/components/ui";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
-import { buildTradeUrl } from "@/services/tradeLocation";
+import { buildTradeUrl, getCurrentTradeLocation } from "@/services/tradeLocation";
+import { BookmarkModal } from "./BookmarkModal";
 import type { BookmarksFolderStruct, BookmarksTradeStruct } from "@/types/bookmarks";
 
 export function BookmarksTab() {
@@ -27,7 +29,12 @@ export function BookmarksTab() {
   } = useBookmarksStore();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
   const [newFolderTitle, setNewFolderTitle] = useState("");
+
+  // Check if there's an active search to bookmark
+  const currentLocation = getCurrentTradeLocation();
+  const canBookmark = !!(currentLocation?.slug && currentLocation?.league);
 
   useEffect(() => {
     fetchFolders();
@@ -84,6 +91,20 @@ export function BookmarksTab() {
         </div>
       </div>
 
+      {/* Bookmark current search button */}
+      <div className="px-3 py-2 border-b border-poe-gray">
+        <Button
+          variant="secondary"
+          size="sm"
+          className="w-full"
+          onClick={() => setIsBookmarkModalOpen(true)}
+          disabled={!canBookmark}
+        >
+          <BookmarkIcon className="w-4 h-4 mr-2" />
+          {canBookmark ? "Bookmark Current Search" : "No active search"}
+        </Button>
+      </div>
+
       {/* Folders list */}
       <div className="flex-1 overflow-y-auto">
         {visibleFolders.length === 0 ? (
@@ -130,6 +151,12 @@ export function BookmarksTab() {
           }}
         />
       </Modal>
+
+      {/* Bookmark Modal */}
+      <BookmarkModal
+        isOpen={isBookmarkModalOpen}
+        onClose={() => setIsBookmarkModalOpen(false)}
+      />
     </div>
   );
 }

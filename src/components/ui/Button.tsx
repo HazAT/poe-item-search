@@ -1,6 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes } from "react";
 
-type ButtonVariant = "default" | "primary" | "danger" | "ghost";
+type ButtonVariant = "default" | "primary" | "secondary" | "danger" | "ghost";
 type ButtonSize = "sm" | "md" | "lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -11,6 +11,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const variantClasses: Record<ButtonVariant, string> = {
   default: "bg-poe-gray hover:bg-poe-gray-alt text-poe-beige border border-poe-gray-alt",
   primary: "bg-poe-blue hover:bg-poe-blue-alt text-poe-white border border-poe-blue-alt",
+  secondary: "bg-poe-gold/20 hover:bg-poe-gold/30 text-poe-gold border border-poe-gold/50",
   danger: "bg-poe-red hover:bg-poe-red-alt text-poe-white border border-poe-red-alt",
   ghost: "bg-transparent hover:bg-poe-gray text-poe-beige border border-transparent",
 };
