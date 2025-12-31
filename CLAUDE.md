@@ -113,6 +113,14 @@ The overlay panel uses Shadow DOM for style isolation. Key considerations:
 
 ## Development Workflow
 
+### Auto-Reload Development
+- Run `bun run dev` to start watch mode with auto-reload
+- Changes to source files trigger automatic rebuild (~1 second)
+- Extension and all PoE trade tabs auto-reload when changes are detected
+- Background service worker polls content.js hash every 1 second
+- **First time setup:** After running `bun run dev`, manually reload extension once in chrome://extensions to register the background script
+- Dev mode adds `tabs` permission and background script (not included in production builds)
+
 ### Storybook First
 - **Always update Storybook stories** when creating or modifying components
 - **Test components in Storybook first** before testing in the extension
@@ -125,7 +133,7 @@ The overlay panel uses Shadow DOM for style isolation. Key considerations:
 - Use Playwriter to interact with Storybook components and verify behavior
 - Use Playwriter to test the extension on live PoE trade pages
 - Playwriter can take accessibility snapshots, click elements, and verify state changes
-- **IMPORTANT:** After running `bun run build`, always prompt the user to refresh the extension in Chrome (chrome://extensions → click refresh icon) before testing with Playwriter MCP
+- With `bun run dev` running, changes auto-reload - no manual refresh needed
 
 ### Debug Logging
 - **Don't be shy to add debug logs** to understand what's going on
