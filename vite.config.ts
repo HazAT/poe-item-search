@@ -60,6 +60,14 @@ export default defineConfig(({ mode }) => {
       // Only use CRXJS in development for hot reload
       ...(isDev ? [crx({ manifest })] : [productionManifestPlugin()]),
     ],
+    server: {
+      port: 5173,
+      strictPort: false,
+      hmr: {
+        port: 5173,
+      },
+      cors: true,
+    },
     build: {
       outDir: "dist",
       emptyOutDir: true,

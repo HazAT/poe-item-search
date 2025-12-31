@@ -5,8 +5,8 @@
   "main": "dist/content.js",
   "type": "module",
   "scripts": {
-    "dev": "vite --mode development",
-    "dev:watch": "vite build --watch --mode production",
+    "dev": "vite build --watch --mode production",
+    "dev:hmr": "vite --mode development",
     "build": "vite build --mode production",
     "build:legacy": "bun build src/content.js --outdir=dist --no-minify --target=browser",
     "storybook": "storybook dev -p 6006",
