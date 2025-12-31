@@ -146,56 +146,21 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       sort: entry.queryPayload?.sort,
     });
 
-    try {
-      const apiUrl = buildTradeApiUrl(entry);
-      debug.log("executeSearch: POSTing to", apiUrl);
-
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(entry.queryPayload),
-      });
-
-      const result = await response.json();
-      debug.log("executeSearch: got result", { id: result.id, total: result.total });
-
-      if (result.id) {
-        // Update entry with new slug and result count
-        const updatedEntry: TradeLocationHistoryStruct = {
-          ...entry,
-          slug: result.id,
-          resultCount: result.total,
-        };
-
-        const newEntries = entries.map((e) => (e.id === id ? updatedEntry : e));
-        await storageService.setValue(HISTORY_KEY, newEntries);
-        set({ entries: newEntries });
-
-        // Set sort override for the page's subsequent requests
-        // Use data attribute on documentElement (works across content script and page)
-        const sort = entry.queryPayload?.sort;
-        if (sort && Object.keys(sort).length > 0) {
-          const isDefaultSort = Object.keys(sort).length === 1 && sort.price === "asc";
-          if (!isDefaultSort) {
-            // Store in localStorage (shared between content script and page on same origin)
-            localStorage.setItem("poe-search-sort-override", JSON.stringify(sort));
-            debug.log("executeSearch: set sort override in localStorage", sort);
-          }
-        }
-
-        // Navigate to fresh results
-        const resultUrl = buildTradeUrl(updatedEntry);
-        debug.log("executeSearch: navigating to", resultUrl);
-        window.location.href = resultUrl;
-      } else {
-        debug.error("executeSearch: no id in response", result);
+    // Set sort override for the page's POST request (interceptor will apply it)
+    // Don't make our own POST - let the page do it to avoid rate limiting
+    const sort = entry.queryPayload?.sort;
+    if (sort && Object.keys(sort).length > 0) {
+      const isDefaultSort = Object.keys(sort).length === 1 && sort.price === "asc";
+      if (!isDefaultSort) {
+        localStorage.setItem("poe-search-sort-override", JSON.stringify(sort));
+        debug.log("executeSearch: set sort override in localStorage", sort);
       }
-    } catch (error) {
-      debug.error("executeSearch: failed", error);
-    } finally {
-      set({ isExecuting: null });
     }
+
+    // Navigate to existing URL - page will POST and interceptor will apply sort
+    const resultUrl = buildTradeUrl(entry);
+    debug.log("executeSearch: navigating to", resultUrl);
+    window.location.href = resultUrl;
+    set({ isExecuting: null });
   },
 }));

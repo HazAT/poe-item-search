@@ -209,60 +209,22 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => ({
       sort: trade.queryPayload?.sort,
     });
 
-    try {
-      const apiUrl = buildTradeApiUrl(trade.location);
-      debug.log("executeSearch: POSTing to", apiUrl);
-
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(trade.queryPayload),
-      });
-
-      const result = await response.json();
-      debug.log("executeSearch: got result", { id: result.id, total: result.total });
-
-      if (result.id) {
-        // Update trade with new slug and result count
-        const updatedTrade: BookmarksTradeStruct = {
-          ...trade,
-          location: { ...trade.location, slug: result.id },
-          resultCount: result.total,
-        };
-
-        const newFolderTrades = folderTrades.map((t) =>
-          t.id === tradeId ? updatedTrade : t
-        );
-        await storageService.setValue(`${TRADES_KEY_PREFIX}-${folderId}`, newFolderTrades);
-        set((state) => ({
-          trades: { ...state.trades, [folderId]: newFolderTrades },
-        }));
-
-        // Set sort override for the page's subsequent requests
-        // Use localStorage (shared between content script and page on same origin)
-        const sort = trade.queryPayload?.sort;
-        if (sort && Object.keys(sort).length > 0) {
-          const isDefaultSort = Object.keys(sort).length === 1 && sort.price === "asc";
-          if (!isDefaultSort) {
-            localStorage.setItem("poe-search-sort-override", JSON.stringify(sort));
-            debug.log("executeSearch: set sort override in localStorage", sort);
-          }
-        }
-
-        // Navigate to fresh results
-        const resultUrl = buildTradeUrl(updatedTrade.location);
-        debug.log("executeSearch: navigating to", resultUrl);
-        window.location.href = resultUrl;
-      } else {
-        debug.error("executeSearch: no id in response", result);
+    // Set sort override for the page's POST request (interceptor will apply it)
+    // Don't make our own POST - let the page do it to avoid rate limiting
+    const sort = trade.queryPayload?.sort;
+    if (sort && Object.keys(sort).length > 0) {
+      const isDefaultSort = Object.keys(sort).length === 1 && sort.price === "asc";
+      if (!isDefaultSort) {
+        localStorage.setItem("poe-search-sort-override", JSON.stringify(sort));
+        debug.log("executeSearch: set sort override in localStorage", sort);
       }
-    } catch (error) {
-      debug.error("executeSearch: failed", error);
-    } finally {
-      set({ isExecuting: null });
     }
+
+    // Navigate to existing URL - page will POST and interceptor will apply sort
+    const resultUrl = buildTradeUrl(trade.location);
+    debug.log("executeSearch: navigating to", resultUrl);
+    window.location.href = resultUrl;
+    set({ isExecuting: null });
   },
 
   toggleShowArchived: () => {

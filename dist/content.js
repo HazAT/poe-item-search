@@ -8247,10 +8247,6 @@ function buildTradeUrl(location) {
 function getCurrentTradeLocation() {
   return parseTradeLocation(window.location.href);
 }
-function buildTradeApiUrl(location) {
-  const tradePath = location.version === "2" ? "trade2" : "trade";
-  return `https://www.pathofexile.com/api/${tradePath}/search/${location.league}`;
-}
 const HISTORY_KEY = "trade-history";
 const MAX_HISTORY_LENGTH = 100;
 const useHistoryStore = create((set, get) => ({
@@ -8347,46 +8343,18 @@ const useHistoryStore = create((set, get) => ({
       queryPayload: entry.queryPayload,
       sort: (_a = entry.queryPayload) == null ? void 0 : _a.sort
     });
-    try {
-      const apiUrl = buildTradeApiUrl(entry);
-      debug.log("executeSearch: POSTing to", apiUrl);
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(entry.queryPayload)
-      });
-      const result = await response.json();
-      debug.log("executeSearch: got result", { id: result.id, total: result.total });
-      if (result.id) {
-        const updatedEntry = {
-          ...entry,
-          slug: result.id,
-          resultCount: result.total
-        };
-        const newEntries = entries.map((e) => e.id === id ? updatedEntry : e);
-        await storageService.setValue(HISTORY_KEY, newEntries);
-        set({ entries: newEntries });
-        const sort = (_b = entry.queryPayload) == null ? void 0 : _b.sort;
-        if (sort && Object.keys(sort).length > 0) {
-          const isDefaultSort = Object.keys(sort).length === 1 && sort.price === "asc";
-          if (!isDefaultSort) {
-            localStorage.setItem("poe-search-sort-override", JSON.stringify(sort));
-            debug.log("executeSearch: set sort override in localStorage", sort);
-          }
-        }
-        const resultUrl = buildTradeUrl(updatedEntry);
-        debug.log("executeSearch: navigating to", resultUrl);
-        window.location.href = resultUrl;
-      } else {
-        debug.error("executeSearch: no id in response", result);
+    const sort = (_b = entry.queryPayload) == null ? void 0 : _b.sort;
+    if (sort && Object.keys(sort).length > 0) {
+      const isDefaultSort = Object.keys(sort).length === 1 && sort.price === "asc";
+      if (!isDefaultSort) {
+        localStorage.setItem("poe-search-sort-override", JSON.stringify(sort));
+        debug.log("executeSearch: set sort override in localStorage", sort);
       }
-    } catch (error) {
-      debug.error("executeSearch: failed", error);
-    } finally {
-      set({ isExecuting: null });
     }
+    const resultUrl = buildTradeUrl(entry);
+    debug.log("executeSearch: navigating to", resultUrl);
+    window.location.href = resultUrl;
+    set({ isExecuting: null });
   }
 }));
 function initSearchInterceptor() {
@@ -9077,8 +9045,8 @@ const useBookmarksStore = create((set, get) => ({
     }
     if (!trade.queryPayload) {
       debug.log("executeSearch: no queryPayload, navigating to existing URL", { tradeId, title: trade.title });
-      const resultUrl = buildTradeUrl(trade.location);
-      window.location.href = resultUrl;
+      const resultUrl2 = buildTradeUrl(trade.location);
+      window.location.href = resultUrl2;
       return;
     }
     set({ isExecuting: tradeId });
@@ -9095,50 +9063,18 @@ const useBookmarksStore = create((set, get) => ({
       queryPayload: trade.queryPayload,
       sort: (_e = trade.queryPayload) == null ? void 0 : _e.sort
     });
-    try {
-      const apiUrl = buildTradeApiUrl(trade.location);
-      debug.log("executeSearch: POSTing to", apiUrl);
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(trade.queryPayload)
-      });
-      const result = await response.json();
-      debug.log("executeSearch: got result", { id: result.id, total: result.total });
-      if (result.id) {
-        const updatedTrade = {
-          ...trade,
-          location: { ...trade.location, slug: result.id },
-          resultCount: result.total
-        };
-        const newFolderTrades = folderTrades.map(
-          (t) => t.id === tradeId ? updatedTrade : t
-        );
-        await storageService.setValue(`${TRADES_KEY_PREFIX}-${folderId}`, newFolderTrades);
-        set((state) => ({
-          trades: { ...state.trades, [folderId]: newFolderTrades }
-        }));
-        const sort = (_f = trade.queryPayload) == null ? void 0 : _f.sort;
-        if (sort && Object.keys(sort).length > 0) {
-          const isDefaultSort = Object.keys(sort).length === 1 && sort.price === "asc";
-          if (!isDefaultSort) {
-            localStorage.setItem("poe-search-sort-override", JSON.stringify(sort));
-            debug.log("executeSearch: set sort override in localStorage", sort);
-          }
-        }
-        const resultUrl = buildTradeUrl(updatedTrade.location);
-        debug.log("executeSearch: navigating to", resultUrl);
-        window.location.href = resultUrl;
-      } else {
-        debug.error("executeSearch: no id in response", result);
+    const sort = (_f = trade.queryPayload) == null ? void 0 : _f.sort;
+    if (sort && Object.keys(sort).length > 0) {
+      const isDefaultSort = Object.keys(sort).length === 1 && sort.price === "asc";
+      if (!isDefaultSort) {
+        localStorage.setItem("poe-search-sort-override", JSON.stringify(sort));
+        debug.log("executeSearch: set sort override in localStorage", sort);
       }
-    } catch (error) {
-      debug.error("executeSearch: failed", error);
-    } finally {
-      set({ isExecuting: null });
     }
+    const resultUrl = buildTradeUrl(trade.location);
+    debug.log("executeSearch: navigating to", resultUrl);
+    window.location.href = resultUrl;
+    set({ isExecuting: null });
   },
   toggleShowArchived: () => {
     set((state) => ({ showArchived: !state.showArchived }));
