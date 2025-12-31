@@ -91,7 +91,7 @@ export function HistoryTab() {
                 resultCount={entry.resultCount}
                 createdAt={entry.createdAt}
                 isExecuting={isExecuting === entry.id}
-                sort={entry.queryPayload?.sort}
+                queryPayload={entry.queryPayload}
                 context="history"
                 folders={folders}
                 previewImageUrl={entry.previewImageUrl}

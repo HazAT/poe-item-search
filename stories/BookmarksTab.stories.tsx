@@ -14,6 +14,8 @@ import { Modal } from "../src/components/ui/Modal";
 import { Input } from "../src/components/ui/Input";
 import { Select } from "../src/components/ui/Select";
 import type { BookmarksFolderStruct, BookmarksTradeStruct } from "../src/types/bookmarks";
+import { getSortLabel, formatSortBadge } from "../src/utils/sortLabel";
+import { getPriceLabel, formatPriceBadge } from "../src/utils/priceLabel";
 
 // Standalone display component for stories (doesn't use store)
 interface BookmarksTabDisplayProps {
@@ -238,6 +240,8 @@ function BookmarkFolderDisplay({
 
 function BookmarkTradeDisplay({ trade }: { trade: BookmarksTradeStruct }) {
   const timeAgo = trade.createdAt ? getRelativeTime(trade.createdAt) : null;
+  const sortInfo = getSortLabel(trade.queryPayload?.sort);
+  const priceInfo = getPriceLabel(trade.queryPayload);
 
   return (
     <li className="group">
@@ -262,6 +266,16 @@ function BookmarkTradeDisplay({ trade }: { trade: BookmarksTradeStruct }) {
             <span className="text-xs text-poe-gray-alt shrink-0">
               {trade.location.version === "2" ? "PoE2" : "PoE1"}
             </span>
+            {sortInfo && (
+              <span className="text-xs text-poe-accent shrink-0">
+                {formatSortBadge(sortInfo)}
+              </span>
+            )}
+            {priceInfo && (
+              <span className="text-xs text-poe-accent shrink-0">
+                {formatPriceBadge(priceInfo)}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-xs text-poe-gray-alt truncate">
@@ -335,6 +349,36 @@ const mockQueryPayload = {
   sort: { price: "asc" },
 };
 
+const mockQueryPayloadWithPrice = {
+  query: {
+    status: { option: "online" },
+    stats: [{ type: "and", filters: [] }],
+    filters: {
+      trade_filters: {
+        filters: {
+          price: { max: 200, option: "exalted" }
+        }
+      }
+    }
+  },
+  sort: { price: "asc" },
+};
+
+const mockQueryPayloadWithChaosPrice = {
+  query: {
+    status: { option: "online" },
+    stats: [{ type: "and", filters: [] }],
+    filters: {
+      trade_filters: {
+        filters: {
+          price: { max: 50, option: "chaos" }
+        }
+      }
+    }
+  },
+  sort: { price: "asc" },
+};
+
 const mockTrades: Record<string, BookmarksTradeStruct[]> = {
   "1": [
     {
@@ -342,7 +386,7 @@ const mockTrades: Record<string, BookmarksTradeStruct[]> = {
       title: "Life + Res Ring",
       location: { version: "2", type: "search", league: "poe2/Standard", slug: "abc123" },
       createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 mins ago
-      queryPayload: mockQueryPayload,
+      queryPayload: mockQueryPayloadWithPrice,
       resultCount: 150,
       previewImageUrl: "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvUmluZ3MvUmluZzEiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MSwicmVhbG0iOiJwb2UyIn1d/1b7c0b5e5e/Ring1.png",
     },
@@ -351,7 +395,7 @@ const mockTrades: Record<string, BookmarksTradeStruct[]> = {
       title: "Movement Speed Boots",
       location: { version: "2", type: "search", league: "poe2/Standard", slug: "def456" },
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
-      queryPayload: mockQueryPayload,
+      queryPayload: mockQueryPayloadWithChaosPrice,
       resultCount: 42,
       previewImageUrl: "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9Cb290cy9Cb290c0RleDFBMSIsInciOjIsImgiOjIsInNjYWxlIjoxLCJyZWFsbSI6InBvZTIifV0/abc123/BootsDex1A1.png",
     },
@@ -362,7 +406,7 @@ const mockTrades: Record<string, BookmarksTradeStruct[]> = {
       title: "Perfect Chaos Res Ring",
       location: { version: "2", type: "search", league: "poe2/Standard", slug: "ghi789" },
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
-      queryPayload: mockQueryPayload,
+      queryPayload: mockQueryPayload, // No price filter - testing no badge
       resultCount: 8,
       // No preview image - testing graceful handling
     },

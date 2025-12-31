@@ -4,6 +4,7 @@ import { Button, TrashIcon, RefreshIcon, BookmarkIcon, FolderIcon, PlusIcon, Che
 import type { TradeLocationHistoryStruct } from "../src/types/tradeLocation";
 import type { BookmarksFolderStruct } from "../src/types/bookmarks";
 import { getSortLabel, formatSortBadge } from "../src/utils/sortLabel";
+import { getPriceLabel, formatPriceBadge } from "../src/utils/priceLabel";
 
 // Format league for display (matches SearchEntry component)
 function formatLeague(league: string): string {
@@ -82,6 +83,7 @@ function HistoryEntryDisplay({
   const [showFolderPicker, setShowFolderPicker] = useState(false);
   const timeAgo = getRelativeTime(entry.createdAt);
   const sortInfo = getSortLabel(entry.queryPayload?.sort);
+  const priceInfo = getPriceLabel(entry.queryPayload);
 
   return (
     <li className="group">
@@ -110,6 +112,11 @@ function HistoryEntryDisplay({
             {sortInfo && (
               <span className="text-xs text-poe-accent shrink-0">
                 {formatSortBadge(sortInfo)}
+              </span>
+            )}
+            {priceInfo && (
+              <span className="text-xs text-poe-accent shrink-0">
+                {formatPriceBadge(priceInfo)}
               </span>
             )}
           </div>
@@ -442,6 +449,104 @@ export const ManyEntries: Story = {
 export const WithCustomSorts: Story = {
   args: {
     entries: mockEntriesWithCustomSorts,
+    executingId: null,
+  },
+};
+
+// Entries with price filters to test price badge display
+const mockEntriesWithPriceFilters: TradeLocationHistoryStruct[] = [
+  {
+    id: "pf1",
+    version: "2",
+    slug: "price1",
+    type: "search",
+    league: "poe2/Standard",
+    title: "Budget Sceptre",
+    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+    queryPayload: {
+      query: {
+        status: { option: "online" },
+        filters: {
+          trade_filters: {
+            filters: {
+              price: { max: 200, option: "exalted" }
+            }
+          }
+        }
+      },
+      sort: { price: "asc" },
+    },
+    resultCount: 156,
+    source: "extension",
+  },
+  {
+    id: "pf2",
+    version: "2",
+    slug: "price2",
+    type: "search",
+    league: "poe2/Standard",
+    title: "Cheap Rings",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
+    queryPayload: {
+      query: {
+        status: { option: "online" },
+        filters: {
+          trade_filters: {
+            filters: {
+              price: { max: 50, option: "chaos" }
+            }
+          }
+        }
+      },
+      sort: { price: "asc" },
+    },
+    resultCount: 789,
+    source: "page",
+  },
+  {
+    id: "pf3",
+    version: "2",
+    slug: "price3",
+    type: "search",
+    league: "poe2/Settlers",
+    title: "Divine Budget Gear",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+    queryPayload: {
+      query: {
+        status: { option: "online" },
+        filters: {
+          trade_filters: {
+            filters: {
+              price: { max: 10, option: "divine" }
+            }
+          }
+        }
+      },
+      sort: { dps: "desc" }, // Custom sort + price
+    },
+    resultCount: 42,
+    source: "extension",
+  },
+  {
+    id: "pf4",
+    version: "2",
+    slug: "price4",
+    type: "search",
+    league: "poe2/Standard",
+    title: "No Price Limit",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
+    queryPayload: {
+      query: { status: { option: "online" } },
+      sort: { price: "asc" },
+    },
+    resultCount: 999,
+    source: "page",
+  },
+];
+
+export const WithPriceFilters: Story = {
+  args: {
+    entries: mockEntriesWithPriceFilters,
     executingId: null,
   },
 };

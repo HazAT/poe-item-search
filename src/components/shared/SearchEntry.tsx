@@ -1,8 +1,9 @@
 import { useState, useRef } from "react";
 import { Button, TrashIcon, RefreshIcon, BookmarkIcon } from "@/components/ui";
-import type { TradeSiteVersion } from "@/types/tradeLocation";
+import type { TradeSiteVersion, TradeSearchQuery } from "@/types/tradeLocation";
 import type { BookmarksFolderStruct } from "@/types/bookmarks";
 import { getSortLabel, formatSortBadge } from "@/utils/sortLabel";
+import { getPriceLabel, formatPriceBadge } from "@/utils/priceLabel";
 import { FolderPickerDropdown } from "./FolderPickerDropdown";
 
 /**
@@ -31,7 +32,7 @@ export interface SearchEntryProps {
   resultCount?: number;
   createdAt?: string;
   isExecuting?: boolean;
-  sort?: Record<string, string>;
+  queryPayload?: TradeSearchQuery;
   context?: "history" | "bookmark";
   folders?: BookmarksFolderStruct[];
   previewImageUrl?: string;
@@ -49,7 +50,7 @@ export function SearchEntry({
   resultCount,
   createdAt,
   isExecuting = false,
-  sort,
+  queryPayload,
   context = "history",
   folders = [],
   previewImageUrl,
@@ -61,7 +62,8 @@ export function SearchEntry({
   const [showFolderPicker, setShowFolderPicker] = useState(false);
   const bookmarkButtonRef = useRef<HTMLButtonElement>(null);
   const timeAgo = createdAt ? getRelativeTime(createdAt) : null;
-  const sortInfo = getSortLabel(sort);
+  const sortInfo = getSortLabel(queryPayload?.sort);
+  const priceInfo = getPriceLabel(queryPayload);
 
   const canBookmark = context === "history" && onBookmark && onCreateFolder;
 
@@ -101,6 +103,11 @@ export function SearchEntry({
             {sortInfo && (
               <span className="text-xs text-poe-accent shrink-0">
                 {formatSortBadge(sortInfo)}
+              </span>
+            )}
+            {priceInfo && (
+              <span className="text-xs text-poe-accent shrink-0">
+                {formatPriceBadge(priceInfo)}
               </span>
             )}
           </div>
