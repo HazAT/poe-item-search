@@ -1,5 +1,50 @@
 const TRADE_API_PATTERN = /\/api\/trade2?\/search\/.+/;
 const SORT_OVERRIDE_KEY = "poe-search-sort-override";
+const PENDING_SORT_CLICK_KEY = "poe-search-pending-sort-click";
+function triggerSortUISync() {
+  const pendingSort = localStorage.getItem(PENDING_SORT_CLICK_KEY);
+  if (!pendingSort) return;
+  try {
+    const { field, direction } = JSON.parse(pendingSort);
+    console.log("[PoE Search Interceptor] Triggering sort UI sync:", { field, direction });
+    const attemptClick = (retries = 10) => {
+      const sortElement = document.querySelector(`[data-field="${field}"]`);
+      if (!sortElement) {
+        if (retries > 0) {
+          setTimeout(() => attemptClick(retries - 1), 200);
+        } else {
+          console.log("[PoE Search Interceptor] Sort element not found after retries:", field);
+        }
+        return;
+      }
+      const classList = sortElement.classList;
+      const isSorted = classList.contains("sorted");
+      const isAsc = classList.contains("sorted-asc");
+      const isDesc = classList.contains("sorted-desc");
+      console.log("[PoE Search Interceptor] Sort element state:", { isSorted, isAsc, isDesc, wantDirection: direction });
+      if (direction === "desc") {
+        if (!isSorted) {
+          sortElement.click();
+          setTimeout(() => sortElement.click(), 100);
+        } else if (isAsc) {
+          sortElement.click();
+        }
+      } else {
+        if (!isSorted) {
+          sortElement.click();
+        } else if (isDesc) {
+          sortElement.click();
+        }
+      }
+      localStorage.removeItem(PENDING_SORT_CLICK_KEY);
+      console.log("[PoE Search Interceptor] Sort UI sync complete");
+    };
+    setTimeout(() => attemptClick(), 500);
+  } catch (e) {
+    console.error("[PoE Search Interceptor] Failed to trigger sort UI sync:", e);
+    localStorage.removeItem(PENDING_SORT_CLICK_KEY);
+  }
+}
 const originalFetch = window.fetch;
 window.fetch = async function(...args) {
   var _a;
@@ -26,6 +71,13 @@ window.fetch = async function(...args) {
         requestBody.sort = overrideData;
         init = { ...init, body: JSON.stringify(requestBody) };
         console.log("[PoE Search Interceptor] Applied sort override:", overrideData);
+        const sortKeys = Object.keys(overrideData);
+        if (sortKeys.length > 0) {
+          const field = sortKeys[0];
+          const direction = overrideData[field];
+          localStorage.setItem(PENDING_SORT_CLICK_KEY, JSON.stringify({ field, direction }));
+          console.log("[PoE Search Interceptor] Queued sort UI sync:", { field, direction });
+        }
         localStorage.removeItem(SORT_OVERRIDE_KEY);
       } catch (e) {
         console.error("[PoE Search Interceptor] Failed to apply sort override:", e);
@@ -53,6 +105,7 @@ window.fetch = async function(...args) {
         total: responseBody.total,
         id: responseBody.id
       });
+      triggerSortUISync();
     } catch (e) {
       console.error("[PoE Search Interceptor] Failed to parse response:", e);
     }
@@ -95,6 +148,13 @@ XMLHttpRequest.prototype.send = function(body) {
             requestBody.sort = overrideData;
             body = JSON.stringify(requestBody);
             console.log("[PoE Search Interceptor XHR] Applied sort override:", overrideData);
+            const sortKeys = Object.keys(overrideData);
+            if (sortKeys.length > 0) {
+              const field = sortKeys[0];
+              const direction = overrideData[field];
+              localStorage.setItem(PENDING_SORT_CLICK_KEY, JSON.stringify({ field, direction }));
+              console.log("[PoE Search Interceptor XHR] Queued sort UI sync:", { field, direction });
+            }
             localStorage.removeItem(SORT_OVERRIDE_KEY);
           } catch (e) {
             console.error("[PoE Search Interceptor XHR] Failed to apply sort override:", e);
@@ -125,6 +185,7 @@ XMLHttpRequest.prototype.send = function(body) {
           total: responseBody.total,
           id: responseBody.id
         });
+        triggerSortUISync();
       } catch (e) {
         console.error(
           "[PoE Search Interceptor] Failed to parse XHR response:",
