@@ -8326,7 +8326,7 @@ const useHistoryStore = create((set, get) => ({
     set({ entries: newEntries });
   },
   executeSearch: async (id) => {
-    var _a;
+    var _a, _b;
     const { entries } = get();
     const entry = entries.find((e) => e.id === id);
     if (!entry) {
@@ -8334,9 +8334,18 @@ const useHistoryStore = create((set, get) => ({
       return;
     }
     set({ isExecuting: id });
-    debug.log("executeSearch: re-executing query", {
-      id,
-      title: entry.title
+    debug.log("executeSearch: FULL ENTRY DUMP", {
+      id: entry.id,
+      title: entry.title,
+      version: entry.version,
+      league: entry.league,
+      type: entry.type,
+      slug: entry.slug,
+      resultCount: entry.resultCount,
+      createdAt: entry.createdAt,
+      source: entry.source,
+      queryPayload: entry.queryPayload,
+      sort: (_a = entry.queryPayload) == null ? void 0 : _a.sort
     });
     try {
       const apiUrl = buildTradeApiUrl(entry);
@@ -8359,7 +8368,7 @@ const useHistoryStore = create((set, get) => ({
         const newEntries = entries.map((e) => e.id === id ? updatedEntry : e);
         await storageService.setValue(HISTORY_KEY, newEntries);
         set({ entries: newEntries });
-        const sort = (_a = entry.queryPayload) == null ? void 0 : _a.sort;
+        const sort = (_b = entry.queryPayload) == null ? void 0 : _b.sort;
         if (sort && Object.keys(sort).length > 0) {
           const isDefaultSort = Object.keys(sort).length === 1 && sort.price === "asc";
           if (!isDefaultSort) {
@@ -9058,7 +9067,7 @@ const useBookmarksStore = create((set, get) => ({
     }));
   },
   executeSearch: async (folderId, tradeId) => {
-    var _a;
+    var _a, _b, _c, _d, _e, _f;
     const { trades } = get();
     const folderTrades = trades[folderId] ?? [];
     const trade = folderTrades.find((t) => t.id === tradeId);
@@ -9073,9 +9082,18 @@ const useBookmarksStore = create((set, get) => ({
       return;
     }
     set({ isExecuting: tradeId });
-    debug.log("executeSearch: re-executing query", {
-      tradeId,
-      title: trade.title
+    debug.log("executeSearch: FULL TRADE DUMP", {
+      id: trade.id,
+      title: trade.title,
+      location: trade.location,
+      version: (_a = trade.location) == null ? void 0 : _a.version,
+      league: (_b = trade.location) == null ? void 0 : _b.league,
+      type: (_c = trade.location) == null ? void 0 : _c.type,
+      slug: (_d = trade.location) == null ? void 0 : _d.slug,
+      resultCount: trade.resultCount,
+      createdAt: trade.createdAt,
+      queryPayload: trade.queryPayload,
+      sort: (_e = trade.queryPayload) == null ? void 0 : _e.sort
     });
     try {
       const apiUrl = buildTradeApiUrl(trade.location);
@@ -9102,7 +9120,7 @@ const useBookmarksStore = create((set, get) => ({
         set((state) => ({
           trades: { ...state.trades, [folderId]: newFolderTrades }
         }));
-        const sort = (_a = trade.queryPayload) == null ? void 0 : _a.sort;
+        const sort = (_f = trade.queryPayload) == null ? void 0 : _f.sort;
         if (sort && Object.keys(sort).length > 0) {
           const isDefaultSort = Object.keys(sort).length === 1 && sort.price === "asc";
           if (!isDefaultSort) {

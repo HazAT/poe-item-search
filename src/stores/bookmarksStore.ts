@@ -195,9 +195,18 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => ({
     }
 
     set({ isExecuting: tradeId });
-    debug.log("executeSearch: re-executing query", {
-      tradeId,
+    debug.log("executeSearch: FULL TRADE DUMP", {
+      id: trade.id,
       title: trade.title,
+      location: trade.location,
+      version: trade.location?.version,
+      league: trade.location?.league,
+      type: trade.location?.type,
+      slug: trade.location?.slug,
+      resultCount: trade.resultCount,
+      createdAt: trade.createdAt,
+      queryPayload: trade.queryPayload,
+      sort: trade.queryPayload?.sort,
     });
 
     try {

@@ -132,9 +132,18 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     }
 
     set({ isExecuting: id });
-    debug.log("executeSearch: re-executing query", {
-      id,
+    debug.log("executeSearch: FULL ENTRY DUMP", {
+      id: entry.id,
       title: entry.title,
+      version: entry.version,
+      league: entry.league,
+      type: entry.type,
+      slug: entry.slug,
+      resultCount: entry.resultCount,
+      createdAt: entry.createdAt,
+      source: entry.source,
+      queryPayload: entry.queryPayload,
+      sort: entry.queryPayload?.sort,
     });
 
     try {
