@@ -12,9 +12,14 @@ import type { TradeSearchQuery } from "@/types/tradeLocation";
 interface MessageEvent {
   data?: {
     type?: string;
-    payload?: TradeSearchInterceptedPayload;
+    payload?: TradeSearchInterceptedPayload | PreviewImagePayload;
   };
   source?: Window | null;
+}
+
+interface PreviewImagePayload {
+  slug: string;
+  imageUrl: string;
 }
 
 /**
@@ -29,7 +34,12 @@ export function initSearchInterceptor() {
     if (event.source !== window) return;
 
     if (event.data?.type === "poe-search-intercepted" && event.data.payload) {
-      await handleInterceptedSearch(event.data.payload);
+      await handleInterceptedSearch(event.data.payload as TradeSearchInterceptedPayload);
+    }
+
+    // Handle preview image capture
+    if (event.data?.type === "poe-search-preview-image" && event.data.payload) {
+      await handlePreviewImage(event.data.payload as PreviewImagePayload);
     }
   });
 
@@ -128,4 +138,20 @@ function formatCategoryName(category: string): string {
     .split(/[_-]/)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
+}
+
+/**
+ * Handle preview image capture from the interceptor.
+ * Updates the corresponding history entry with the image URL.
+ */
+async function handlePreviewImage(payload: PreviewImagePayload) {
+  const { slug, imageUrl } = payload;
+
+  debug.log("handlePreviewImage: received", {
+    slug,
+    imageUrl: imageUrl.slice(0, 60),
+  });
+
+  // Update the entry that matches this search ID (slug)
+  await useHistoryStore.getState().updateEntryPreviewImage(slug, imageUrl);
 }

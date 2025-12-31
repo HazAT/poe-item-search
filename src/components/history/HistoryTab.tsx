@@ -42,6 +42,7 @@ export function HistoryTab() {
       createdAt: new Date().toISOString(),
       queryPayload: entry.queryPayload,
       resultCount: entry.resultCount,
+      previewImageUrl: entry.previewImageUrl,
     };
     await createTrade(folderId, trade);
   };
@@ -93,6 +94,7 @@ export function HistoryTab() {
                 sort={entry.queryPayload?.sort}
                 context="history"
                 folders={folders}
+                previewImageUrl={entry.previewImageUrl}
                 onExecute={() => executeSearch(entry.id)}
                 onDelete={() => deleteEntry(entry.id)}
                 onBookmark={(folderId) => handleBookmark(entry, folderId)}

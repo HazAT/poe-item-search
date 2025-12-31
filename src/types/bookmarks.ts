@@ -17,6 +17,7 @@ export interface BookmarksTradeStruct {
   createdAt?: string;
   queryPayload?: TradeSearchQuery;
   resultCount?: number;
+  previewImageUrl?: string;
 }
 
 export interface BookmarksFolderStruct {

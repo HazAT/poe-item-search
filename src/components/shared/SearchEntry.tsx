@@ -34,6 +34,7 @@ export interface SearchEntryProps {
   sort?: Record<string, string>;
   context?: "history" | "bookmark";
   folders?: BookmarksFolderStruct[];
+  previewImageUrl?: string;
   onExecute: () => void;
   onDelete: () => void;
   onBookmark?: (folderId: string) => void;
@@ -51,6 +52,7 @@ export function SearchEntry({
   sort,
   context = "history",
   folders = [],
+  previewImageUrl,
   onExecute,
   onDelete,
   onBookmark,
@@ -76,6 +78,18 @@ export function SearchEntry({
         disabled={isExecuting}
         className="w-full flex items-start gap-3 px-3 py-2 hover:bg-poe-gray transition-colors text-left disabled:opacity-50 disabled:cursor-wait"
       >
+        {previewImageUrl && (
+          <div className="shrink-0 w-8 h-8 rounded overflow-hidden bg-poe-dark">
+            <img
+              src={previewImageUrl}
+              alt=""
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-fontin text-sm text-poe-beige truncate">

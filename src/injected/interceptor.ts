@@ -15,6 +15,9 @@ const SORT_OVERRIDE_KEY = "poe-search-sort-override";
 // Key for pending sort click (to sync UI after results load)
 const PENDING_SORT_CLICK_KEY = "poe-search-pending-sort-click";
 
+// Selector for first item's image in results
+const PREVIEW_IMAGE_SELECTOR = ".results .row[data-id] img";
+
 /**
  * Click the sort element to sync the UI after results load.
  * The API returns correctly sorted results, but the UI doesn't reflect the sort state
@@ -82,6 +85,64 @@ function triggerSortUISync() {
     console.error("[PoE Search Interceptor] Failed to trigger sort UI sync:", e);
     localStorage.removeItem(PENDING_SORT_CLICK_KEY);
   }
+}
+
+/**
+ * Capture the first item's preview image URL after results render.
+ * Uses MutationObserver with timeout fallback.
+ */
+function capturePreviewImage(slug: string) {
+  const maxWaitTime = 5000; // 5 seconds max
+  const startTime = Date.now();
+
+  const tryCapture = (): string | null => {
+    const img = document.querySelector(PREVIEW_IMAGE_SELECTOR) as HTMLImageElement;
+    return img?.src || null;
+  };
+
+  const sendPreviewImage = (imageUrl: string) => {
+    window.postMessage(
+      {
+        type: "poe-search-preview-image",
+        payload: { slug, imageUrl },
+      },
+      "*"
+    );
+    console.log(
+      "[PoE Search Interceptor] Captured preview image:",
+      imageUrl.slice(0, 60) + "..."
+    );
+  };
+
+  // Try immediately first (results might already be rendered)
+  const immediate = tryCapture();
+  if (immediate) {
+    sendPreviewImage(immediate);
+    return;
+  }
+
+  // Set up MutationObserver to watch for results
+  const observer = new MutationObserver((mutations, obs) => {
+    const imageUrl = tryCapture();
+    if (imageUrl) {
+      obs.disconnect();
+      sendPreviewImage(imageUrl);
+    } else if (Date.now() - startTime > maxWaitTime) {
+      obs.disconnect();
+      console.log("[PoE Search Interceptor] Preview image capture timed out");
+    }
+  });
+
+  const resultsContainer = document.querySelector(".results") || document.body;
+  observer.observe(resultsContainer, {
+    childList: true,
+    subtree: true,
+  });
+
+  // Fallback timeout to disconnect observer
+  setTimeout(() => {
+    observer.disconnect();
+  }, maxWaitTime);
 }
 
 export interface TradeSearchInterceptedPayload {
@@ -185,6 +246,9 @@ window.fetch = async function (...args: Parameters<typeof fetch>) {
 
       // Trigger sort UI sync if we have a pending sort click
       triggerSortUISync();
+
+      // Capture preview image from first result
+      capturePreviewImage(responseBody.id);
     } catch (e) {
       console.error("[PoE Search Interceptor] Failed to parse response:", e);
     }
@@ -301,6 +365,9 @@ XMLHttpRequest.prototype.send = function (
 
         // Trigger sort UI sync if we have a pending sort click
         triggerSortUISync();
+
+        // Capture preview image from first result
+        capturePreviewImage(responseBody.id);
       } catch (e) {
         console.error(
           "[PoE Search Interceptor] Failed to parse XHR response:",

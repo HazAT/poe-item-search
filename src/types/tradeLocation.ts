@@ -25,6 +25,7 @@ export interface TradeLocationHistoryStruct extends Required<TradeLocationStruct
   queryPayload: TradeSearchQuery;
   resultCount: number;
   source: "extension" | "page";
+  previewImageUrl?: string;
 }
 
 // The search query payload structure (matches PoE API)

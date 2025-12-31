@@ -27,6 +27,7 @@ interface HistoryState {
   ) => Promise<void>;
   deleteEntry: (id: string) => Promise<void>;
   executeSearch: (id: string) => Promise<void>;
+  updateEntryPreviewImage: (slug: string, imageUrl: string) => Promise<void>;
 }
 
 export const useHistoryStore = create<HistoryState>((set, get) => ({
@@ -162,5 +163,34 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     debug.log("executeSearch: navigating to", resultUrl);
     window.location.href = resultUrl;
     set({ isExecuting: null });
+  },
+
+  updateEntryPreviewImage: async (slug: string, imageUrl: string) => {
+    const { entries } = get();
+    const entryIndex = entries.findIndex((e) => e.slug === slug);
+
+    if (entryIndex === -1) {
+      debug.log("updateEntryPreviewImage: entry not found", slug);
+      return;
+    }
+
+    const updatedEntry = {
+      ...entries[entryIndex],
+      previewImageUrl: imageUrl,
+    };
+
+    const newEntries = [
+      ...entries.slice(0, entryIndex),
+      updatedEntry,
+      ...entries.slice(entryIndex + 1),
+    ];
+
+    await storageService.setValue(HISTORY_KEY, newEntries);
+    set({ entries: newEntries });
+
+    debug.log("updateEntryPreviewImage: updated", {
+      slug,
+      imageUrl: imageUrl.slice(0, 60),
+    });
   },
 }));

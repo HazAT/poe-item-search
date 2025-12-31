@@ -89,6 +89,18 @@ function HistoryEntryDisplay({
         disabled={isExecuting}
         className="w-full flex items-start gap-3 px-3 py-2 hover:bg-poe-gray transition-colors text-left disabled:opacity-50 disabled:cursor-wait"
       >
+        {entry.previewImageUrl && (
+          <div className="shrink-0 w-8 h-8 rounded overflow-hidden bg-poe-dark">
+            <img
+              src={entry.previewImageUrl}
+              alt=""
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-fontin text-sm text-poe-beige truncate">{entry.title}</span>
@@ -260,6 +272,7 @@ const mockEntries: TradeLocationHistoryStruct[] = [
     },
     resultCount: 1234,
     source: "extension",
+    previewImageUrl: "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9Cb2R5QXJtb3Vycy9Cb2R5U3RyMUEzIiwidyI6MiwiaCI6Mywic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/d2b0c7c3e5/BodyStr1A3.png",
   },
   {
     id: "2",
@@ -283,6 +296,7 @@ const mockEntries: TradeLocationHistoryStruct[] = [
     },
     resultCount: 567,
     source: "page",
+    previewImageUrl: "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvUmluZ3MvUmluZzEiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MSwicmVhbG0iOiJwb2UyIn1d/1b7c0b5e5e/Ring1.png",
   },
   {
     id: "3",
@@ -301,6 +315,7 @@ const mockEntries: TradeLocationHistoryStruct[] = [
     },
     resultCount: 89,
     source: "page",
+    // No preview image - testing graceful handling
   },
 ];
 

@@ -242,6 +242,18 @@ function BookmarkTradeDisplay({ trade }: { trade: BookmarksTradeStruct }) {
   return (
     <li className="group">
       <button className="w-full flex items-start gap-3 px-3 py-2 hover:bg-poe-gray transition-colors text-left">
+        {trade.previewImageUrl && (
+          <div className="shrink-0 w-8 h-8 rounded overflow-hidden bg-poe-dark">
+            <img
+              src={trade.previewImageUrl}
+              alt=""
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-fontin text-sm text-poe-beige truncate">
@@ -332,6 +344,7 @@ const mockTrades: Record<string, BookmarksTradeStruct[]> = {
       createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 mins ago
       queryPayload: mockQueryPayload,
       resultCount: 150,
+      previewImageUrl: "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvUmluZ3MvUmluZzEiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MSwicmVhbG0iOiJwb2UyIn1d/1b7c0b5e5e/Ring1.png",
     },
     {
       id: "t2",
@@ -340,6 +353,7 @@ const mockTrades: Record<string, BookmarksTradeStruct[]> = {
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
       queryPayload: mockQueryPayload,
       resultCount: 42,
+      previewImageUrl: "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9Cb290cy9Cb290c0RleDFBMSIsInciOjIsImgiOjIsInNjYWxlIjoxLCJyZWFsbSI6InBvZTIifV0/abc123/BootsDex1A1.png",
     },
   ],
   "2": [
@@ -350,6 +364,7 @@ const mockTrades: Record<string, BookmarksTradeStruct[]> = {
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
       queryPayload: mockQueryPayload,
       resultCount: 8,
+      // No preview image - testing graceful handling
     },
   ],
 };
