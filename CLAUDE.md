@@ -24,8 +24,9 @@ Features a React-based overlay panel (inspired by better-trading) with:
 ## Commands
 
 ```bash
-bun run build        # Build with Vite (outputs to dist/)
-bun run dev          # Build with watch mode for development
+bun run dev          # Build watch + Storybook together (auto-reload enabled)
+bun run dev:build    # Build watch only (auto-reload enabled)
+bun run build        # Production build (outputs to dist/)
 bun test             # Run tests with Bun's test runner
 bun run storybook    # Start Storybook dev server on port 6006
 bun run package      # Build and create extension.zip (prompts for version)
@@ -114,11 +115,12 @@ The overlay panel uses Shadow DOM for style isolation. Key considerations:
 ## Development Workflow
 
 ### Auto-Reload Development
-- Run `bun run dev` to start watch mode with auto-reload
+- Run `bun run dev` to start build watch + storybook together (color-coded output)
+- Run `bun run dev:build` for build watch only
 - Changes to source files trigger automatic rebuild (~1 second)
 - Extension and all PoE trade tabs auto-reload when changes are detected
 - Background service worker polls content.js hash every 1 second
-- **First time setup:** After running `bun run dev`, manually reload extension once in chrome://extensions to register the background script
+- **First time setup:** After running dev, manually reload extension once in chrome://extensions to register the background script
 - Dev mode adds `tabs` permission and background script (not included in production builds)
 
 ### Storybook First
