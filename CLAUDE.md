@@ -107,16 +107,15 @@ The overlay panel uses Shadow DOM for style isolation. Key considerations:
 - This breaks all Tailwind rem-based sizing
 - Solution: `zoom: 1.4` on shadow root container, with proportionally adjusted dimensions
 
-### Chrome Extension Storage
-- Uses `chrome.storage.local` for persistence
-- Falls back to localStorage when not in extension context (for Storybook)
+### Storage
+- Uses `localStorage` for persistence (simpler and more reliable than chrome.storage)
 - See `src/utils/extensionApi.ts` for the abstraction
 
 ## Development Workflow
 
 ### Auto-Reload Development
-- Run `bun run dev` to start build watch + storybook together (color-coded output)
-- Run `bun run dev:build` for build watch only
+- **Prefer `bun run dev`** - runs build watch + Storybook concurrently (color-coded output)
+- Run `bun run dev:build` for build watch only (if you don't need Storybook)
 - Changes to source files trigger automatic rebuild (~1 second)
 - Extension and all PoE trade tabs auto-reload when changes are detected
 - Background service worker polls content.js hash every 1 second
@@ -136,6 +135,7 @@ The overlay panel uses Shadow DOM for style isolation. Key considerations:
 - Use Playwriter to test the extension on live PoE trade pages
 - Playwriter can take accessibility snapshots, click elements, and verify state changes
 - With `bun run dev` running, changes auto-reload - no manual refresh needed
+- **If no pages are connected**, use `mcp__playwriter__reset` to reset the connection
 
 ### Debug Logging
 - **Don't be shy to add debug logs** to understand what's going on
