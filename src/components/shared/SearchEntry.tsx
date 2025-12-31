@@ -1,5 +1,9 @@
-import { Button, TrashIcon, RefreshIcon } from "@/components/ui";
+import { useState, useRef } from "react";
+import { Button, TrashIcon, RefreshIcon, BookmarkIcon } from "@/components/ui";
 import type { TradeSiteVersion } from "@/types/tradeLocation";
+import type { BookmarksFolderStruct } from "@/types/bookmarks";
+import { getSortLabel, formatSortBadge } from "@/utils/sortLabel";
+import { FolderPickerDropdown } from "./FolderPickerDropdown";
 
 export interface SearchEntryProps {
   title: string;
@@ -9,8 +13,13 @@ export interface SearchEntryProps {
   resultCount?: number;
   createdAt?: string;
   isExecuting?: boolean;
+  sort?: Record<string, string>;
+  context?: "history" | "bookmark";
+  folders?: BookmarksFolderStruct[];
   onExecute: () => void;
   onDelete: () => void;
+  onBookmark?: (folderId: string) => void;
+  onCreateFolder?: (title: string) => Promise<string>;
 }
 
 export function SearchEntry({
@@ -21,10 +30,20 @@ export function SearchEntry({
   resultCount,
   createdAt,
   isExecuting = false,
+  sort,
+  context = "history",
+  folders = [],
   onExecute,
   onDelete,
+  onBookmark,
+  onCreateFolder,
 }: SearchEntryProps) {
+  const [showFolderPicker, setShowFolderPicker] = useState(false);
+  const bookmarkButtonRef = useRef<HTMLButtonElement>(null);
   const timeAgo = createdAt ? getRelativeTime(createdAt) : null;
+  const sortInfo = getSortLabel(sort);
+
+  const canBookmark = context === "history" && onBookmark && onCreateFolder;
 
   const handleClick = () => {
     if (!isExecuting) {
@@ -47,6 +66,11 @@ export function SearchEntry({
             <span className="text-xs text-poe-gray-alt shrink-0">
               {version === "2" ? "PoE2" : "PoE1"}
             </span>
+            {sortInfo && (
+              <span className="text-xs text-poe-accent shrink-0">
+                {formatSortBadge(sortInfo)}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-xs text-poe-gray-alt truncate">
@@ -62,22 +86,48 @@ export function SearchEntry({
             )}
           </div>
         </div>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="relative flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {isExecuting ? (
             <RefreshIcon className="w-4 h-4 text-poe-gold animate-spin" />
           ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onDelete();
-              }}
-              title="Delete"
-            >
-              <TrashIcon className="w-4 h-4" />
-            </Button>
+            <>
+              {canBookmark && (
+                <Button
+                  ref={bookmarkButtonRef}
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowFolderPicker(!showFolderPicker);
+                  }}
+                  title="Add to bookmarks"
+                >
+                  <BookmarkIcon className="w-4 h-4" />
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                title="Delete"
+              >
+                <TrashIcon className="w-4 h-4" />
+              </Button>
+            </>
+          )}
+          {showFolderPicker && canBookmark && (
+            <FolderPickerDropdown
+              folders={folders}
+              anchorRef={bookmarkButtonRef}
+              onSelect={onBookmark}
+              onCreateFolder={onCreateFolder}
+              onClose={() => setShowFolderPicker(false)}
+            />
           )}
         </div>
       </button>

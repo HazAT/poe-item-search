@@ -292,6 +292,8 @@ function BookmarkTrade({ folderId, trade, isExecuting }: BookmarkTradeProps) {
       resultCount={trade.resultCount}
       createdAt={trade.createdAt}
       isExecuting={isExecuting}
+      sort={trade.queryPayload?.sort}
+      context="bookmark"
       onExecute={() => executeSearch(folderId, trade.id!)}
       onDelete={() => deleteTrade(folderId, trade.id!)}
     />

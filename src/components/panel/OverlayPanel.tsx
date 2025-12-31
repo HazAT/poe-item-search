@@ -67,8 +67,9 @@ export function OverlayPanel({ children }: OverlayPanelProps) {
   // Width compensated for zoom: 400px / 1.4 = 286px, height adjusted similarly
   const panelContent = (
     <div
+      data-panel-container
       className={`
-        flex flex-col
+        flex flex-col relative
         bg-poe-black text-poe-beige font-body
         border-l border-poe-gray
         transition-transform duration-200 ease-in-out

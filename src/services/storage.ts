@@ -139,8 +139,11 @@ class StorageService {
         safeResolve(null, "outer error");
       }
 
-      // Timeout fallback - resolve after 500ms if callback never fires
-      setTimeout(() => safeResolve(null, "timeout"), 500);
+      // Timeout fallback - resolve after 3000ms if callback never fires
+      setTimeout(() => {
+        console.warn(`[PoE Search] [Storage] getValue(${key}) timed out after 3000ms`);
+        safeResolve(null, "timeout");
+      }, 3000);
     });
   }
 

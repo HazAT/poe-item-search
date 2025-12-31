@@ -1,15 +1,50 @@
 import { useEffect } from "react";
 import { useHistoryStore } from "@/stores/historyStore";
+import { useBookmarksStore } from "@/stores/bookmarksStore";
 import { Button, TrashIcon } from "@/components/ui";
 import { SearchEntry } from "@/components/shared/SearchEntry";
+import type { TradeLocationHistoryStruct } from "@/types/tradeLocation";
 
 export function HistoryTab() {
   const { entries, isLoading, isExecuting, fetchEntries, clearEntries, deleteEntry, executeSearch } =
     useHistoryStore();
+  const { folders, fetchFolders, createFolder, createTrade } = useBookmarksStore();
 
   useEffect(() => {
     fetchEntries();
-  }, [fetchEntries]);
+    fetchFolders();
+  }, [fetchEntries, fetchFolders]);
+
+  const handleCreateFolder = async (title: string): Promise<string> => {
+    // Create a folder with the current version (default to "2" for PoE2)
+    const newFolder = {
+      title,
+      version: "2" as const,
+      icon: null,
+      archivedAt: null,
+    };
+    await createFolder(newFolder);
+    // The folder was added to the store, get the latest folders and find the new one
+    const latestFolders = useBookmarksStore.getState().folders;
+    const created = latestFolders.find((f) => f.title === title);
+    return created?.id ?? "";
+  };
+
+  const handleBookmark = async (entry: TradeLocationHistoryStruct, folderId: string) => {
+    const trade = {
+      title: entry.title,
+      location: {
+        version: entry.version,
+        type: entry.type,
+        league: entry.league,
+        slug: entry.slug,
+      },
+      createdAt: new Date().toISOString(),
+      queryPayload: entry.queryPayload,
+      resultCount: entry.resultCount,
+    };
+    await createTrade(folderId, trade);
+  };
 
   if (isLoading) {
     return (
@@ -55,8 +90,13 @@ export function HistoryTab() {
                 resultCount={entry.resultCount}
                 createdAt={entry.createdAt}
                 isExecuting={isExecuting === entry.id}
+                sort={entry.queryPayload?.sort}
+                context="history"
+                folders={folders}
                 onExecute={() => executeSearch(entry.id)}
                 onDelete={() => deleteEntry(entry.id)}
+                onBookmark={(folderId) => handleBookmark(entry, folderId)}
+                onCreateFolder={handleCreateFolder}
               />
             ))}
           </ul>

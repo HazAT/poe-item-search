@@ -1,14 +1,26 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Button, TrashIcon, RefreshIcon } from "../src/components/ui";
+import { useState } from "react";
+import { Button, TrashIcon, RefreshIcon, BookmarkIcon, FolderIcon, PlusIcon, CheckIcon } from "../src/components/ui";
 import type { TradeLocationHistoryStruct } from "../src/types/tradeLocation";
+import type { BookmarksFolderStruct } from "../src/types/bookmarks";
+import { getSortLabel, formatSortBadge } from "../src/utils/sortLabel";
+
+// Mock folders for storybook
+const mockFolders: BookmarksFolderStruct[] = [
+  { id: "f1", title: "Leveling Gear", version: "2", icon: null, archivedAt: null },
+  { id: "f2", title: "Endgame Builds", version: "2", icon: null, archivedAt: null },
+  { id: "f3", title: "Trade Flips", version: "2", icon: null, archivedAt: null },
+];
 
 // Standalone display component for stories (doesn't use store)
 function HistoryTabDisplay({
   entries,
   executingId,
+  folders = mockFolders,
 }: {
   entries: TradeLocationHistoryStruct[];
   executingId?: string | null;
+  folders?: BookmarksFolderStruct[];
 }) {
   return (
     <div className="flex flex-col h-full">
@@ -36,6 +48,7 @@ function HistoryTabDisplay({
                 key={entry.id}
                 entry={entry}
                 isExecuting={executingId === entry.id}
+                folders={folders}
               />
             ))}
           </ul>
@@ -48,11 +61,15 @@ function HistoryTabDisplay({
 function HistoryEntryDisplay({
   entry,
   isExecuting,
+  folders,
 }: {
   entry: TradeLocationHistoryStruct;
   isExecuting: boolean;
+  folders: BookmarksFolderStruct[];
 }) {
+  const [showFolderPicker, setShowFolderPicker] = useState(false);
   const timeAgo = getRelativeTime(entry.createdAt);
+  const sortInfo = getSortLabel(entry.queryPayload?.sort);
 
   return (
     <li className="group">
@@ -66,6 +83,11 @@ function HistoryEntryDisplay({
             <span className="text-xs text-poe-gray-alt shrink-0">
               {entry.version === "2" ? "PoE2" : "PoE1"}
             </span>
+            {sortInfo && (
+              <span className="text-xs text-poe-accent shrink-0">
+                {formatSortBadge(sortInfo)}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-xs text-poe-gray-alt truncate">
@@ -77,17 +99,104 @@ function HistoryEntryDisplay({
             <span className="text-xs text-poe-gray-alt shrink-0">{timeAgo}</span>
           </div>
         </div>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="relative flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {isExecuting ? (
             <RefreshIcon className="w-4 h-4 text-poe-gold animate-spin" />
           ) : (
-            <Button variant="ghost" size="sm" title="Delete">
-              <TrashIcon className="w-4 h-4" />
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                title="Add to bookmarks"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowFolderPicker(!showFolderPicker);
+                }}
+              >
+                <BookmarkIcon className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="sm" title="Delete">
+                <TrashIcon className="w-4 h-4" />
+              </Button>
+            </>
+          )}
+          {showFolderPicker && (
+            <FolderPickerDisplay
+              folders={folders}
+              onSelect={() => setShowFolderPicker(false)}
+            />
           )}
         </div>
       </button>
     </li>
+  );
+}
+
+// Simple folder picker display for storybook (simplified version without fixed positioning)
+function FolderPickerDisplay({
+  folders,
+  onSelect,
+}: {
+  folders: BookmarksFolderStruct[];
+  onSelect: (folderId: string) => void;
+}) {
+  const [isCreating, setIsCreating] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+
+  return (
+    <div
+      className="absolute right-0 top-full mt-1 w-48 bg-poe-dark border border-poe-border rounded shadow-lg"
+      style={{ zIndex: 9999 }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="py-1 max-h-48 overflow-y-auto">
+        {folders.filter((f) => !f.archivedAt).map((folder) => (
+          <button
+            key={folder.id}
+            className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm text-poe-beige hover:bg-poe-gray transition-colors"
+            onClick={() => {
+              console.log("Bookmarked to folder:", folder.title);
+              onSelect(folder.id!);
+            }}
+          >
+            <FolderIcon className="w-4 h-4 text-poe-gold shrink-0" />
+            <span className="truncate">{folder.title}</span>
+          </button>
+        ))}
+      </div>
+      <div className="border-t border-poe-border">
+        {isCreating ? (
+          <div className="flex items-center gap-1 p-2">
+            <input
+              type="text"
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              placeholder="Folder name..."
+              className="flex-1 bg-poe-gray text-poe-beige text-sm px-2 py-1 rounded border border-poe-border focus:border-poe-gold focus:outline-none"
+            />
+            <button
+              onClick={() => {
+                console.log("Creating folder:", newFolderName);
+                setIsCreating(false);
+                setNewFolderName("");
+              }}
+              className="p-1 text-poe-gold hover:text-poe-accent"
+            >
+              <CheckIcon className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <button
+            className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-poe-gray-alt hover:bg-poe-gray hover:text-poe-beige transition-colors"
+            onClick={() => setIsCreating(true)}
+          >
+            <PlusIcon className="w-4 h-4 shrink-0" />
+            <span>New Folder</span>
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -183,6 +292,85 @@ const mockEntries: TradeLocationHistoryStruct[] = [
   },
 ];
 
+// Entries with custom sorts to test sort badge display
+const mockEntriesWithCustomSorts: TradeLocationHistoryStruct[] = [
+  {
+    id: "cs1",
+    version: "2",
+    slug: "custom1",
+    type: "search",
+    league: "poe2/Standard",
+    title: "High DPS Weapons",
+    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+    queryPayload: {
+      query: { status: { option: "online" } },
+      sort: { dps: "desc" },
+    },
+    resultCount: 456,
+    source: "extension",
+  },
+  {
+    id: "cs2",
+    version: "2",
+    slug: "custom2",
+    type: "search",
+    league: "poe2/Standard",
+    title: "Cheap Uniques",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
+    queryPayload: {
+      query: { status: { option: "online" } },
+      sort: { price: "desc" },
+    },
+    resultCount: 789,
+    source: "page",
+  },
+  {
+    id: "cs3",
+    version: "2",
+    slug: "custom3",
+    type: "search",
+    league: "poe2/Settlers",
+    title: "Best Armour",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+    queryPayload: {
+      query: { status: { option: "online" } },
+      sort: { "item.armour": "desc" },
+    },
+    resultCount: 234,
+    source: "extension",
+  },
+  {
+    id: "cs4",
+    version: "2",
+    slug: "custom4",
+    type: "search",
+    league: "poe2/Standard",
+    title: "Stat Sort Example",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
+    queryPayload: {
+      query: { status: { option: "online" } },
+      sort: { "stat.explicit.stat_123456": "desc" },
+    },
+    resultCount: 123,
+    source: "page",
+  },
+  {
+    id: "cs5",
+    version: "2",
+    slug: "custom5",
+    type: "search",
+    league: "poe2/Standard",
+    title: "Default Sort Entry",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
+    queryPayload: {
+      query: { status: { option: "online" } },
+      sort: { price: "asc" },
+    },
+    resultCount: 999,
+    source: "extension",
+  },
+];
+
 export const Empty: Story = {
   args: {
     entries: [],
@@ -220,6 +408,13 @@ export const ManyEntries: Story = {
       resultCount: Math.floor(Math.random() * 5000),
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * i).toISOString(),
     })),
+    executingId: null,
+  },
+};
+
+export const WithCustomSorts: Story = {
+  args: {
+    entries: mockEntriesWithCustomSorts,
     executingId: null,
   },
 };
