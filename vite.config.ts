@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
+import Terminal from "vite-plugin-terminal";
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -67,7 +68,14 @@ function extensionAssetsPlugin(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), extensionAssetsPlugin()],
+  plugins: [
+    react(),
+    Terminal({
+      console: "terminal",
+      output: ["terminal", "console"],
+    }),
+    extensionAssetsPlugin(),
+  ],
   build: {
     outDir: "dist",
     emptyOutDir: true,

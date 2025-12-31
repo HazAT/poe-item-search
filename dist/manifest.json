@@ -7,8 +7,7 @@
     "128": "assets/logo128.png"
   },
   "permissions": [
-    "storage",
-    "tabs"
+    "storage"
   ],
   "content_scripts": [
     {
@@ -30,9 +29,5 @@
         "https://www.pathofexile.com/*"
       ]
     }
-  ],
-  "background": {
-    "service_worker": "background/reload.js",
-    "type": "module"
-  }
+  ]
 }
