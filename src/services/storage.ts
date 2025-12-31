@@ -104,46 +104,34 @@ class StorageService {
     storageLog(`getValue(${key}) - backend: ${backend}`);
 
     return new Promise((resolve) => {
-      let resolved = false;
-      const safeResolve = (value: T | null, reason?: string) => {
-        if (!resolved) {
-          resolved = true;
-          storageLog(`getValue(${key}) resolved: ${value !== null ? "found" : "null"}${reason ? ` (${reason})` : ""}`);
-          resolve(value);
-        }
-      };
-
       try {
         storageApi.get([formattedKey], (result) => {
           try {
             const payload = result[formattedKey] as StoragePayload<T> | undefined;
             if (!payload) {
-              safeResolve(null, "no payload");
+              storageLog(`getValue(${key}) resolved: null (no payload)`);
+              resolve(null);
               return;
             }
             if (payload.expiresAt) {
               const expired = new Date(payload.expiresAt).getTime() < Date.now();
               if (expired) {
-                safeResolve(null, "expired");
+                storageLog(`getValue(${key}) resolved: null (expired)`);
+                resolve(null);
                 return;
               }
             }
-            safeResolve(payload.value);
+            storageLog(`getValue(${key}) resolved: found`);
+            resolve(payload.value);
           } catch (e) {
             console.error(`[PoE Search] [Storage] getValue(${key}) callback error:`, e);
-            safeResolve(null, "callback error");
+            resolve(null);
           }
         });
       } catch (e) {
-        console.error(`[PoE Search] [Storage] getValue(${key}) outer error:`, e);
-        safeResolve(null, "outer error");
+        console.error(`[PoE Search] [Storage] getValue(${key}) error:`, e);
+        resolve(null);
       }
-
-      // Timeout fallback - resolve after 3000ms if callback never fires
-      setTimeout(() => {
-        console.warn(`[PoE Search] [Storage] getValue(${key}) timed out after 3000ms`);
-        safeResolve(null, "timeout");
-      }, 3000);
     });
   }
 

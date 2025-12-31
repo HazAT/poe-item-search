@@ -25,16 +25,27 @@ interface ExtensionApi {
   };
 }
 
+// Unused but kept for potential future use
+export function isExtensionContextValid(): boolean {
+  try {
+    return typeof chrome !== "undefined" && !!chrome.runtime?.id;
+  } catch {
+    return false;
+  }
+}
+
+// Unused but kept for potential future use
+export function enableLocalStorageFallback(): void {
+  // No-op - we always use localStorage now
+}
+
 export const extensionApi = (): ExtensionApi => {
-  // Chrome is the primary target, but this abstraction allows for Firefox compatibility
-  if (typeof chrome !== "undefined" && chrome.storage?.local) {
-    return chrome as unknown as ExtensionApi;
-  }
-  // Firefox uses 'browser' namespace
-  if (typeof browser !== "undefined" && browser?.storage?.local) {
-    return browser as unknown as ExtensionApi;
-  }
-  // Fallback for development/testing - mock storage with localStorage
+  // Always use localStorage - chrome.storage has reliability issues
+  // with extension context invalidation during development
+  return createLocalStorageFallback();
+};
+
+function createLocalStorageFallback(): ExtensionApi {
   return {
     runtime: {
       getURL: (path: string) => path,
@@ -51,7 +62,7 @@ export const extensionApi = (): ExtensionApi => {
       },
     },
   };
-};
+}
 
 function createLocalStorageMock(prefix: string): StorageArea {
   return {
