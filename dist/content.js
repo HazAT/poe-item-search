@@ -7022,7 +7022,7 @@ function requireClient() {
   return client;
 }
 var clientExports = requireClient();
-requireReactDom();
+var reactDomExports = requireReactDom();
 const createStoreImpl = (createState) => {
   let state;
   const listeners = /* @__PURE__ */ new Set();
@@ -7063,13 +7063,9 @@ const createImpl = (createState) => {
 };
 const create = ((createState) => createState ? createImpl(createState) : createImpl);
 const extensionApi = () => {
-  var _a, _b;
-  if (typeof chrome !== "undefined" && ((_a = chrome.storage) == null ? void 0 : _a.local)) {
-    return chrome;
-  }
-  if (typeof browser !== "undefined" && ((_b = browser == null ? void 0 : browser.storage) == null ? void 0 : _b.local)) {
-    return browser;
-  }
+  return createLocalStorageFallback();
+};
+function createLocalStorageFallback() {
   return {
     runtime: {
       getURL: (path) => path,
@@ -7086,7 +7082,7 @@ const extensionApi = () => {
       }
     }
   };
-};
+}
 function createLocalStorageMock(prefix) {
   return {
     get(keys, callback) {
@@ -7219,40 +7215,34 @@ class StorageService {
     const storageApi = this.getStorageApi(backend);
     storageLog(`getValue(${key}) - backend: ${backend}`);
     return new Promise((resolve) => {
-      let resolved = false;
-      const safeResolve = (value, reason) => {
-        if (!resolved) {
-          resolved = true;
-          storageLog(`getValue(${key}) resolved: ${value !== null ? "found" : "null"}${reason ? ` (${reason})` : ""}`);
-          resolve(value);
-        }
-      };
       try {
         storageApi.get([formattedKey], (result) => {
           try {
             const payload = result[formattedKey];
             if (!payload) {
-              safeResolve(null, "no payload");
+              storageLog(`getValue(${key}) resolved: null (no payload)`);
+              resolve(null);
               return;
             }
             if (payload.expiresAt) {
               const expired = new Date(payload.expiresAt).getTime() < Date.now();
               if (expired) {
-                safeResolve(null, "expired");
+                storageLog(`getValue(${key}) resolved: null (expired)`);
+                resolve(null);
                 return;
               }
             }
-            safeResolve(payload.value);
+            storageLog(`getValue(${key}) resolved: found`);
+            resolve(payload.value);
           } catch (e) {
             console.error(`[PoE Search] [Storage] getValue(${key}) callback error:`, e);
-            safeResolve(null, "callback error");
+            resolve(null);
           }
         });
       } catch (e) {
-        console.error(`[PoE Search] [Storage] getValue(${key}) outer error:`, e);
-        safeResolve(null, "outer error");
+        console.error(`[PoE Search] [Storage] getValue(${key}) error:`, e);
+        resolve(null);
       }
-      setTimeout(() => safeResolve(null, "timeout"), 500);
     });
   }
   async setValue(key, value) {
@@ -7263,11 +7253,8 @@ class StorageService {
     return new Promise((resolve, reject) => {
       const payload = { value, expiresAt: null };
       storageApi.set({ [formattedKey]: payload }, () => {
-        const lastError = extensionApi().runtime.lastError;
-        if (lastError) {
-          storageLog(`setValue(${key}) error:`, lastError.message);
-          reject(new Error(lastError.message));
-        } else {
+        extensionApi().runtime.lastError;
+        {
           storageLog(`setValue(${key}) success`);
           resolve();
         }
@@ -7284,10 +7271,8 @@ class StorageService {
         expiresAt: expirationDate.toUTCString()
       };
       storageApi.set({ [formattedKey]: payload }, () => {
-        const lastError = extensionApi().runtime.lastError;
-        if (lastError) {
-          reject(new Error(lastError.message));
-        } else {
+        extensionApi().runtime.lastError;
+        {
           resolve();
         }
       });
@@ -7416,10 +7401,8 @@ class StorageService {
     const storageApi = this.getStorageApi(backend);
     return new Promise((resolve, reject) => {
       storageApi.set({ [key]: value }, () => {
-        const lastError = extensionApi().runtime.lastError;
-        if (lastError) {
-          reject(new Error(lastError.message));
-        } else {
+        extensionApi().runtime.lastError;
+        {
           resolve();
         }
       });
@@ -7880,6 +7863,24 @@ function PlusIcon(props) {
     }
   );
 }
+function CheckIcon(props) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "svg",
+    {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: "16",
+      height: "16",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      ...props,
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M20 6 9 17l-5-5" })
+    }
+  );
+}
 function FolderIcon(props) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(
     "svg",
@@ -8111,7 +8112,7 @@ function TabMenu() {
     }
   );
 }
-const styles = "@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap');\n\n*, ::before, ::after{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n::backdrop{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n/*\n! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com\n*/\n\n/*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: '';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user's configured `sans` font-family by default.\n5. Use the user's configured `sans` font-feature-settings by default.\n6. Use the user's configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user's configured `mono` font-family by default.\n2. Use the user's configured `mono` font-feature-settings by default.\n3. Use the user's configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type='button']),\ninput:where([type='reset']),\ninput:where([type='submit']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type='search'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\n\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user's configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role=\"button\"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don't get the pointer cursor.\n*/\n\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n\n[hidden]:where(:not([hidden=\"until-found\"])) {\n  display: none;\n}\n\nhtml {\n    font-size: 16px;\n  }\n\n:root {\n    --poe-black: #161616;\n    --poe-gray: #373737;\n    --poe-gray-alt: #7a7a7a;\n    --poe-white: #ffffff;\n    --poe-beige: #fff8e1;\n    --poe-blue: #0f304d;\n    --poe-blue-alt: #4c4c7d;\n    --poe-gold: #5a3806;\n    --poe-gold-alt: #8a5609;\n    --poe-red: #5a0a09;\n    --poe-red-alt: #6d2725;\n    --poe-yellow: #666521;\n    --poe-yellow-alt: #7a7921;\n    --poe-green: #4b7e42;\n    --poe-green-alt: #5e9954;\n  }\n\n.container{\n  width: 100%;\n}\n\n@media (min-width: 640px){\n\n  .container{\n    max-width: 640px;\n  }\n}\n\n@media (min-width: 768px){\n\n  .container{\n    max-width: 768px;\n  }\n}\n\n@media (min-width: 1024px){\n\n  .container{\n    max-width: 1024px;\n  }\n}\n\n@media (min-width: 1280px){\n\n  .container{\n    max-width: 1280px;\n  }\n}\n\n@media (min-width: 1536px){\n\n  .container{\n    max-width: 1536px;\n  }\n}\n\n.fixed{\n  position: fixed;\n}\n\n.absolute{\n  position: absolute;\n}\n\n.relative{\n  position: relative;\n}\n\n.inset-0{\n  inset: 0px;\n}\n\n.right-0{\n  right: 0px;\n}\n\n.top-0{\n  top: 0px;\n}\n\n.z-50{\n  z-index: 50;\n}\n\n.z-\\[9999\\]{\n  z-index: 9999;\n}\n\n.mx-4{\n  margin-left: 1rem;\n  margin-right: 1rem;\n}\n\n.mb-1{\n  margin-bottom: 0.25rem;\n}\n\n.mb-2{\n  margin-bottom: 0.5rem;\n}\n\n.mr-1{\n  margin-right: 0.25rem;\n}\n\n.mr-2{\n  margin-right: 0.5rem;\n}\n\n.mt-0\\.5{\n  margin-top: 0.125rem;\n}\n\n.mt-1{\n  margin-top: 0.25rem;\n}\n\n.mt-2{\n  margin-top: 0.5rem;\n}\n\n.block{\n  display: block;\n}\n\n.inline-block{\n  display: inline-block;\n}\n\n.inline{\n  display: inline;\n}\n\n.flex{\n  display: flex;\n}\n\n.inline-flex{\n  display: inline-flex;\n}\n\n.table{\n  display: table;\n}\n\n.h-4{\n  height: 1rem;\n}\n\n.h-5{\n  height: 1.25rem;\n}\n\n.h-6{\n  height: 1.5rem;\n}\n\n.h-8{\n  height: 2rem;\n}\n\n.h-\\[500px\\]{\n  height: 500px;\n}\n\n.h-\\[600px\\]{\n  height: 600px;\n}\n\n.h-full{\n  height: 100%;\n}\n\n.h-screen{\n  height: 100vh;\n}\n\n.w-11{\n  width: 2.75rem;\n}\n\n.w-4{\n  width: 1rem;\n}\n\n.w-5{\n  width: 1.25rem;\n}\n\n.w-8{\n  width: 2rem;\n}\n\n.w-full{\n  width: 100%;\n}\n\n.w-panel{\n  width: 400px;\n}\n\n.min-w-0{\n  min-width: 0px;\n}\n\n.max-w-md{\n  max-width: 28rem;\n}\n\n.flex-1{\n  flex: 1 1 0%;\n}\n\n.shrink-0{\n  flex-shrink: 0;\n}\n\n.translate-x-0{\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n.translate-x-1{\n  --tw-translate-x: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n.translate-x-6{\n  --tw-translate-x: 1.5rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n.translate-x-full{\n  --tw-translate-x: 100%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n.transform{\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n@keyframes fadeIn{\n\n  0%{\n    opacity: 0;\n  }\n\n  100%{\n    opacity: 1;\n  }\n}\n\n.animate-fade-in{\n  animation: fadeIn 0.2s ease-in-out;\n}\n\n@keyframes spin{\n\n  to{\n    transform: rotate(360deg);\n  }\n}\n\n.animate-spin{\n  animation: spin 1s linear infinite;\n}\n\n.cursor-pointer{\n  cursor: pointer;\n}\n\n.resize-none{\n  resize: none;\n}\n\n.flex-col{\n  flex-direction: column;\n}\n\n.items-start{\n  align-items: flex-start;\n}\n\n.items-center{\n  align-items: center;\n}\n\n.justify-end{\n  justify-content: flex-end;\n}\n\n.justify-center{\n  justify-content: center;\n}\n\n.justify-between{\n  justify-content: space-between;\n}\n\n.gap-1{\n  gap: 0.25rem;\n}\n\n.gap-2{\n  gap: 0.5rem;\n}\n\n.gap-3{\n  gap: 0.75rem;\n}\n\n.gap-4{\n  gap: 1rem;\n}\n\n.space-y-2 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\n}\n\n.space-y-4 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\n}\n\n.divide-y > :not([hidden]) ~ :not([hidden]){\n  --tw-divide-y-reverse: 0;\n  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));\n  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));\n}\n\n.divide-poe-gray > :not([hidden]) ~ :not([hidden]){\n  --tw-divide-opacity: 1;\n  border-color: rgb(55 55 55 / var(--tw-divide-opacity, 1));\n}\n\n.overflow-hidden{\n  overflow: hidden;\n}\n\n.overflow-y-auto{\n  overflow-y: auto;\n}\n\n.truncate{\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.rounded{\n  border-radius: 0.25rem;\n}\n\n.rounded-full{\n  border-radius: 9999px;\n}\n\n.rounded-lg{\n  border-radius: 0.5rem;\n}\n\n.border{\n  border-width: 1px;\n}\n\n.border-b{\n  border-bottom-width: 1px;\n}\n\n.border-b-2{\n  border-bottom-width: 2px;\n}\n\n.border-l{\n  border-left-width: 1px;\n}\n\n.border-t{\n  border-top-width: 1px;\n}\n\n.border-poe-blue-alt{\n  --tw-border-opacity: 1;\n  border-color: rgb(76 76 125 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-gold{\n  --tw-border-opacity: 1;\n  border-color: rgb(90 56 6 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-gray{\n  --tw-border-opacity: 1;\n  border-color: rgb(55 55 55 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-gray-alt{\n  --tw-border-opacity: 1;\n  border-color: rgb(122 122 122 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-red{\n  --tw-border-opacity: 1;\n  border-color: rgb(90 10 9 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-red-alt{\n  --tw-border-opacity: 1;\n  border-color: rgb(109 39 37 / var(--tw-border-opacity, 1));\n}\n\n.border-transparent{\n  border-color: transparent;\n}\n\n.bg-black\\/70{\n  background-color: rgb(0 0 0 / 0.7);\n}\n\n.bg-poe-black{\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 22 22 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-black\\/50{\n  background-color: rgb(22 22 22 / 0.5);\n}\n\n.bg-poe-blue{\n  --tw-bg-opacity: 1;\n  background-color: rgb(15 48 77 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-gold\\/30{\n  background-color: rgb(90 56 6 / 0.3);\n}\n\n.bg-poe-gray{\n  --tw-bg-opacity: 1;\n  background-color: rgb(55 55 55 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-gray-alt{\n  --tw-bg-opacity: 1;\n  background-color: rgb(122 122 122 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-green{\n  --tw-bg-opacity: 1;\n  background-color: rgb(75 126 66 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-red{\n  --tw-bg-opacity: 1;\n  background-color: rgb(90 10 9 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-red\\/20{\n  background-color: rgb(90 10 9 / 0.2);\n}\n\n.bg-transparent{\n  background-color: transparent;\n}\n\n.bg-white{\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));\n}\n\n.p-3{\n  padding: 0.75rem;\n}\n\n.p-4{\n  padding: 1rem;\n}\n\n.px-2{\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n\n.px-3{\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n\n.px-4{\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n\n.px-6{\n  padding-left: 1.5rem;\n  padding-right: 1.5rem;\n}\n\n.py-1{\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n\n.py-1\\.5{\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n\n.py-2{\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n\n.py-3{\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n\n.pt-4{\n  padding-top: 1rem;\n}\n\n.text-left{\n  text-align: left;\n}\n\n.text-center{\n  text-align: center;\n}\n\n.font-body{\n  font-family: Verdana, Arial, Helvetica, sans-serif;\n}\n\n.font-fontin{\n  font-family: Cinzel, serif;\n}\n\n.text-base{\n  font-size: 1rem;\n  line-height: 1.5rem;\n}\n\n.text-lg{\n  font-size: 1.125rem;\n  line-height: 1.75rem;\n}\n\n.text-sm{\n  font-size: 0.875rem;\n  line-height: 1.25rem;\n}\n\n.text-xl{\n  font-size: 1.25rem;\n  line-height: 1.75rem;\n}\n\n.text-xs{\n  font-size: 0.75rem;\n  line-height: 1rem;\n}\n\n.font-semibold{\n  font-weight: 600;\n}\n\n.lowercase{\n  text-transform: lowercase;\n}\n\n.tracking-wide{\n  letter-spacing: 0.025em;\n}\n\n.text-poe-beige{\n  --tw-text-opacity: 1;\n  color: rgb(255 248 225 / var(--tw-text-opacity, 1));\n}\n\n.text-poe-gold{\n  --tw-text-opacity: 1;\n  color: rgb(90 56 6 / var(--tw-text-opacity, 1));\n}\n\n.text-poe-gray-alt{\n  --tw-text-opacity: 1;\n  color: rgb(122 122 122 / var(--tw-text-opacity, 1));\n}\n\n.text-poe-red{\n  --tw-text-opacity: 1;\n  color: rgb(90 10 9 / var(--tw-text-opacity, 1));\n}\n\n.text-poe-white{\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n\n.opacity-0{\n  opacity: 0;\n}\n\n.opacity-60{\n  opacity: 0.6;\n}\n\n.shadow{\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n\n.shadow-2xl{\n  --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);\n  --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n\n.filter{\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n\n.backdrop-blur-sm{\n  --tw-backdrop-blur: blur(4px);\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n\n.transition{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.transition-colors{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.transition-opacity{\n  transition-property: opacity;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.transition-transform{\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.duration-200{\n  transition-duration: 200ms;\n}\n\n.ease-in-out{\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n\n/* Custom base styles for the PoE theme */\n\n/* Panel container styles */\n\n.placeholder\\:text-poe-gray-alt::-moz-placeholder{\n  --tw-text-opacity: 1;\n  color: rgb(122 122 122 / var(--tw-text-opacity, 1));\n}\n\n.placeholder\\:text-poe-gray-alt::placeholder{\n  --tw-text-opacity: 1;\n  color: rgb(122 122 122 / var(--tw-text-opacity, 1));\n}\n\n.hover\\:bg-poe-blue-alt:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(76 76 125 / var(--tw-bg-opacity, 1));\n}\n\n.hover\\:bg-poe-gold\\/40:hover{\n  background-color: rgb(90 56 6 / 0.4);\n}\n\n.hover\\:bg-poe-gray:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(55 55 55 / var(--tw-bg-opacity, 1));\n}\n\n.hover\\:bg-poe-gray-alt:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(122 122 122 / var(--tw-bg-opacity, 1));\n}\n\n.hover\\:bg-poe-red-alt:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(109 39 37 / var(--tw-bg-opacity, 1));\n}\n\n.hover\\:text-poe-beige:hover{\n  --tw-text-opacity: 1;\n  color: rgb(255 248 225 / var(--tw-text-opacity, 1));\n}\n\n.focus\\:border-poe-gold:focus{\n  --tw-border-opacity: 1;\n  border-color: rgb(90 56 6 / var(--tw-border-opacity, 1));\n}\n\n.focus\\:outline-none:focus{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n\n.focus\\:ring-1:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n\n.focus\\:ring-2:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n\n.focus\\:ring-poe-gold:focus{\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(90 56 6 / var(--tw-ring-opacity, 1));\n}\n\n.focus\\:ring-offset-1:focus{\n  --tw-ring-offset-width: 1px;\n}\n\n.focus\\:ring-offset-poe-black:focus{\n  --tw-ring-offset-color: #161616;\n}\n\n.disabled\\:cursor-not-allowed:disabled{\n  cursor: not-allowed;\n}\n\n.disabled\\:cursor-wait:disabled{\n  cursor: wait;\n}\n\n.disabled\\:opacity-50:disabled{\n  opacity: 0.5;\n}\n\n.group:hover .group-hover\\:opacity-100{\n  opacity: 1;\n}\n";
+const styles = "@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap');\n\n*, ::before, ::after{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n::backdrop{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n/*\n! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com\n*/\n\n/*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: '';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user's configured `sans` font-family by default.\n5. Use the user's configured `sans` font-feature-settings by default.\n6. Use the user's configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user's configured `mono` font-family by default.\n2. Use the user's configured `mono` font-feature-settings by default.\n3. Use the user's configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type='button']),\ninput:where([type='reset']),\ninput:where([type='submit']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type='search'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\n\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user's configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role=\"button\"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don't get the pointer cursor.\n*/\n\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n\n[hidden]:where(:not([hidden=\"until-found\"])) {\n  display: none;\n}\n\nhtml {\n    font-size: 16px;\n  }\n\n:root {\n    --poe-black: #161616;\n    --poe-gray: #373737;\n    --poe-gray-alt: #7a7a7a;\n    --poe-white: #ffffff;\n    --poe-beige: #fff8e1;\n    --poe-blue: #0f304d;\n    --poe-blue-alt: #4c4c7d;\n    --poe-gold: #5a3806;\n    --poe-gold-alt: #8a5609;\n    --poe-red: #5a0a09;\n    --poe-red-alt: #6d2725;\n    --poe-yellow: #666521;\n    --poe-yellow-alt: #7a7921;\n    --poe-green: #4b7e42;\n    --poe-green-alt: #5e9954;\n  }\n\n.container{\n  width: 100%;\n}\n\n@media (min-width: 640px){\n\n  .container{\n    max-width: 640px;\n  }\n}\n\n@media (min-width: 768px){\n\n  .container{\n    max-width: 768px;\n  }\n}\n\n@media (min-width: 1024px){\n\n  .container{\n    max-width: 1024px;\n  }\n}\n\n@media (min-width: 1280px){\n\n  .container{\n    max-width: 1280px;\n  }\n}\n\n@media (min-width: 1536px){\n\n  .container{\n    max-width: 1536px;\n  }\n}\n\n.fixed{\n  position: fixed;\n}\n\n.absolute{\n  position: absolute;\n}\n\n.relative{\n  position: relative;\n}\n\n.inset-0{\n  inset: 0px;\n}\n\n.right-0{\n  right: 0px;\n}\n\n.top-0{\n  top: 0px;\n}\n\n.top-full{\n  top: 100%;\n}\n\n.z-50{\n  z-index: 50;\n}\n\n.z-\\[9999\\]{\n  z-index: 9999;\n}\n\n.mx-4{\n  margin-left: 1rem;\n  margin-right: 1rem;\n}\n\n.mb-1{\n  margin-bottom: 0.25rem;\n}\n\n.mb-2{\n  margin-bottom: 0.5rem;\n}\n\n.mr-1{\n  margin-right: 0.25rem;\n}\n\n.mr-2{\n  margin-right: 0.5rem;\n}\n\n.mt-0\\.5{\n  margin-top: 0.125rem;\n}\n\n.mt-1{\n  margin-top: 0.25rem;\n}\n\n.mt-2{\n  margin-top: 0.5rem;\n}\n\n.block{\n  display: block;\n}\n\n.inline-block{\n  display: inline-block;\n}\n\n.inline{\n  display: inline;\n}\n\n.flex{\n  display: flex;\n}\n\n.inline-flex{\n  display: inline-flex;\n}\n\n.table{\n  display: table;\n}\n\n.hidden{\n  display: none;\n}\n\n.h-4{\n  height: 1rem;\n}\n\n.h-5{\n  height: 1.25rem;\n}\n\n.h-6{\n  height: 1.5rem;\n}\n\n.h-8{\n  height: 2rem;\n}\n\n.h-\\[500px\\]{\n  height: 500px;\n}\n\n.h-\\[600px\\]{\n  height: 600px;\n}\n\n.h-full{\n  height: 100%;\n}\n\n.h-screen{\n  height: 100vh;\n}\n\n.max-h-48{\n  max-height: 12rem;\n}\n\n.w-11{\n  width: 2.75rem;\n}\n\n.w-4{\n  width: 1rem;\n}\n\n.w-5{\n  width: 1.25rem;\n}\n\n.w-8{\n  width: 2rem;\n}\n\n.w-full{\n  width: 100%;\n}\n\n.w-panel{\n  width: 400px;\n}\n\n.w-48{\n  width: 12rem;\n}\n\n.min-w-0{\n  min-width: 0px;\n}\n\n.max-w-md{\n  max-width: 28rem;\n}\n\n.flex-1{\n  flex: 1 1 0%;\n}\n\n.shrink-0{\n  flex-shrink: 0;\n}\n\n.translate-x-0{\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n.translate-x-1{\n  --tw-translate-x: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n.translate-x-6{\n  --tw-translate-x: 1.5rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n.translate-x-full{\n  --tw-translate-x: 100%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n.transform{\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n\n@keyframes fadeIn{\n\n  0%{\n    opacity: 0;\n  }\n\n  100%{\n    opacity: 1;\n  }\n}\n\n.animate-fade-in{\n  animation: fadeIn 0.2s ease-in-out;\n}\n\n@keyframes spin{\n\n  to{\n    transform: rotate(360deg);\n  }\n}\n\n.animate-spin{\n  animation: spin 1s linear infinite;\n}\n\n.cursor-pointer{\n  cursor: pointer;\n}\n\n.resize-none{\n  resize: none;\n}\n\n.flex-col{\n  flex-direction: column;\n}\n\n.items-start{\n  align-items: flex-start;\n}\n\n.items-center{\n  align-items: center;\n}\n\n.justify-end{\n  justify-content: flex-end;\n}\n\n.justify-center{\n  justify-content: center;\n}\n\n.justify-between{\n  justify-content: space-between;\n}\n\n.gap-1{\n  gap: 0.25rem;\n}\n\n.gap-2{\n  gap: 0.5rem;\n}\n\n.gap-3{\n  gap: 0.75rem;\n}\n\n.gap-4{\n  gap: 1rem;\n}\n\n.space-y-2 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\n}\n\n.space-y-4 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\n}\n\n.divide-y > :not([hidden]) ~ :not([hidden]){\n  --tw-divide-y-reverse: 0;\n  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));\n  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));\n}\n\n.divide-poe-gray > :not([hidden]) ~ :not([hidden]){\n  --tw-divide-opacity: 1;\n  border-color: rgb(55 55 55 / var(--tw-divide-opacity, 1));\n}\n\n.overflow-hidden{\n  overflow: hidden;\n}\n\n.overflow-y-auto{\n  overflow-y: auto;\n}\n\n.truncate{\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.rounded{\n  border-radius: 0.25rem;\n}\n\n.rounded-full{\n  border-radius: 9999px;\n}\n\n.rounded-lg{\n  border-radius: 0.5rem;\n}\n\n.border{\n  border-width: 1px;\n}\n\n.border-b{\n  border-bottom-width: 1px;\n}\n\n.border-b-2{\n  border-bottom-width: 2px;\n}\n\n.border-l{\n  border-left-width: 1px;\n}\n\n.border-t{\n  border-top-width: 1px;\n}\n\n.border-poe-blue-alt{\n  --tw-border-opacity: 1;\n  border-color: rgb(76 76 125 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-gold{\n  --tw-border-opacity: 1;\n  border-color: rgb(90 56 6 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-gray{\n  --tw-border-opacity: 1;\n  border-color: rgb(55 55 55 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-gray-alt{\n  --tw-border-opacity: 1;\n  border-color: rgb(122 122 122 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-red{\n  --tw-border-opacity: 1;\n  border-color: rgb(90 10 9 / var(--tw-border-opacity, 1));\n}\n\n.border-poe-red-alt{\n  --tw-border-opacity: 1;\n  border-color: rgb(109 39 37 / var(--tw-border-opacity, 1));\n}\n\n.border-transparent{\n  border-color: transparent;\n}\n\n.bg-black\\/70{\n  background-color: rgb(0 0 0 / 0.7);\n}\n\n.bg-poe-black{\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 22 22 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-black\\/50{\n  background-color: rgb(22 22 22 / 0.5);\n}\n\n.bg-poe-blue{\n  --tw-bg-opacity: 1;\n  background-color: rgb(15 48 77 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-gold\\/30{\n  background-color: rgb(90 56 6 / 0.3);\n}\n\n.bg-poe-gray{\n  --tw-bg-opacity: 1;\n  background-color: rgb(55 55 55 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-gray-alt{\n  --tw-bg-opacity: 1;\n  background-color: rgb(122 122 122 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-green{\n  --tw-bg-opacity: 1;\n  background-color: rgb(75 126 66 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-red{\n  --tw-bg-opacity: 1;\n  background-color: rgb(90 10 9 / var(--tw-bg-opacity, 1));\n}\n\n.bg-poe-red\\/20{\n  background-color: rgb(90 10 9 / 0.2);\n}\n\n.bg-transparent{\n  background-color: transparent;\n}\n\n.bg-white{\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));\n}\n\n.p-3{\n  padding: 0.75rem;\n}\n\n.p-4{\n  padding: 1rem;\n}\n\n.p-1{\n  padding: 0.25rem;\n}\n\n.p-2{\n  padding: 0.5rem;\n}\n\n.px-2{\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n\n.px-3{\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n\n.px-4{\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n\n.px-6{\n  padding-left: 1.5rem;\n  padding-right: 1.5rem;\n}\n\n.py-1{\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n\n.py-1\\.5{\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n\n.py-2{\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n\n.py-3{\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n\n.pt-4{\n  padding-top: 1rem;\n}\n\n.text-left{\n  text-align: left;\n}\n\n.text-center{\n  text-align: center;\n}\n\n.font-body{\n  font-family: Verdana, Arial, Helvetica, sans-serif;\n}\n\n.font-fontin{\n  font-family: Cinzel, serif;\n}\n\n.text-base{\n  font-size: 1rem;\n  line-height: 1.5rem;\n}\n\n.text-lg{\n  font-size: 1.125rem;\n  line-height: 1.75rem;\n}\n\n.text-sm{\n  font-size: 0.875rem;\n  line-height: 1.25rem;\n}\n\n.text-xl{\n  font-size: 1.25rem;\n  line-height: 1.75rem;\n}\n\n.text-xs{\n  font-size: 0.75rem;\n  line-height: 1rem;\n}\n\n.font-semibold{\n  font-weight: 600;\n}\n\n.lowercase{\n  text-transform: lowercase;\n}\n\n.capitalize{\n  text-transform: capitalize;\n}\n\n.tracking-wide{\n  letter-spacing: 0.025em;\n}\n\n.text-poe-beige{\n  --tw-text-opacity: 1;\n  color: rgb(255 248 225 / var(--tw-text-opacity, 1));\n}\n\n.text-poe-gold{\n  --tw-text-opacity: 1;\n  color: rgb(90 56 6 / var(--tw-text-opacity, 1));\n}\n\n.text-poe-gray-alt{\n  --tw-text-opacity: 1;\n  color: rgb(122 122 122 / var(--tw-text-opacity, 1));\n}\n\n.text-poe-red{\n  --tw-text-opacity: 1;\n  color: rgb(90 10 9 / var(--tw-text-opacity, 1));\n}\n\n.text-poe-white{\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n\n.opacity-0{\n  opacity: 0;\n}\n\n.opacity-60{\n  opacity: 0.6;\n}\n\n.shadow{\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n\n.shadow-2xl{\n  --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);\n  --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n\n.shadow-lg{\n  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n\n.outline{\n  outline-style: solid;\n}\n\n.filter{\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n\n.backdrop-blur-sm{\n  --tw-backdrop-blur: blur(4px);\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n\n.transition{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.transition-colors{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.transition-opacity{\n  transition-property: opacity;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.transition-transform{\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n\n.duration-200{\n  transition-duration: 200ms;\n}\n\n.ease-in-out{\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n\n/* Custom base styles for the PoE theme */\n\n/* Panel container styles */\n\n.placeholder\\:text-poe-gray-alt::-moz-placeholder{\n  --tw-text-opacity: 1;\n  color: rgb(122 122 122 / var(--tw-text-opacity, 1));\n}\n\n.placeholder\\:text-poe-gray-alt::placeholder{\n  --tw-text-opacity: 1;\n  color: rgb(122 122 122 / var(--tw-text-opacity, 1));\n}\n\n.hover\\:bg-poe-blue-alt:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(76 76 125 / var(--tw-bg-opacity, 1));\n}\n\n.hover\\:bg-poe-gold\\/40:hover{\n  background-color: rgb(90 56 6 / 0.4);\n}\n\n.hover\\:bg-poe-gray:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(55 55 55 / var(--tw-bg-opacity, 1));\n}\n\n.hover\\:bg-poe-gray-alt:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(122 122 122 / var(--tw-bg-opacity, 1));\n}\n\n.hover\\:bg-poe-red-alt:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(109 39 37 / var(--tw-bg-opacity, 1));\n}\n\n.hover\\:text-poe-beige:hover{\n  --tw-text-opacity: 1;\n  color: rgb(255 248 225 / var(--tw-text-opacity, 1));\n}\n\n.focus\\:border-poe-gold:focus{\n  --tw-border-opacity: 1;\n  border-color: rgb(90 56 6 / var(--tw-border-opacity, 1));\n}\n\n.focus\\:outline-none:focus{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n\n.focus\\:ring-1:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n\n.focus\\:ring-2:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n\n.focus\\:ring-poe-gold:focus{\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(90 56 6 / var(--tw-ring-opacity, 1));\n}\n\n.focus\\:ring-offset-1:focus{\n  --tw-ring-offset-width: 1px;\n}\n\n.focus\\:ring-offset-poe-black:focus{\n  --tw-ring-offset-color: #161616;\n}\n\n.disabled\\:cursor-not-allowed:disabled{\n  cursor: not-allowed;\n}\n\n.disabled\\:cursor-wait:disabled{\n  cursor: wait;\n}\n\n.disabled\\:opacity-50:disabled{\n  opacity: 0.5;\n}\n\n.group:hover .group-hover\\:opacity-100{\n  opacity: 1;\n}\n";
 function CollapsedToggle({ forceShow = false }) {
   const { isCollapsed, toggleCollapsed } = usePanelStore();
   if (!isCollapsed && !forceShow) return null;
@@ -8799,119 +8800,6 @@ function extractItemTitle(lines) {
   }
   return "Unknown Item";
 }
-function SearchEntry({
-  title,
-  version: version2,
-  league,
-  type,
-  resultCount,
-  createdAt,
-  isExecuting = false,
-  onExecute,
-  onDelete
-}) {
-  const timeAgo = createdAt ? getRelativeTime$1(createdAt) : null;
-  const handleClick = () => {
-    if (!isExecuting) {
-      onExecute();
-    }
-  };
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("li", { className: "group", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-    "button",
-    {
-      onClick: handleClick,
-      disabled: isExecuting,
-      className: "w-full flex items-start gap-3 px-3 py-2 hover:bg-poe-gray transition-colors text-left disabled:opacity-50 disabled:cursor-wait",
-      children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 min-w-0", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-fontin text-sm text-poe-beige truncate", children: title || "Untitled Search" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-poe-gray-alt shrink-0", children: version2 === "2" ? "PoE2" : "PoE1" })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mt-0.5", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-poe-gray-alt truncate", children: [
-              league,
-              " • ",
-              type
-            ] }),
-            resultCount !== void 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-poe-gold shrink-0", children: [
-              resultCount.toLocaleString(),
-              " results"
-            ] }),
-            timeAgo && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-poe-gray-alt shrink-0", children: timeAgo })
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity", children: isExecuting ? /* @__PURE__ */ jsxRuntimeExports.jsx(RefreshIcon, { className: "w-4 h-4 text-poe-gold animate-spin" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Button,
-          {
-            variant: "ghost",
-            size: "sm",
-            onClick: (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onDelete();
-            },
-            title: "Delete",
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx(TrashIcon, { className: "w-4 h-4" })
-          }
-        ) })
-      ]
-    }
-  ) });
-}
-function getRelativeTime$1(dateString) {
-  const date = new Date(dateString);
-  const now = /* @__PURE__ */ new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / (1e3 * 60));
-  const diffHours = Math.floor(diffMs / (1e3 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1e3 * 60 * 60 * 24));
-  if (diffMins < 1) return "just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString();
-}
-function HistoryTab() {
-  const { entries, isLoading, isExecuting, fetchEntries, clearEntries, deleteEntry, executeSearch } = useHistoryStore();
-  reactExports.useEffect(() => {
-    fetchEntries();
-  }, [fetchEntries]);
-  if (isLoading) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-center h-full", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-poe-gray-alt", children: "Loading..." }) });
-  }
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col h-full", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between px-3 py-2 border-b border-poe-gray", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-poe-gray-alt", children: [
-        entries.length,
-        " ",
-        entries.length === 1 ? "entry" : "entries"
-      ] }),
-      entries.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { variant: "ghost", size: "sm", onClick: clearEntries, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(TrashIcon, { className: "w-4 h-4 mr-1" }),
-        "Clear all"
-      ] })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 overflow-y-auto", children: entries.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col items-center justify-center h-full p-4 text-center", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-poe-gray-alt mb-2", children: "No search history yet" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-poe-gray-alt", children: "Your searches will appear here" })
-    ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "divide-y divide-poe-gray", children: entries.map((entry) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-      SearchEntry,
-      {
-        title: entry.title,
-        version: entry.version,
-        league: entry.league,
-        type: entry.type,
-        resultCount: entry.resultCount,
-        createdAt: entry.createdAt,
-        isExecuting: isExecuting === entry.id,
-        onExecute: () => executeSearch(entry.id),
-        onDelete: () => deleteEntry(entry.id)
-      },
-      entry.id
-    )) }) })
-  ] });
-}
 const FOLDERS_KEY = "bookmark-folders";
 const TRADES_KEY_PREFIX = "bookmark-trades";
 const EXPANDED_FOLDERS_KEY = "expanded-folders";
@@ -9080,6 +8968,467 @@ const useBookmarksStore = create((set, get) => ({
     set((state) => ({ showArchived: !state.showArchived }));
   }
 }));
+function getSortLabel(sort) {
+  if (!sort) return null;
+  const entries = Object.entries(sort);
+  if (entries.length === 0) return null;
+  const [key, direction] = entries[0];
+  if (key === "price" && direction === "asc") {
+    return null;
+  }
+  const label = parseSortKey(key);
+  return {
+    label,
+    direction
+  };
+}
+function parseSortKey(key) {
+  const knownKeys = {
+    price: "Price",
+    dps: "DPS",
+    pdps: "pDPS",
+    edps: "eDPS",
+    "item.armour": "Armour",
+    "item.evasion": "Evasion",
+    "item.energy_shield": "ES",
+    "item.level": "Level",
+    "item.quality": "Quality",
+    "item.stack_size": "Stack",
+    "item.gem_level": "Gem Lvl"
+  };
+  if (knownKeys[key]) {
+    return knownKeys[key];
+  }
+  if (key.startsWith("stat.")) {
+    return "Stat";
+  }
+  if (key.startsWith("item.")) {
+    const prop = key.replace("item.", "");
+    return prop.charAt(0).toUpperCase() + prop.slice(1).replace(/_/g, " ");
+  }
+  return key.charAt(0).toUpperCase() + key.slice(1);
+}
+function formatSortBadge(result) {
+  const arrow = result.direction === "asc" ? "↑" : "↓";
+  return `${result.label} ${arrow}`;
+}
+function FolderPickerDropdown({
+  folders,
+  anchorRef,
+  onSelect,
+  onCreateFolder,
+  onClose
+}) {
+  const [isCreating, setIsCreating] = reactExports.useState(false);
+  const [newFolderName, setNewFolderName] = reactExports.useState("");
+  const [isSubmitting, setIsSubmitting] = reactExports.useState(false);
+  const [position, setPosition] = reactExports.useState({ top: 0, left: 0 });
+  const dropdownRef = reactExports.useRef(null);
+  const inputRef = reactExports.useRef(null);
+  reactExports.useEffect(() => {
+    if (anchorRef.current) {
+      const rect = anchorRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + 4,
+        left: Math.max(8, rect.right - 192)
+        // 192px = dropdown width, keep 8px from edge
+      });
+    }
+  }, [anchorRef]);
+  const activeFolders = folders.filter((f) => !f.archivedAt);
+  reactExports.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
+  reactExports.useEffect(() => {
+    if (isCreating && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isCreating]);
+  const handleSelectFolder = (folderId) => {
+    onSelect(folderId);
+    onClose();
+  };
+  const handleCreateFolder = async () => {
+    if (!newFolderName.trim() || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const folderId = await onCreateFolder(newFolderName.trim());
+      onSelect(folderId);
+      onClose();
+    } catch (error) {
+      console.error("Failed to create folder:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleCreateFolder();
+    } else if (e.key === "Escape") {
+      if (isCreating) {
+        setIsCreating(false);
+        setNewFolderName("");
+      } else {
+        onClose();
+      }
+    }
+  };
+  const styles2 = {
+    dropdown: {
+      position: "fixed",
+      top: position.top,
+      left: position.left,
+      width: "192px",
+      backgroundColor: "#1a1a1d",
+      border: "1px solid #3d3d3d",
+      borderRadius: "4px",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+      zIndex: 99999,
+      fontFamily: "system-ui, sans-serif",
+      fontSize: "14px"
+    },
+    folderList: {
+      padding: "4px 0",
+      maxHeight: "192px",
+      overflowY: "auto"
+    },
+    folderButton: {
+      width: "100%",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      padding: "6px 12px",
+      textAlign: "left",
+      color: "#c8b68b",
+      backgroundColor: "transparent",
+      border: "none",
+      cursor: "pointer"
+    },
+    folderIcon: {
+      width: "16px",
+      height: "16px",
+      color: "#af8930",
+      flexShrink: 0
+    },
+    separator: {
+      borderTop: "1px solid #3d3d3d"
+    },
+    newFolderButton: {
+      width: "100%",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      padding: "8px 12px",
+      textAlign: "left",
+      color: "#8b8b8b",
+      backgroundColor: "transparent",
+      border: "none",
+      cursor: "pointer"
+    },
+    inputRow: {
+      display: "flex",
+      alignItems: "center",
+      gap: "4px",
+      padding: "8px"
+    },
+    input: {
+      flex: 1,
+      backgroundColor: "#2a2a2e",
+      color: "#c8b68b",
+      fontSize: "14px",
+      padding: "4px 8px",
+      borderRadius: "4px",
+      border: "1px solid #3d3d3d",
+      outline: "none"
+    },
+    submitButton: {
+      padding: "4px",
+      color: "#af8930",
+      backgroundColor: "transparent",
+      border: "none",
+      cursor: "pointer"
+    },
+    emptyText: {
+      padding: "8px 12px",
+      fontSize: "12px",
+      color: "#8b8b8b"
+    }
+  };
+  const dropdown = /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      ref: dropdownRef,
+      style: styles2.dropdown,
+      onClick: (e) => e.stopPropagation(),
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: styles2.folderList, children: [
+          activeFolders.length === 0 && !isCreating && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: styles2.emptyText, children: "No folders yet" }),
+          activeFolders.map((folder) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "button",
+            {
+              style: styles2.folderButton,
+              onMouseEnter: (e) => e.currentTarget.style.backgroundColor = "#2a2a2e",
+              onMouseLeave: (e) => e.currentTarget.style.backgroundColor = "transparent",
+              onClick: () => handleSelectFolder(folder.id),
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(FolderIcon, { style: styles2.folderIcon }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }, children: folder.title })
+              ]
+            },
+            folder.id
+          ))
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: styles2.separator, children: isCreating ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: styles2.inputRow, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "input",
+            {
+              ref: inputRef,
+              type: "text",
+              value: newFolderName,
+              onChange: (e) => setNewFolderName(e.target.value),
+              onKeyDown: handleKeyDown,
+              placeholder: "Folder name...",
+              style: styles2.input,
+              disabled: isSubmitting
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              onClick: handleCreateFolder,
+              disabled: !newFolderName.trim() || isSubmitting,
+              style: {
+                ...styles2.submitButton,
+                opacity: !newFolderName.trim() || isSubmitting ? 0.5 : 1
+              },
+              title: "Create folder",
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(CheckIcon, { style: { width: "16px", height: "16px" } })
+            }
+          )
+        ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "button",
+          {
+            style: styles2.newFolderButton,
+            onMouseEnter: (e) => {
+              e.currentTarget.style.backgroundColor = "#2a2a2e";
+              e.currentTarget.style.color = "#c8b68b";
+            },
+            onMouseLeave: (e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = "#8b8b8b";
+            },
+            onClick: () => setIsCreating(true),
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(PlusIcon, { style: { width: "16px", height: "16px", flexShrink: 0 } }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "New Folder" })
+            ]
+          }
+        ) })
+      ]
+    }
+  );
+  return reactDomExports.createPortal(dropdown, document.body);
+}
+function formatLeague(league) {
+  let cleaned = league;
+  cleaned = cleaned.replace(/^poe[12]\//, "");
+  try {
+    cleaned = decodeURIComponent(cleaned);
+  } catch {
+  }
+  return cleaned;
+}
+function SearchEntry({
+  title,
+  version: version2,
+  league,
+  type,
+  resultCount,
+  createdAt,
+  isExecuting = false,
+  sort,
+  context = "history",
+  folders = [],
+  onExecute,
+  onDelete,
+  onBookmark,
+  onCreateFolder
+}) {
+  const [showFolderPicker, setShowFolderPicker] = reactExports.useState(false);
+  const bookmarkButtonRef = reactExports.useRef(null);
+  const timeAgo = createdAt ? getRelativeTime$1(createdAt) : null;
+  const sortInfo = getSortLabel(sort);
+  const canBookmark = context === "history" && onBookmark && onCreateFolder;
+  const handleClick = () => {
+    if (!isExecuting) {
+      onExecute();
+    }
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("li", { className: "group", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "button",
+    {
+      onClick: handleClick,
+      disabled: isExecuting,
+      className: "w-full flex items-start gap-3 px-3 py-2 hover:bg-poe-gray transition-colors text-left disabled:opacity-50 disabled:cursor-wait",
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 min-w-0", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-fontin text-sm text-poe-beige truncate", children: title || "Untitled Search" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-poe-gray-alt shrink-0", children: version2 === "2" ? "PoE2" : "PoE1" }),
+            sortInfo && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-poe-accent shrink-0", children: formatSortBadge(sortInfo) })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mt-0.5", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-poe-gray-alt truncate", children: formatLeague(league) }),
+            resultCount !== void 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-poe-gold shrink-0", children: [
+              resultCount.toLocaleString(),
+              " results"
+            ] }),
+            timeAgo && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-poe-gray-alt shrink-0", children: timeAgo })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity", children: [
+          isExecuting ? /* @__PURE__ */ jsxRuntimeExports.jsx(RefreshIcon, { className: "w-4 h-4 text-poe-gold animate-spin" }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+            canBookmark && /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Button,
+              {
+                ref: bookmarkButtonRef,
+                variant: "ghost",
+                size: "sm",
+                onClick: (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowFolderPicker(!showFolderPicker);
+                },
+                title: "Add to bookmarks",
+                children: /* @__PURE__ */ jsxRuntimeExports.jsx(BookmarkIcon, { className: "w-4 h-4" })
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Button,
+              {
+                variant: "ghost",
+                size: "sm",
+                onClick: (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDelete();
+                },
+                title: "Delete",
+                children: /* @__PURE__ */ jsxRuntimeExports.jsx(TrashIcon, { className: "w-4 h-4" })
+              }
+            )
+          ] }),
+          showFolderPicker && canBookmark && /* @__PURE__ */ jsxRuntimeExports.jsx(
+            FolderPickerDropdown,
+            {
+              folders,
+              anchorRef: bookmarkButtonRef,
+              onSelect: onBookmark,
+              onCreateFolder,
+              onClose: () => setShowFolderPicker(false)
+            }
+          )
+        ] })
+      ]
+    }
+  ) });
+}
+function getRelativeTime$1(dateString) {
+  const date = new Date(dateString);
+  const now = /* @__PURE__ */ new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / (1e3 * 60));
+  const diffHours = Math.floor(diffMs / (1e3 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1e3 * 60 * 60 * 24));
+  if (diffMins < 1) return "just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
+}
+function HistoryTab() {
+  const { entries, isLoading, isExecuting, fetchEntries, clearEntries, deleteEntry, executeSearch } = useHistoryStore();
+  const { folders, fetchFolders, createFolder, createTrade } = useBookmarksStore();
+  reactExports.useEffect(() => {
+    fetchEntries();
+    fetchFolders();
+  }, [fetchEntries, fetchFolders]);
+  const handleCreateFolder = async (title) => {
+    const newFolder = {
+      title,
+      version: "2",
+      icon: null,
+      archivedAt: null
+    };
+    await createFolder(newFolder);
+    const latestFolders = useBookmarksStore.getState().folders;
+    const created = latestFolders.find((f) => f.title === title);
+    return (created == null ? void 0 : created.id) ?? "";
+  };
+  const handleBookmark = async (entry, folderId) => {
+    const trade = {
+      title: entry.title,
+      location: {
+        version: entry.version,
+        type: entry.type,
+        league: entry.league,
+        slug: entry.slug
+      },
+      createdAt: (/* @__PURE__ */ new Date()).toISOString(),
+      queryPayload: entry.queryPayload,
+      resultCount: entry.resultCount
+    };
+    await createTrade(folderId, trade);
+  };
+  if (isLoading) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-center h-full", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-poe-gray-alt", children: "Loading..." }) });
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col h-full", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between px-3 py-2 border-b border-poe-gray", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-poe-gray-alt", children: [
+        entries.length,
+        " ",
+        entries.length === 1 ? "entry" : "entries"
+      ] }),
+      entries.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { variant: "ghost", size: "sm", onClick: clearEntries, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(TrashIcon, { className: "w-4 h-4 mr-1" }),
+        "Clear all"
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 overflow-y-auto", children: entries.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col items-center justify-center h-full p-4 text-center", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-poe-gray-alt mb-2", children: "No search history yet" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-poe-gray-alt", children: "Your searches will appear here" })
+    ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "divide-y divide-poe-gray", children: entries.map((entry) => {
+      var _a;
+      return /* @__PURE__ */ jsxRuntimeExports.jsx(
+        SearchEntry,
+        {
+          title: entry.title,
+          version: entry.version,
+          league: entry.league,
+          type: entry.type,
+          resultCount: entry.resultCount,
+          createdAt: entry.createdAt,
+          isExecuting: isExecuting === entry.id,
+          sort: (_a = entry.queryPayload) == null ? void 0 : _a.sort,
+          context: "history",
+          folders,
+          onExecute: () => executeSearch(entry.id),
+          onDelete: () => deleteEntry(entry.id),
+          onBookmark: (folderId) => handleBookmark(entry, folderId),
+          onCreateFolder: handleCreateFolder
+        },
+        entry.id
+      );
+    }) }) })
+  ] });
+}
 function BookmarkModal({ isOpen, onClose }) {
   const { folders, fetchFolders, createFolder, createTrade } = useBookmarksStore();
   const [title, setTitle] = reactExports.useState("");
@@ -9483,6 +9832,7 @@ function BookmarkFolder({ folder }) {
   ] });
 }
 function BookmarkTrade({ folderId, trade, isExecuting }) {
+  var _a;
   const { deleteTrade, executeSearch } = useBookmarksStore();
   return /* @__PURE__ */ jsxRuntimeExports.jsx(
     SearchEntry,
@@ -9494,6 +9844,8 @@ function BookmarkTrade({ folderId, trade, isExecuting }) {
       resultCount: trade.resultCount,
       createdAt: trade.createdAt,
       isExecuting,
+      sort: (_a = trade.queryPayload) == null ? void 0 : _a.sort,
+      context: "bookmark",
       onExecute: () => executeSearch(folderId, trade.id),
       onDelete: () => deleteTrade(folderId, trade.id)
     }

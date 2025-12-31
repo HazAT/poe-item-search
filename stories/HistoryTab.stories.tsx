@@ -5,6 +5,18 @@ import type { TradeLocationHistoryStruct } from "../src/types/tradeLocation";
 import type { BookmarksFolderStruct } from "../src/types/bookmarks";
 import { getSortLabel, formatSortBadge } from "../src/utils/sortLabel";
 
+// Format league for display (matches SearchEntry component)
+function formatLeague(league: string): string {
+  let cleaned = league;
+  cleaned = cleaned.replace(/^poe[12]\//, "");
+  try {
+    cleaned = decodeURIComponent(cleaned);
+  } catch {
+    // If decode fails, use as-is
+  }
+  return cleaned;
+}
+
 // Mock folders for storybook
 const mockFolders: BookmarksFolderStruct[] = [
   { id: "f1", title: "Leveling Gear", version: "2", icon: null, archivedAt: null },
@@ -91,7 +103,7 @@ function HistoryEntryDisplay({
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-xs text-poe-gray-alt truncate">
-              {entry.league} • {entry.type}
+              {formatLeague(entry.league)}
             </span>
             <span className="text-xs text-poe-gold shrink-0">
               {entry.resultCount.toLocaleString()} results

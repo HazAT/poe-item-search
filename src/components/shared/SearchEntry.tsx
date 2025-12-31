@@ -5,6 +5,24 @@ import type { BookmarksFolderStruct } from "@/types/bookmarks";
 import { getSortLabel, formatSortBadge } from "@/utils/sortLabel";
 import { FolderPickerDropdown } from "./FolderPickerDropdown";
 
+/**
+ * Clean up league string for display:
+ * - URL decode (e.g., "Fate%20of%20the%20Vaal" -> "Fate of the Vaal")
+ * - Remove "poe2/" or "poe1/" prefix if present
+ */
+function formatLeague(league: string): string {
+  let cleaned = league;
+  // Remove poe1/ or poe2/ prefix
+  cleaned = cleaned.replace(/^poe[12]\//, "");
+  // URL decode
+  try {
+    cleaned = decodeURIComponent(cleaned);
+  } catch {
+    // If decode fails, use as-is
+  }
+  return cleaned;
+}
+
 export interface SearchEntryProps {
   title: string;
   version: TradeSiteVersion;
@@ -74,7 +92,7 @@ export function SearchEntry({
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-xs text-poe-gray-alt truncate">
-              {league} • {type}
+              {formatLeague(league)}
             </span>
             {resultCount !== undefined && (
               <span className="text-xs text-poe-gold shrink-0">
