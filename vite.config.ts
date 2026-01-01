@@ -7,6 +7,9 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Sentry DSN for error tracking
+const SENTRY_DSN = "https://2f310e8a7b71228d08e5e09060ecdab9@o55934.ingest.us.sentry.io/4510637224558592";
+
 // Read version from package.json
 const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, "package.json"), "utf-8"));
 const APP_VERSION = packageJson.version;
@@ -75,6 +78,7 @@ export default defineConfig({
   define: {
     __DEV_MODE__: JSON.stringify(process.env.BUILD_MODE === "dev"),
     __APP_VERSION__: JSON.stringify(APP_VERSION),
+    __SENTRY_DSN__: JSON.stringify(SENTRY_DSN),
   },
   plugins: [
     react(),

@@ -6,12 +6,19 @@
 import { useHistoryStore } from "@/stores/historyStore";
 import { parseTradeLocation } from "@/services/tradeLocation";
 import { debug } from "@/utils/debug";
+import { logger } from "@/services/sentry";
 import type { TradeSearchInterceptedPayload } from "@/injected/interceptor";
 import type { TradeSearchQuery } from "@/types/tradeLocation";
 
 interface PreviewImagePayload {
   slug: string;
   imageUrl: string;
+}
+
+interface ItemCopiedPayload {
+  itemText: string;
+  itemName: string;
+  itemId: string;
 }
 
 /**
@@ -32,6 +39,11 @@ export function initSearchInterceptor() {
     // Handle preview image capture
     if (event.data?.type === "poe-search-preview-image" && event.data.payload) {
       await handlePreviewImage(event.data.payload as PreviewImagePayload);
+    }
+
+    // Handle item copied from results
+    if (event.data?.type === "poe-search-item-copied" && event.data.payload) {
+      handleItemCopied(event.data.payload as ItemCopiedPayload);
     }
   });
 
@@ -146,4 +158,21 @@ async function handlePreviewImage(payload: PreviewImagePayload) {
 
   // Update the entry that matches this search ID (slug)
   await useHistoryStore.getState().updateEntryPreviewImage(slug, imageUrl);
+}
+
+/**
+ * Handle item copied from results (sent from interceptor).
+ * Logs the copied item to Sentry.
+ */
+function handleItemCopied(payload: ItemCopiedPayload) {
+  const { itemText, itemName, itemId } = payload;
+
+  debug.log("handleItemCopied: received", { itemName, itemId });
+
+  // Log to Sentry
+  logger.info("Item copied from results", {
+    itemText,
+    itemName,
+    itemId,
+  });
 }

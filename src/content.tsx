@@ -4,6 +4,7 @@ import { CollapsedToggle } from "@/components/panel";
 import { PanelContent } from "@/components/panel/PanelContent";
 import { usePanelStore } from "@/stores/panelStore";
 import { initSearchInterceptor } from "@/services/searchInterceptor";
+import { initSentry, captureException } from "@/services/sentry";
 import { getExtensionUrl } from "@/utils/extensionApi";
 import { App } from "./App";
 
@@ -97,6 +98,9 @@ function PageLayoutManager() {
 
 // Initialize the extension
 async function initialize() {
+  // Initialize Sentry FIRST for error tracking
+  initSentry();
+
   try {
     // Inject interceptor script FIRST (before page makes any requests)
     injectInterceptorScript();
@@ -174,6 +178,7 @@ async function initialize() {
     console.log("PoE Item Search initialized successfully");
   } catch (error) {
     console.error("PoE Item Search initialization failed:", error);
+    captureException(error, { context: "initialization" });
   }
 }
 

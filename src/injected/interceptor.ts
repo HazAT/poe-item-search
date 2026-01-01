@@ -538,6 +538,16 @@ function wireCopyButtons() {
         const text = formatItemText(item);
         await navigator.clipboard.writeText(text);
 
+        // Send log to content script for Sentry logging
+        window.postMessage({
+          type: "poe-search-item-copied",
+          payload: {
+            itemText: text,
+            itemName: item.name || item.typeLine,
+            itemId: itemId,
+          },
+        }, "*");
+
         // Visual feedback - show a temporary tooltip
         showCopyFeedback(copyBtn, "Copied!");
 

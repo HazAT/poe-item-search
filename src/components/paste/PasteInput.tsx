@@ -3,6 +3,7 @@ import { Textarea, Button, ClipboardIcon, SearchIcon } from "@/components/ui";
 import { useHistoryStore } from "@/stores/historyStore";
 import { parseTradeLocation } from "@/services/tradeLocation";
 import { debug } from "@/utils/debug";
+import { logger, captureException } from "@/services/sentry";
 // Import the existing search logic
 import { getSearchQuery } from "@/item.js";
 
@@ -20,6 +21,12 @@ export function PasteInput({ onSearch }: PasteInputProps) {
   const handleSearch = useCallback(async (textOverride?: string) => {
     const searchText = textOverride ?? itemText;
     if (!searchText.trim()) return;
+
+    // Log pasted item to Sentry
+    logger.info("Item pasted for search", {
+      itemText: searchText,
+      itemLength: searchText.length,
+    });
 
     setIsSearching(true);
     setError(null);
@@ -109,6 +116,7 @@ export function PasteInput({ onSearch }: PasteInputProps) {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Search failed");
+      captureException(err, { context: "paste_search", itemTextLength: searchText.length });
     } finally {
       setIsSearching(false);
     }

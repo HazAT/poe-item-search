@@ -19,6 +19,7 @@
   "author": "Daniel Griesser",
   "license": "MIT",
   "dependencies": {
+    "@sentry/browser": "^10.32.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zustand": "^5.0.2"
