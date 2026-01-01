@@ -4,14 +4,19 @@ import { useHistoryStore } from "@/stores/historyStore";
 import { getCurrentTradeLocation } from "@/services/tradeLocation";
 import { Button, Input, Select, Modal, PlusIcon } from "@/components/ui";
 import type { TradeLocationStruct, TradeLocationHistoryStruct } from "@/types/tradeLocation";
+import type { BookmarksTradeStruct } from "@/types/bookmarks";
 
 interface BookmarkModalProps {
   isOpen: boolean;
   onClose: () => void;
+  editMode?: {
+    folderId: string;
+    trade: BookmarksTradeStruct;
+  };
 }
 
-export function BookmarkModal({ isOpen, onClose }: BookmarkModalProps) {
-  const { folders, fetchFolders, createFolder, createTrade } = useBookmarksStore();
+export function BookmarkModal({ isOpen, onClose, editMode }: BookmarkModalProps) {
+  const { folders, fetchFolders, createFolder, createTrade, updateTrade } = useBookmarksStore();
 
   const [title, setTitle] = useState("");
   const [selectedFolderId, setSelectedFolderId] = useState("");
@@ -33,15 +38,18 @@ export function BookmarkModal({ isOpen, onClose }: BookmarkModalProps) {
       const historyEntry = entries.find((e) => e.slug === location.slug) ?? null;
       setCurrentHistoryEntry(historyEntry);
 
-      // Use history entry title if available, otherwise fallback
-      if (historyEntry?.title) {
+      // In edit mode, use existing bookmark title; otherwise use history/fallback
+      if (editMode) {
+        setTitle(editMode.trade.title);
+        setSelectedFolderId(editMode.folderId);
+      } else if (historyEntry?.title) {
         setTitle(historyEntry.title);
       } else {
         setTitle("Custom Search");
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, editMode]);
 
   // Auto-select first folder if available
   useEffect(() => {
@@ -90,32 +98,50 @@ export function BookmarkModal({ isOpen, onClose }: BookmarkModalProps) {
       setError("Please enter a title");
       return;
     }
-    if (!selectedFolderId) {
+    if (!editMode && !selectedFolderId) {
       setError("Please select a folder");
       return;
     }
     if (!currentLocation?.slug || !currentLocation?.league) {
-      setError("Cannot bookmark: no search active");
+      setError(editMode ? "Cannot update: no search active" : "Cannot bookmark: no search active");
       return;
     }
     if (!currentHistoryEntry?.queryPayload) {
-      setError("Cannot bookmark: search data not found in history");
+      setError(editMode ? "Cannot update: search data not found in history" : "Cannot bookmark: search data not found in history");
       return;
     }
 
-    await createTrade(selectedFolderId, {
-      title: title.trim(),
-      location: {
-        version: currentLocation.version,
-        type: currentLocation.type || "search",
-        league: currentLocation.league,
-        slug: currentLocation.slug,
-      },
-      createdAt: new Date().toISOString(),
-      queryPayload: currentHistoryEntry.queryPayload,
-      resultCount: currentHistoryEntry.resultCount,
-      previewImageUrl: currentHistoryEntry.previewImageUrl,
-    });
+    if (editMode) {
+      // Update existing bookmark
+      await updateTrade(editMode.folderId, editMode.trade.id!, {
+        title: title.trim(),
+        location: {
+          version: currentLocation.version,
+          type: currentLocation.type || "search",
+          league: currentLocation.league,
+          slug: currentLocation.slug,
+        },
+        queryPayload: currentHistoryEntry.queryPayload,
+        resultCount: currentHistoryEntry.resultCount,
+        previewImageUrl: currentHistoryEntry.previewImageUrl,
+        // Note: createdAt is preserved from original bookmark
+      });
+    } else {
+      // Create new bookmark
+      await createTrade(selectedFolderId, {
+        title: title.trim(),
+        location: {
+          version: currentLocation.version,
+          type: currentLocation.type || "search",
+          league: currentLocation.league,
+          slug: currentLocation.slug,
+        },
+        createdAt: new Date().toISOString(),
+        queryPayload: currentHistoryEntry.queryPayload,
+        resultCount: currentHistoryEntry.resultCount,
+        previewImageUrl: currentHistoryEntry.previewImageUrl,
+      });
+    }
 
     // Reset and close
     setTitle("");
@@ -135,7 +161,7 @@ export function BookmarkModal({ isOpen, onClose }: BookmarkModalProps) {
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Bookmark Search"
+      title={editMode ? "Update Bookmark" : "Bookmark Search"}
       footer={
         <>
           <Button variant="ghost" onClick={handleClose}>
@@ -146,7 +172,7 @@ export function BookmarkModal({ isOpen, onClose }: BookmarkModalProps) {
             onClick={handleBookmark}
             disabled={!canBookmark}
           >
-            Save Bookmark
+            {editMode ? "Update Bookmark" : "Save Bookmark"}
           </Button>
         </>
       }
@@ -174,63 +200,65 @@ export function BookmarkModal({ isOpen, onClose }: BookmarkModalProps) {
           }}
         />
 
-        {isCreatingFolder ? (
-          <div className="space-y-2">
-            <Input
-              label="New Folder Name"
-              value={newFolderTitle}
-              onChange={(e) => setNewFolderTitle(e.target.value)}
-              placeholder="e.g., Leveling Gear"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleCreateFolder();
-                if (e.key === "Escape") setIsCreatingFolder(false);
-              }}
-            />
-            <div className="flex gap-2">
+        {!editMode && (
+          isCreatingFolder ? (
+            <div className="space-y-2">
+              <Input
+                label="New Folder Name"
+                value={newFolderTitle}
+                onChange={(e) => setNewFolderTitle(e.target.value)}
+                placeholder="e.g., Leveling Gear"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleCreateFolder();
+                  if (e.key === "Escape") setIsCreatingFolder(false);
+                }}
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsCreatingFolder(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleCreateFolder}
+                >
+                  Create Folder
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {folderOptions.length > 0 ? (
+                <Select
+                  label="Folder"
+                  value={selectedFolderId}
+                  onChange={(e) => {
+                    setSelectedFolderId(e.target.value);
+                    setError("");
+                  }}
+                  options={folderOptions}
+                  placeholder="Select a folder..."
+                />
+              ) : (
+                <div className="text-sm text-poe-gray-alt">
+                  No folders yet. Create one to save bookmarks.
+                </div>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsCreatingFolder(false)}
+                onClick={() => setIsCreatingFolder(true)}
               >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleCreateFolder}
-              >
-                Create Folder
+                <PlusIcon className="w-4 h-4 mr-1" />
+                Create New Folder
               </Button>
             </div>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {folderOptions.length > 0 ? (
-              <Select
-                label="Folder"
-                value={selectedFolderId}
-                onChange={(e) => {
-                  setSelectedFolderId(e.target.value);
-                  setError("");
-                }}
-                options={folderOptions}
-                placeholder="Select a folder..."
-              />
-            ) : (
-              <div className="text-sm text-poe-gray-alt">
-                No folders yet. Create one to save bookmarks.
-              </div>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsCreatingFolder(true)}
-            >
-              <PlusIcon className="w-4 h-4 mr-1" />
-              Create New Folder
-            </Button>
-          </div>
+          )
         )}
 
         {error && (

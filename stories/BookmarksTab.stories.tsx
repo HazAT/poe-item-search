@@ -9,6 +9,7 @@ import {
   TrashIcon,
   ArchiveIcon,
   BookmarkIcon,
+  SaveIcon,
 } from "../src/components/ui";
 import { Modal } from "../src/components/ui/Modal";
 import { Input } from "../src/components/ui/Input";
@@ -23,6 +24,7 @@ interface BookmarksTabDisplayProps {
   trades: Record<string, BookmarksTradeStruct[]>;
   showArchived?: boolean;
   canBookmark?: boolean;
+  canUpdate?: boolean;
   onBookmarkClick?: () => void;
 }
 
@@ -31,6 +33,7 @@ function BookmarksTabDisplay({
   trades,
   showArchived = false,
   canBookmark = true,
+  canUpdate = true,
   onBookmarkClick,
 }: BookmarksTabDisplayProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -112,6 +115,7 @@ function BookmarksTabDisplay({
                 trades={trades[folder.id!] ?? []}
                 isExpanded={expandedFolders.has(folder.id!)}
                 onToggle={() => toggleFolder(folder.id!)}
+                canUpdate={canUpdate}
               />
             ))}
           </ul>
@@ -175,6 +179,7 @@ interface BookmarkFolderDisplayProps {
   trades: BookmarksTradeStruct[];
   isExpanded: boolean;
   onToggle: () => void;
+  canUpdate?: boolean;
 }
 
 function BookmarkFolderDisplay({
@@ -182,6 +187,7 @@ function BookmarkFolderDisplay({
   trades,
   isExpanded,
   onToggle,
+  canUpdate = true,
 }: BookmarkFolderDisplayProps) {
   const isArchived = !!folder.archivedAt;
 
@@ -229,7 +235,7 @@ function BookmarkFolderDisplay({
             </li>
           ) : (
             trades.map((trade) => (
-              <BookmarkTradeDisplay key={trade.id} trade={trade} />
+              <BookmarkTradeDisplay key={trade.id} trade={trade} canUpdate={canUpdate} />
             ))
           )}
         </ul>
@@ -238,7 +244,7 @@ function BookmarkFolderDisplay({
   );
 }
 
-function BookmarkTradeDisplay({ trade }: { trade: BookmarksTradeStruct }) {
+function BookmarkTradeDisplay({ trade, canUpdate = true }: { trade: BookmarksTradeStruct; canUpdate?: boolean }) {
   const timeAgo = trade.createdAt ? getRelativeTime(trade.createdAt) : null;
   const sortInfo = getSortLabel(trade.queryPayload?.sort);
   const priceInfo = getPriceLabel(trade.queryPayload);
@@ -292,6 +298,11 @@ function BookmarkTradeDisplay({ trade }: { trade: BookmarksTradeStruct }) {
           </div>
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {canUpdate && (
+            <Button variant="ghost" size="sm" title="Update with current search">
+              <SaveIcon className="w-4 h-4" />
+            </Button>
+          )}
           <Button variant="ghost" size="sm" title="Delete">
             <TrashIcon className="w-4 h-4" />
           </Button>

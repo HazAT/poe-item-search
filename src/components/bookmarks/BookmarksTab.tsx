@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useBookmarksStore } from "@/stores/bookmarksStore";
+import { useHistoryStore } from "@/stores/historyStore";
 import {
   Button,
   PlusIcon,
@@ -282,21 +283,50 @@ interface BookmarkTradeProps {
 
 function BookmarkTrade({ folderId, trade, isExecuting }: BookmarkTradeProps) {
   const { deleteTrade, executeSearch } = useBookmarksStore();
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [hasCurrentSearch, setHasCurrentSearch] = useState(false);
+
+  // Check if there's a current search that can be used for update
+  useEffect(() => {
+    const checkCurrentSearch = () => {
+      const location = getCurrentTradeLocation();
+      if (!location?.slug || !location?.league) {
+        setHasCurrentSearch(false);
+        return;
+      }
+      const { entries } = useHistoryStore.getState();
+      const historyEntry = entries.find((e) => e.slug === location.slug);
+      setHasCurrentSearch(!!historyEntry?.queryPayload);
+    };
+
+    checkCurrentSearch();
+    // Re-check periodically for URL changes
+    const interval = setInterval(checkCurrentSearch, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <SearchEntry
-      title={trade.title}
-      version={trade.location.version}
-      league={trade.location.league}
-      type={trade.location.type}
-      resultCount={trade.resultCount}
-      createdAt={trade.createdAt}
-      isExecuting={isExecuting}
-      queryPayload={trade.queryPayload}
-      context="bookmark"
-      previewImageUrl={trade.previewImageUrl}
-      onExecute={() => executeSearch(folderId, trade.id!)}
-      onDelete={() => deleteTrade(folderId, trade.id!)}
-    />
+    <>
+      <SearchEntry
+        title={trade.title}
+        version={trade.location.version}
+        league={trade.location.league}
+        type={trade.location.type}
+        resultCount={trade.resultCount}
+        createdAt={trade.createdAt}
+        isExecuting={isExecuting}
+        queryPayload={trade.queryPayload}
+        context="bookmark"
+        previewImageUrl={trade.previewImageUrl}
+        onExecute={() => executeSearch(folderId, trade.id!)}
+        onDelete={() => deleteTrade(folderId, trade.id!)}
+        onUpdate={hasCurrentSearch ? () => setIsUpdateModalOpen(true) : undefined}
+      />
+      <BookmarkModal
+        isOpen={isUpdateModalOpen}
+        onClose={() => setIsUpdateModalOpen(false)}
+        editMode={{ folderId, trade }}
+      />
+    </>
   );
 }

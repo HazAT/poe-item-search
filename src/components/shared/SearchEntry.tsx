@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Button, TrashIcon, RefreshIcon, BookmarkIcon } from "@/components/ui";
+import { Button, TrashIcon, RefreshIcon, BookmarkIcon, SaveIcon } from "@/components/ui";
 import type { TradeSiteVersion, TradeSearchQuery } from "@/types/tradeLocation";
 import type { BookmarksFolderStruct } from "@/types/bookmarks";
 import { getSortLabel, formatSortBadge } from "@/utils/sortLabel";
@@ -41,6 +41,7 @@ export interface SearchEntryProps {
   onDelete: () => void;
   onBookmark?: (folderId: string) => void;
   onCreateFolder?: (title: string) => Promise<string>;
+  onUpdate?: () => void;
 }
 
 export function SearchEntry({
@@ -59,6 +60,7 @@ export function SearchEntry({
   onDelete,
   onBookmark,
   onCreateFolder,
+  onUpdate,
 }: SearchEntryProps) {
   const [showFolderPicker, setShowFolderPicker] = useState(false);
   const bookmarkButtonRef = useRef<HTMLButtonElement>(null);
@@ -150,6 +152,20 @@ export function SearchEntry({
                   title="Add to bookmarks"
                 >
                   <BookmarkIcon className="w-4 h-4" />
+                </Button>
+              )}
+              {context === "bookmark" && onUpdate && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onUpdate();
+                  }}
+                  title="Update with current search"
+                >
+                  <SaveIcon className="w-4 h-4" />
                 </Button>
               )}
               <Button
