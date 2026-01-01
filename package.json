@@ -29,6 +29,7 @@
     "@storybook/addon-interactions": "^8.4.7",
     "@storybook/react": "^8.4.7",
     "@storybook/react-vite": "^8.4.7",
+    "@types/bun": "^1.3.5",
     "@types/chrome": "^0.0.287",
     "@types/node": "^25.0.3",
     "@types/react": "^18.3.14",

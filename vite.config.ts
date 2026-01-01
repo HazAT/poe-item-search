@@ -7,6 +7,10 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Read version from package.json
+const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, "package.json"), "utf-8"));
+const APP_VERSION = packageJson.version;
+
 // Plugin to generate production manifest and copy assets
 function extensionAssetsPlugin(): Plugin {
   return {
@@ -19,7 +23,7 @@ function extensionAssetsPlugin(): Plugin {
       const manifest: Record<string, unknown> = {
         manifest_version: 3,
         name: "PoE Item Search",
-        version: "1.3.0",
+        version: APP_VERSION,
         description: "Paste your item from ingame into the input field to search for it.",
         icons: {
           "128": "assets/logo128.png",
@@ -70,6 +74,7 @@ function extensionAssetsPlugin(): Plugin {
 export default defineConfig({
   define: {
     __DEV_MODE__: JSON.stringify(process.env.BUILD_MODE === "dev"),
+    __APP_VERSION__: JSON.stringify(APP_VERSION),
   },
   plugins: [
     react(),

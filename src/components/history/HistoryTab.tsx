@@ -35,9 +35,9 @@ export function HistoryTab() {
       title: entry.title,
       location: {
         version: entry.version,
-        type: entry.type,
-        league: entry.league,
-        slug: entry.slug,
+        type: entry.type ?? "",
+        league: entry.league ?? "",
+        slug: entry.slug ?? "",
       },
       createdAt: new Date().toISOString(),
       queryPayload: entry.queryPayload,
@@ -86,8 +86,8 @@ export function HistoryTab() {
                 key={entry.id}
                 title={entry.title}
                 version={entry.version}
-                league={entry.league}
-                type={entry.type}
+                league={entry.league ?? ""}
+                type={entry.type ?? ""}
                 resultCount={entry.resultCount}
                 createdAt={entry.createdAt}
                 isExecuting={isExecuting === entry.id}

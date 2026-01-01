@@ -62,7 +62,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
         <div className="pt-4 border-t border-poe-gray">
           <div className="text-xs text-poe-gray-alt">
-            PoE Item Search v1.2.0
+            PoE Item Search v{__APP_VERSION__}
           </div>
         </div>
       </div>

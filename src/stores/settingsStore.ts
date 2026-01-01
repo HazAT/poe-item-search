@@ -14,7 +14,7 @@ interface SettingsData {
   debugLogging: boolean;
 }
 
-export const useSettingsStore = create<SettingsState>((set, get) => ({
+export const useSettingsStore = create<SettingsState>((set) => ({
   debugLogging: false,
   isLoading: true,
 

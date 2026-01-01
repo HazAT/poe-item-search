@@ -21,13 +21,13 @@ function formatArgs(args: unknown[]): unknown[] {
 }
 
 function createLogger(level: LogLevel) {
-  return (category: string, message: string, ...args: unknown[]) => {
+  return (message: string, ...args: unknown[]) => {
     if (!getDebugLogging()) return;
 
     const timestamp = new Date().toISOString().split("T")[1].slice(0, 12);
     const formattedArgs = formatArgs(args);
 
-    console[level](`${PREFIX} [${timestamp}] [${category}] ${message}`, ...formattedArgs);
+    console[level](`${PREFIX} [${timestamp}] ${message}`, ...formattedArgs);
   };
 }
 
@@ -38,30 +38,30 @@ export const debug = {
   info: createLogger("info"),
 
   // Group related logs together
-  group: (category: string, label: string, fn: () => void) => {
+  group: (label: string, fn: () => void) => {
     if (!getDebugLogging()) return;
-    console.group(`${PREFIX} [${category}] ${label}`);
+    console.group(`${PREFIX} ${label}`);
     fn();
     console.groupEnd();
   },
 
   // Always log regardless of debug setting (for critical errors)
-  critical: (category: string, message: string, ...args: unknown[]) => {
-    console.error(`${PREFIX} [CRITICAL] [${category}] ${message}`, ...formatArgs(args));
+  critical: (message: string, ...args: unknown[]) => {
+    console.error(`${PREFIX} [CRITICAL] ${message}`, ...formatArgs(args));
   },
 
   // Table output for arrays/objects
-  table: (category: string, label: string, data: unknown) => {
+  table: (label: string, data: unknown) => {
     if (!getDebugLogging()) return;
-    console.log(`${PREFIX} [${category}] ${label}:`);
+    console.log(`${PREFIX} ${label}:`);
     console.table(data);
   },
 };
 
 // Shorthand for common categories
-export const debugStorage = (message: string, ...args: unknown[]) => debug.log("Storage", message, ...args);
-export const debugPanel = (message: string, ...args: unknown[]) => debug.log("Panel", message, ...args);
-export const debugBookmarks = (message: string, ...args: unknown[]) => debug.log("Bookmarks", message, ...args);
-export const debugHistory = (message: string, ...args: unknown[]) => debug.log("History", message, ...args);
-export const debugSearch = (message: string, ...args: unknown[]) => debug.log("Search", message, ...args);
-export const debugInit = (message: string, ...args: unknown[]) => debug.log("Init", message, ...args);
+export const debugStorage = (message: string, ...args: unknown[]) => debug.log(`[Storage] ${message}`, ...args);
+export const debugPanel = (message: string, ...args: unknown[]) => debug.log(`[Panel] ${message}`, ...args);
+export const debugBookmarks = (message: string, ...args: unknown[]) => debug.log(`[Bookmarks] ${message}`, ...args);
+export const debugHistory = (message: string, ...args: unknown[]) => debug.log(`[History] ${message}`, ...args);
+export const debugSearch = (message: string, ...args: unknown[]) => debug.log(`[Search] ${message}`, ...args);
+export const debugInit = (message: string, ...args: unknown[]) => debug.log(`[Init] ${message}`, ...args);

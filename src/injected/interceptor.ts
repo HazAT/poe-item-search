@@ -132,7 +132,7 @@ function capturePreviewImage(slug: string) {
   }
 
   // Set up MutationObserver to watch for results
-  const observer = new MutationObserver((mutations, obs) => {
+  const observer = new MutationObserver((_mutations, obs) => {
     const imageUrl = tryCapture();
     if (imageUrl) {
       obs.disconnect();
@@ -170,8 +170,8 @@ export interface TradeSearchInterceptedPayload {
 // Store original fetch
 const originalFetch = window.fetch;
 
-// Override fetch
-window.fetch = async function (...args: Parameters<typeof fetch>) {
+// Override fetch (cast to any to avoid TypeScript issues with fetch.preconnect)
+(window as any).fetch = async function (...args: Parameters<typeof fetch>) {
   let [input, init] = args;
   const url =
     typeof input === "string"

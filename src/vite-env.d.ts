@@ -2,6 +2,7 @@
 
 // Build-time constants
 declare const __DEV_MODE__: boolean;
+declare const __APP_VERSION__: string;
 
 // CSS module imports
 declare module "*.css?inline" {

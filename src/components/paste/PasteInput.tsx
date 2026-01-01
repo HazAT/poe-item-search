@@ -40,8 +40,8 @@ export function PasteInput({ onSearch }: PasteInputProps) {
       );
       const statsData = await statsResponse.json();
 
-      // Build the search query
-      const query = getSearchQuery(searchText, statsData);
+      // Build the search query (getSearchQuery returns untyped JS object)
+      const query = getSearchQuery(searchText, statsData) as unknown as Record<string, unknown>;
 
       // Read user's status preference from PoE's localStorage
       // PoE stores this in lscache-trade2state (for trade2) or lscache-tradestate (for trade)
@@ -166,7 +166,7 @@ export function PasteInput({ onSearch }: PasteInputProps) {
         <Button
           variant="primary"
           size="sm"
-          onClick={handleSearch}
+          onClick={() => handleSearch()}
           disabled={!itemText.trim() || isSearching}
         >
           <SearchIcon className="w-4 h-4 mr-1" />

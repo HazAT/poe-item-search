@@ -48,7 +48,7 @@ export function SearchEntry({
   title,
   version,
   league,
-  type,
+  type: _type,
   resultCount,
   createdAt,
   isExecuting = false,

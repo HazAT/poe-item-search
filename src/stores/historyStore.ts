@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { storageService } from "@/services/storage";
 import { uniqueId } from "@/utils/uniqueId";
-import { buildTradeUrl, buildTradeApiUrl } from "@/services/tradeLocation";
+import { buildTradeUrl } from "@/services/tradeLocation";
 import { debug } from "@/utils/debug";
 import type {
   TradeLocationStruct,

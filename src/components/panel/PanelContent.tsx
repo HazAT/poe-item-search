@@ -8,7 +8,7 @@ interface PanelContentProps {
 }
 
 export function PanelContent({ children }: PanelContentProps) {
-  const { isCollapsed, isLoading, initialize } = usePanelStore();
+  const { isLoading, initialize } = usePanelStore();
 
   // Initialize panel state from storage
   useEffect(() => {

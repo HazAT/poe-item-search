@@ -9,14 +9,6 @@ import { debug } from "@/utils/debug";
 import type { TradeSearchInterceptedPayload } from "@/injected/interceptor";
 import type { TradeSearchQuery } from "@/types/tradeLocation";
 
-interface MessageEvent {
-  data?: {
-    type?: string;
-    payload?: TradeSearchInterceptedPayload | PreviewImagePayload;
-  };
-  source?: Window | null;
-}
-
 interface PreviewImagePayload {
   slug: string;
   imageUrl: string;
@@ -29,7 +21,7 @@ interface PreviewImagePayload {
 export function initSearchInterceptor() {
   debug.log("initSearchInterceptor: initializing");
 
-  window.addEventListener("message", async (event: MessageEvent) => {
+  window.addEventListener("message", async (event) => {
     // Only accept messages from same window
     if (event.source !== window) return;
 

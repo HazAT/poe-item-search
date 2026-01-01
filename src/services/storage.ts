@@ -320,7 +320,7 @@ class StorageService {
     const storageApi = this.getStorageApi(backend);
     return new Promise((resolve) => {
       storageApi.get([key], (result) => {
-        resolve(result[key] || null);
+        resolve(key in result ? (result[key] as StoragePayload<unknown>) : null);
       });
     });
   }

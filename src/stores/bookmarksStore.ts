@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { storageService } from "@/services/storage";
 import { uniqueId } from "@/utils/uniqueId";
 import { debugBookmarks } from "@/utils/debug";
-import { buildTradeApiUrl, buildTradeUrl } from "@/services/tradeLocation";
+import { buildTradeUrl } from "@/services/tradeLocation";
 import { debug } from "@/utils/debug";
 import type { BookmarksFolderStruct, BookmarksTradeStruct } from "@/types/bookmarks";
 

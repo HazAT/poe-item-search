@@ -8,7 +8,8 @@ import { getPriceLabel, formatPriceBadge } from "../src/utils/priceLabel";
 import { getStatCount } from "../src/utils/statCount";
 
 // Format league for display (matches SearchEntry component)
-function formatLeague(league: string): string {
+function formatLeague(league: string | null): string {
+  if (!league) return "";
   let cleaned = league;
   cleaned = cleaned.replace(/^poe[12]\//, "");
   try {
@@ -637,9 +638,9 @@ const mockEntriesWithStatFilters: TradeLocationHistoryStruct[] = [
           {
             type: "weight",
             filters: [
-              { id: "pseudo.pseudo_total_life", weight: 1 },
-              { id: "pseudo.pseudo_total_mana", weight: 0.5 },
-              { id: "pseudo.pseudo_total_energy_shield", weight: 0.8 },
+              { id: "pseudo.pseudo_total_life", value: { weight: 1 } },
+              { id: "pseudo.pseudo_total_mana", value: { weight: 0.5 } },
+              { id: "pseudo.pseudo_total_energy_shield", value: { weight: 0.8 } },
             ],
           },
         ],
