@@ -1,5 +1,8 @@
 /// <reference types="vite/client" />
 
+// Build-time constants
+declare const __DEV_MODE__: boolean;
+
 // CSS module imports
 declare module "*.css?inline" {
   const content: string;

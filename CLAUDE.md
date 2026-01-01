@@ -114,13 +114,23 @@ The overlay panel uses Shadow DOM for style isolation. Key considerations:
 ## Development Workflow
 
 ### Auto-Reload Development
-- **Prefer `bun run dev`** - runs build watch + Storybook concurrently (color-coded output)
+- **Always run `bun run dev` first** - runs build watch + Storybook concurrently (color-coded output)
+- This ensures you have build output available and can see any compilation errors
 - Run `bun run dev:build` for build watch only (if you don't need Storybook)
 - Changes to source files trigger automatic rebuild (~1 second)
 - Extension and all PoE trade tabs auto-reload when changes are detected
 - Background service worker polls content.js hash every 1 second
 - **First time setup:** After running dev, manually reload extension once in chrome://extensions to register the background script
 - Dev mode adds `tabs` permission and background script (not included in production builds)
+
+### Dev Mode Indicator
+- In dev builds, a "DEV" indicator appears in the panel header (next to version number)
+- Shows connection status to the background reload worker:
+  - **Green dot**: Dev reload active - live reload is working
+  - **Red dot**: Dev reload disconnected - need to reload extension or check background worker
+  - **Yellow dot**: Checking connection status
+- Uses heartbeat ping/pong between content script and background worker (every 3 seconds)
+- Only appears in dev builds (`BUILD_MODE=dev`), tree-shaken from production
 
 ### Storybook First
 - **Always update Storybook stories** when creating or modifying components
@@ -136,6 +146,10 @@ The overlay panel uses Shadow DOM for style isolation. Key considerations:
 - Playwriter can take accessibility snapshots, click elements, and verify state changes
 - With `bun run dev` running, changes auto-reload - no manual refresh needed
 - **If no pages are connected**, use `mcp__playwriter__reset` to reset the connection
+- **When debugging and can't find the dedicated page**: Prompt the user to connect Playwriter MCP to both:
+  1. A PoE trade page (pathofexile.com/trade or trade2) for testing the extension
+  2. Storybook (localhost:6006) for isolated component testing
+- To connect a page: User clicks the Playwriter extension icon on the tab they want to control
 
 ### Debug Logging
 - **Don't be shy to add debug logs** to understand what's going on

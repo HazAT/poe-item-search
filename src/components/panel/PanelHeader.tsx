@@ -2,6 +2,7 @@ import { useState } from "react";
 import { usePanelStore } from "@/stores/panelStore";
 import { Button, ChevronRightIcon, SettingsIcon } from "@/components/ui";
 import { SettingsModal } from "@/components/settings";
+import { DevModeIndicator } from "./DevModeIndicator";
 
 export function PanelHeader() {
   const { toggleCollapsed } = usePanelStore();
@@ -13,6 +14,7 @@ export function PanelHeader() {
         <div className="flex items-center gap-3">
           <h1 className="font-fontin text-xl text-poe-beige tracking-wide">PoE Search</h1>
           <span className="text-sm text-poe-gray-alt">v1.2.0</span>
+          {__DEV_MODE__ && <DevModeIndicator />}
         </div>
         <div className="flex items-center gap-1">
           <Button

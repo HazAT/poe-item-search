@@ -68,6 +68,9 @@ function extensionAssetsPlugin(): Plugin {
 }
 
 export default defineConfig({
+  define: {
+    __DEV_MODE__: JSON.stringify(process.env.BUILD_MODE === "dev"),
+  },
   plugins: [
     react(),
     Terminal({

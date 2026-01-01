@@ -57,3 +57,11 @@ setInterval(checkForChanges, 1000);
 checkForChanges();
 
 console.log("[Extension Reload] Watching for changes (every 1s)...");
+
+// Heartbeat listener for dev mode indicator in content script
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message.type === "DEV_HEARTBEAT_PING") {
+    sendResponse({ type: "DEV_HEARTBEAT_PONG" });
+  }
+  return true; // Keep channel open for async response
+});
