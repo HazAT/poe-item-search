@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
+import { GitHubIcon, ExternalLinkIcon } from "@/components/ui/Icons";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -60,8 +61,27 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </div>
         )}
 
-        <div className="pt-4 border-t border-poe-gray">
-          <div className="text-xs text-poe-gray-alt">
+        <div className="pt-4 border-t border-poe-gray space-y-3">
+          <a
+            href="https://github.com/HazAT/poe-item-search"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sm text-poe-beige hover:text-poe-beige-light transition-colors"
+          >
+            <GitHubIcon className="w-4 h-4" />
+            <span>GitHub</span>
+            <ExternalLinkIcon className="w-3 h-3 text-poe-gray-alt" />
+          </a>
+          <a
+            href="https://github.com/HazAT/poe-item-search/issues/new"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sm text-poe-beige hover:text-poe-beige-light transition-colors ml-6"
+          >
+            <span>Report a bug / Request a feature</span>
+            <ExternalLinkIcon className="w-3 h-3 text-poe-gray-alt" />
+          </a>
+          <div className="text-xs text-poe-gray-alt pt-1">
             PoE Item Search v{__APP_VERSION__}
           </div>
         </div>
