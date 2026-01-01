@@ -54,7 +54,10 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       return;
     }
 
-    const { entries } = get();
+    // Read from storage directly, not store state - this prevents race condition
+    // where interceptor adds entry before fetchEntries() runs on page load
+    const entries =
+      (await storageService.getValue<TradeLocationHistoryStruct[]>(HISTORY_KEY)) ?? [];
 
     // Always create a new entry - no deduplication
     // Each search change creates an independent history entry
@@ -84,7 +87,9 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   },
 
   deleteEntry: async (id: string) => {
-    const { entries } = get();
+    // Read from storage directly for consistency
+    const entries =
+      (await storageService.getValue<TradeLocationHistoryStruct[]>(HISTORY_KEY)) ?? [];
     const newEntries = entries.filter((entry) => entry.id !== id);
     await storageService.setValue(HISTORY_KEY, newEntries);
     set({ entries: newEntries });
@@ -133,7 +138,9 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   },
 
   updateEntryPreviewImage: async (slug: string, imageUrl: string) => {
-    const { entries } = get();
+    // Read from storage directly - this is called by interceptor and may race with fetchEntries
+    const entries =
+      (await storageService.getValue<TradeLocationHistoryStruct[]>(HISTORY_KEY)) ?? [];
     const entryIndex = entries.findIndex((e) => e.slug === slug);
 
     if (entryIndex === -1) {
