@@ -114,6 +114,7 @@ export function BookmarkModal({ isOpen, onClose }: BookmarkModalProps) {
       createdAt: new Date().toISOString(),
       queryPayload: currentHistoryEntry.queryPayload,
       resultCount: currentHistoryEntry.resultCount,
+      previewImageUrl: currentHistoryEntry.previewImageUrl,
     });
 
     // Reset and close
