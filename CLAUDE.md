@@ -115,6 +115,7 @@ The overlay panel uses Shadow DOM for style isolation. Key considerations:
 
 ### Auto-Reload Development
 - **Always run `bun run dev` first** - runs build watch + Storybook concurrently (color-coded output)
+- **Don't run `bun run build` manually** - rely on the dev server for builds
 - This ensures you have build output available and can see any compilation errors
 - Run `bun run dev:build` for build watch only (if you don't need Storybook)
 - Changes to source files trigger automatic rebuild (~1 second)
