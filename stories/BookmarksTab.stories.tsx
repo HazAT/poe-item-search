@@ -10,6 +10,7 @@ import {
   ArchiveIcon,
   BookmarkIcon,
   SaveIcon,
+  EditIcon,
 } from "../src/components/ui";
 import { Modal } from "../src/components/ui/Modal";
 import { Input } from "../src/components/ui/Input";
@@ -209,6 +210,14 @@ function BookmarkFolderDisplay({
         <span className="text-xs text-poe-gray-alt shrink-0">({trades.length})</span>
         <div className="flex-1" />
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            variant="ghost"
+            size="sm"
+            title="Rename"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <EditIcon className="w-4 h-4" />
+          </Button>
           <Button
             variant="ghost"
             size="sm"

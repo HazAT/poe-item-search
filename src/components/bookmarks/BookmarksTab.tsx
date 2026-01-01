@@ -10,6 +10,7 @@ import {
   TrashIcon,
   ArchiveIcon,
   BookmarkIcon,
+  EditIcon,
 } from "@/components/ui";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
@@ -27,12 +28,16 @@ export function BookmarksTab() {
     fetchTradesForFolder,
     toggleShowArchived,
     createFolder,
+    updateFolder,
   } = useBookmarksStore();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
   const [newFolderTitle, setNewFolderTitle] = useState("");
   const [canBookmark, setCanBookmark] = useState(false);
+  const [isRenameFolderOpen, setIsRenameFolderOpen] = useState(false);
+  const [renamingFolder, setRenamingFolder] = useState<BookmarksFolderStruct | null>(null);
+  const [renameFolderTitle, setRenameFolderTitle] = useState("");
 
   useEffect(() => {
     fetchFolders();
@@ -79,6 +84,20 @@ export function BookmarksTab() {
     });
     setNewFolderTitle("");
     setIsCreateModalOpen(false);
+  };
+
+  const handleRenameFolder = async () => {
+    if (renamingFolder?.id && renameFolderTitle.trim()) {
+      await updateFolder(renamingFolder.id, { title: renameFolderTitle.trim() });
+      setIsRenameFolderOpen(false);
+      setRenamingFolder(null);
+    }
+  };
+
+  const openRenameModal = (folder: BookmarksFolderStruct) => {
+    setRenamingFolder(folder);
+    setRenameFolderTitle(folder.title);
+    setIsRenameFolderOpen(true);
   };
 
   const visibleFolders = folders.filter((folder) =>
@@ -147,7 +166,7 @@ export function BookmarksTab() {
         ) : (
           <ul className="divide-y divide-poe-gray">
             {visibleFolders.map((folder) => (
-              <BookmarkFolder key={folder.id} folder={folder} />
+              <BookmarkFolder key={folder.id} folder={folder} onRename={() => openRenameModal(folder)} />
             ))}
           </ul>
         )}
@@ -181,6 +200,42 @@ export function BookmarksTab() {
         />
       </Modal>
 
+      {/* Rename Folder Modal */}
+      <Modal
+        isOpen={isRenameFolderOpen}
+        onClose={() => {
+          setIsRenameFolderOpen(false);
+          setRenamingFolder(null);
+        }}
+        title="Rename Folder"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsRenameFolderOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleRenameFolder}
+              disabled={!renameFolderTitle.trim()}
+            >
+              Save
+            </Button>
+          </>
+        }
+      >
+        <Input
+          label="Folder Name"
+          value={renameFolderTitle}
+          onChange={(e) => setRenameFolderTitle(e.target.value)}
+          autoFocus
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && renameFolderTitle.trim()) {
+              handleRenameFolder();
+            }
+          }}
+        />
+      </Modal>
+
       {/* Bookmark Modal */}
       <BookmarkModal
         isOpen={isBookmarkModalOpen}
@@ -192,9 +247,10 @@ export function BookmarksTab() {
 
 interface BookmarkFolderProps {
   folder: BookmarksFolderStruct;
+  onRename: () => void;
 }
 
-function BookmarkFolder({ folder }: BookmarkFolderProps) {
+function BookmarkFolder({ folder, onRename }: BookmarkFolderProps) {
   const { trades, isExecuting, expandedFolders, toggleFolderExpanded, fetchTradesForFolder, deleteFolder, archiveFolder, unarchiveFolder } =
     useBookmarksStore();
   const isExpanded = expandedFolders.includes(folder.id!);
@@ -229,6 +285,17 @@ function BookmarkFolder({ folder }: BookmarkFolderProps) {
         </span>
         <div className="flex-1" />
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRename();
+            }}
+            title="Rename"
+          >
+            <EditIcon className="w-4 h-4" />
+          </Button>
           <Button
             variant="ghost"
             size="sm"
