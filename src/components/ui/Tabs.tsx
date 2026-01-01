@@ -47,5 +47,5 @@ interface TabPanelProps {
 
 export function TabPanel({ children, isActive }: TabPanelProps) {
   if (!isActive) return null;
-  return <div className="flex-1 overflow-y-auto">{children}</div>;
+  return <div className="flex-1 min-h-0 flex flex-col">{children}</div>;
 }

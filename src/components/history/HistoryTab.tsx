@@ -71,7 +71,7 @@ export function HistoryTab() {
       </div>
 
       {/* History list */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         {entries.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full p-4 text-center">
             <span className="text-poe-gray-alt mb-2">No search history yet</span>
