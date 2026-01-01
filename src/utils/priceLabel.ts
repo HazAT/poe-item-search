@@ -49,7 +49,7 @@ export function getPriceLabel(queryPayload?: TradeSearchQuery): PriceLabelResult
 
   return {
     max: price.max,
-    currency: price.option || "chaos", // Default to chaos if not specified
+    currency: price.option || "exalted", // null means "Exalted Orb Equivalent" (the default)
   };
 }
 
