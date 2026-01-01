@@ -44,7 +44,8 @@ export function getPriceLabel(queryPayload?: TradeSearchQuery): PriceLabelResult
   if (!innerFilters) return null;
 
   const price = innerFilters.price as { min?: number; max?: number; option?: string } | undefined;
-  if (!price || price.max === undefined) return null;
+  // Only show badge if max is a valid number (not null, undefined, or NaN)
+  if (!price || price.max == null || typeof price.max !== "number") return null;
 
   return {
     max: price.max,
