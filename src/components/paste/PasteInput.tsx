@@ -43,6 +43,27 @@ export function PasteInput({ onSearch }: PasteInputProps) {
       // Build the search query
       const query = getSearchQuery(searchText, statsData);
 
+      // Read user's status preference from PoE's localStorage
+      // PoE stores this in lscache-trade2state (for trade2) or lscache-tradestate (for trade)
+      const stateKey = tradeVersion === "trade2" ? "lscache-trade2state" : "lscache-tradestate";
+      let userStatus: string | undefined;
+      try {
+        const stateJson = localStorage.getItem(stateKey);
+        if (stateJson) {
+          const state = JSON.parse(stateJson);
+          userStatus = state.status;
+          debug.log("PasteInput", "read user status preference", { stateKey, userStatus });
+        }
+      } catch (e) {
+        debug.error("PasteInput", "failed to read status from localStorage", e);
+      }
+
+      // Include user's status preference in query if available
+      // This preserves their "Instant Buyout" / "In Person" setting
+      if (userStatus) {
+        query.status = { option: userStatus };
+      }
+
       // Execute the search
       const searchResponse = await fetch(
         `https://www.pathofexile.com/api/${tradeVersion}${tradePath}`,
