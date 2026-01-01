@@ -6,8 +6,18 @@
  * back via window.postMessage.
  */
 
+import { formatItemText } from "@/utils/itemFormatter";
+import type { TradeItem, TradeFetchResponse } from "@/types/tradeItem";
+
 // Trade API URL patterns
-const TRADE_API_PATTERN = /\/api\/trade2?\/search\/.+/;
+const TRADE_SEARCH_PATTERN = /\/api\/trade2?\/search\/.+/;
+const TRADE_FETCH_PATTERN = /\/api\/trade2?\/fetch\/.+/;
+
+// Item cache for copy functionality
+const itemCache = new Map<string, TradeItem>();
+
+// Legacy alias for existing code
+const TRADE_API_PATTERN = TRADE_SEARCH_PATTERN;
 
 // Key for storing desired sort override
 const SORT_OVERRIDE_KEY = "poe-search-sort-override";
@@ -256,6 +266,37 @@ window.fetch = async function (...args: Parameters<typeof fetch>) {
     return response;
   }
 
+  // Check if this is a trade fetch GET (item details)
+  if (TRADE_FETCH_PATTERN.test(url)) {
+    const response = await originalFetch.apply(this, args);
+    const clonedResponse = response.clone();
+
+    try {
+      const responseBody = (await clonedResponse.json()) as TradeFetchResponse;
+
+      // Cache items by ID for copy functionality
+      if (responseBody.result) {
+        for (const result of responseBody.result) {
+          if (result.item?.id) {
+            itemCache.set(result.item.id, result.item);
+          }
+        }
+        console.log(
+          "[PoE Search Interceptor] Cached",
+          responseBody.result.length,
+          "items from fetch API"
+        );
+
+        // Wire up copy buttons for newly loaded items
+        wireCopyButtons();
+      }
+    } catch (e) {
+      console.error("[PoE Search Interceptor] Failed to parse fetch response:", e);
+    }
+
+    return response;
+  }
+
   return originalFetch.apply(this, args);
 };
 
@@ -292,6 +333,34 @@ XMLHttpRequest.prototype.send = function (
   body?: Document | XMLHttpRequestBodyInit | null
 ) {
   const xhr = this as ExtendedXHR;
+
+  // Handle trade fetch GET (item details)
+  if (xhr._poeUrl && TRADE_FETCH_PATTERN.test(xhr._poeUrl)) {
+    xhr.addEventListener("load", function () {
+      try {
+        const responseBody = JSON.parse(xhr.responseText) as TradeFetchResponse;
+
+        // Cache items by ID for copy functionality
+        if (responseBody.result) {
+          for (const result of responseBody.result) {
+            if (result.item?.id) {
+              itemCache.set(result.item.id, result.item);
+            }
+          }
+          console.log(
+            "[PoE Search Interceptor] Cached",
+            responseBody.result.length,
+            "items from XHR fetch API"
+          );
+
+          // Wire up copy buttons for newly loaded items
+          wireCopyButtons();
+        }
+      } catch (e) {
+        console.error("[PoE Search Interceptor] Failed to parse XHR fetch response:", e);
+      }
+    });
+  }
 
   if (
     xhr._poeMethod?.toUpperCase() === "POST" &&
@@ -388,5 +457,109 @@ window.addEventListener("message", (event) => {
     console.log("[PoE Search Interceptor] Sort override set:", event.data.sort);
   }
 });
+
+/**
+ * Wire up copy buttons on result rows.
+ * Finds all .copy buttons, enables them, and adds click handlers.
+ */
+function wireCopyButtons() {
+  const rows = document.querySelectorAll(".resultset .row[data-id]");
+
+  for (const row of rows) {
+    const itemId = (row as HTMLElement).dataset.id;
+    if (!itemId) continue;
+
+    const copyBtn = row.querySelector(".copy") as HTMLButtonElement;
+    if (!copyBtn) continue;
+
+    // Skip if already wired
+    if (copyBtn.dataset.poeWired === "true") continue;
+
+    // Enable the button
+    copyBtn.classList.remove("hidden");
+    copyBtn.style.display = "block";
+    copyBtn.dataset.poeWired = "true";
+
+    // Add click handler
+    copyBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const item = itemCache.get(itemId);
+      if (!item) {
+        console.warn("[PoE Search Interceptor] Item not in cache:", itemId);
+        copyBtn.title = "Item not loaded - try refreshing";
+        return;
+      }
+
+      try {
+        const text = formatItemText(item);
+        await navigator.clipboard.writeText(text);
+
+        // Visual feedback
+        const originalTitle = copyBtn.title;
+        copyBtn.title = "Copied!";
+        copyBtn.classList.add("copied");
+        setTimeout(() => {
+          copyBtn.title = originalTitle;
+          copyBtn.classList.remove("copied");
+        }, 1500);
+
+        console.log("[PoE Search Interceptor] Copied item:", item.name || item.typeLine);
+      } catch (err) {
+        console.error("[PoE Search Interceptor] Failed to copy:", err);
+        copyBtn.title = "Copy failed";
+      }
+    });
+  }
+
+  console.log("[PoE Search Interceptor] Wired copy buttons for", rows.length, "rows");
+}
+
+// Set up MutationObserver to wire copy buttons as new rows are added
+const resultsObserver = new MutationObserver((mutations) => {
+  // Check if any result rows were added
+  let hasNewRows = false;
+  for (const mutation of mutations) {
+    for (const node of mutation.addedNodes) {
+      if (node instanceof HTMLElement) {
+        if (node.matches?.(".row[data-id]") || node.querySelector?.(".row[data-id]")) {
+          hasNewRows = true;
+          break;
+        }
+      }
+    }
+    if (hasNewRows) break;
+  }
+
+  if (hasNewRows) {
+    // Debounce to avoid excessive calls
+    setTimeout(wireCopyButtons, 100);
+  }
+});
+
+// Start observing when results container exists
+function startResultsObserver() {
+  const resultsContainer = document.querySelector(".results");
+  if (resultsContainer) {
+    resultsObserver.observe(resultsContainer, {
+      childList: true,
+      subtree: true,
+    });
+    console.log("[PoE Search Interceptor] Results observer started");
+    // Initial wire-up
+    wireCopyButtons();
+  } else {
+    // Retry if container doesn't exist yet
+    setTimeout(startResultsObserver, 500);
+  }
+}
+
+// Start observer when DOM is ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", startResultsObserver);
+} else {
+  startResultsObserver();
+}
 
 console.log("[PoE Search Interceptor] Request interceptor installed");

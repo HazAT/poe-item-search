@@ -13,3 +13,15 @@ export type {
 } from "./bookmarks";
 
 export type { PinnedItemStruct } from "./pinned";
+
+export type {
+  TradeItem,
+  TradeItemProperty,
+  TradeItemRequirement,
+  TradeItemSocket,
+  TradeItemExtended,
+  TradeItemExtendedMod,
+  TradeItemListing,
+  TradeItemResult,
+  TradeFetchResponse,
+} from "./tradeItem";

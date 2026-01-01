@@ -1,0 +1,51 @@
+{
+  "realm": "poe2",
+  "verified": true,
+  "w": 2,
+  "h": 3,
+  "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9Cb2R5QXJtb3Vycy9CYXNldHlwZXMvQm9keVN0ckRleEludDAyIiwidyI6MiwiaCI6Mywic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/7e5722b0ec/BodyStrDexInt02.png",
+  "league": "Fate of the Vaal",
+  "id": "1ba3f900e122a79a7fb43104917dbd389057b5613f39f1da72fa900ceb3fad84",
+  "sockets": [
+    { "group": 0, "type": "rune" },
+    { "group": 1, "type": "rune" },
+    { "group": 2, "type": "rune" }
+  ],
+  "name": "Dragon Shelter",
+  "typeLine": "Sacrificial Regalia",
+  "baseType": "Sacrificial Regalia",
+  "rarity": "Rare",
+  "ilvl": 83,
+  "identified": true,
+  "note": "~b/o 1 exalted",
+  "corrupted": true,
+  "properties": [
+    { "name": "Body Armour", "values": [], "displayMode": 0 },
+    { "name": "[Quality]", "values": [["+20%", 1]], "displayMode": 0, "type": 6 },
+    { "name": "[Armour]", "values": [["552", 1]], "displayMode": 0, "type": 16 },
+    { "name": "[Evasion|Evasion Rating]", "values": [["503", 1]], "displayMode": 0, "type": 17 },
+    { "name": "[EnergyShield|Energy Shield]", "values": [["191", 1]], "displayMode": 0, "type": 18 }
+  ],
+  "requirements": [
+    { "name": "Level", "values": [["65", 0]], "displayMode": 0, "type": 62 },
+    { "name": "[Strength|Str]", "values": [["54", 1]], "displayMode": 1, "type": 63 },
+    { "name": "[Dexterity|Dex]", "values": [["54", 1]], "displayMode": 1, "type": 64 },
+    { "name": "[Intelligence|Int]", "values": [["54", 1]], "displayMode": 1, "type": 65 }
+  ],
+  "implicitMods": ["+1 to Level of all [Corrupted] Skill Gems"],
+  "explicitMods": [
+    "71% increased [Armour|Armour], [Evasion|Evasion] and [EnergyShield|Energy Shield]",
+    "+83 to maximum Life",
+    "25% reduced [Attributes|Attribute] Requirements",
+    "+23% to [Resistances|Cold Resistance]",
+    "+249 to [StunThreshold|Stun Threshold]",
+    "115 to 154 [Physical|Physical] [Thorns|Thorns] damage"
+  ],
+  "frameType": 2,
+  "socketedItems": [],
+  "extended": {
+    "ev": 503,
+    "ar": 552,
+    "es": 191
+  }
+}
