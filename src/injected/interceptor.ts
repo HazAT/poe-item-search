@@ -459,6 +459,48 @@ window.addEventListener("message", (event) => {
 });
 
 /**
+ * Show a brief visual feedback tooltip near the button.
+ */
+function showCopyFeedback(button: HTMLElement, message: string) {
+  console.log("[PoE Search Interceptor] showCopyFeedback called:", message);
+
+  // Create tooltip element
+  const tooltip = document.createElement("div");
+  tooltip.textContent = message;
+  tooltip.setAttribute("data-poe-copy-tooltip", "true");
+  Object.assign(tooltip.style, {
+    position: "absolute",
+    background: "#1a1a1a",
+    color: "#8abd1c",
+    padding: "4px 8px",
+    borderRadius: "4px",
+    fontSize: "12px",
+    fontWeight: "bold",
+    zIndex: "10000",
+    pointerEvents: "none",
+    border: "1px solid #8abd1c",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
+  });
+
+  // Position tooltip above the button
+  const rect = button.getBoundingClientRect();
+  tooltip.style.left = `${rect.left + window.scrollX}px`;
+  tooltip.style.top = `${rect.top + window.scrollY - 30}px`;
+
+  document.body.appendChild(tooltip);
+  console.log("[PoE Search Interceptor] Tooltip appended to body");
+
+  // Fade out and remove
+  setTimeout(() => {
+    tooltip.style.transition = "opacity 0.3s, transform 0.3s";
+    tooltip.style.opacity = "0";
+    tooltip.style.transform = "translateY(-10px)";
+  }, 1000);
+
+  setTimeout(() => tooltip.remove(), 1500);
+}
+
+/**
  * Wire up copy buttons on result rows.
  * Finds all .copy buttons, enables them, and adds click handlers.
  */
@@ -496,19 +538,13 @@ function wireCopyButtons() {
         const text = formatItemText(item);
         await navigator.clipboard.writeText(text);
 
-        // Visual feedback
-        const originalTitle = copyBtn.title;
-        copyBtn.title = "Copied!";
-        copyBtn.classList.add("copied");
-        setTimeout(() => {
-          copyBtn.title = originalTitle;
-          copyBtn.classList.remove("copied");
-        }, 1500);
+        // Visual feedback - show a temporary tooltip
+        showCopyFeedback(copyBtn, "Copied!");
 
         console.log("[PoE Search Interceptor] Copied item:", item.name || item.typeLine);
       } catch (err) {
         console.error("[PoE Search Interceptor] Failed to copy:", err);
-        copyBtn.title = "Copy failed";
+        showCopyFeedback(copyBtn, "Failed!");
       }
     });
   }
