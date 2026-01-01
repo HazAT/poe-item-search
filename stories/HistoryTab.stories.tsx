@@ -5,6 +5,7 @@ import type { TradeLocationHistoryStruct } from "../src/types/tradeLocation";
 import type { BookmarksFolderStruct } from "../src/types/bookmarks";
 import { getSortLabel, formatSortBadge } from "../src/utils/sortLabel";
 import { getPriceLabel, formatPriceBadge } from "../src/utils/priceLabel";
+import { getStatCount } from "../src/utils/statCount";
 
 // Format league for display (matches SearchEntry component)
 function formatLeague(league: string): string {
@@ -84,6 +85,7 @@ function HistoryEntryDisplay({
   const timeAgo = getRelativeTime(entry.createdAt);
   const sortInfo = getSortLabel(entry.queryPayload?.sort);
   const priceInfo = getPriceLabel(entry.queryPayload);
+  const statCount = getStatCount(entry.queryPayload);
 
   return (
     <li className="group">
@@ -117,6 +119,11 @@ function HistoryEntryDisplay({
             {priceInfo && (
               <span className="text-xs text-poe-accent shrink-0">
                 {formatPriceBadge(priceInfo)}
+              </span>
+            )}
+            {statCount && (
+              <span className="text-xs text-poe-gray-alt shrink-0">
+                {statCount} stats
               </span>
             )}
           </div>
@@ -547,6 +554,124 @@ const mockEntriesWithPriceFilters: TradeLocationHistoryStruct[] = [
 export const WithPriceFilters: Story = {
   args: {
     entries: mockEntriesWithPriceFilters,
+    executingId: null,
+  },
+};
+
+// Entries with stat filters to test stat count badge display
+const mockEntriesWithStatFilters: TradeLocationHistoryStruct[] = [
+  {
+    id: "sf1",
+    version: "2",
+    slug: "stat1",
+    type: "search",
+    league: "poe2/Standard",
+    title: "High Life Ring",
+    createdAt: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
+    queryPayload: {
+      query: {
+        status: { option: "online" },
+        stats: [
+          {
+            type: "and",
+            filters: [
+              { id: "pseudo.pseudo_total_life", value: { min: 70 } },
+            ],
+          },
+        ],
+      },
+      sort: { price: "asc" },
+    },
+    resultCount: 234,
+    source: "extension",
+  },
+  {
+    id: "sf2",
+    version: "2",
+    slug: "stat2",
+    type: "search",
+    league: "poe2/Standard",
+    title: "Tri-Res Gloves",
+    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+    queryPayload: {
+      query: {
+        status: { option: "online" },
+        stats: [
+          {
+            type: "and",
+            filters: [
+              { id: "pseudo.pseudo_total_fire_resistance", value: { min: 30 } },
+              { id: "pseudo.pseudo_total_cold_resistance", value: { min: 30 } },
+              { id: "pseudo.pseudo_total_lightning_resistance", value: { min: 30 } },
+            ],
+          },
+        ],
+      },
+      sort: { price: "asc" },
+    },
+    resultCount: 567,
+    source: "page",
+  },
+  {
+    id: "sf3",
+    version: "2",
+    slug: "stat3",
+    type: "search",
+    league: "poe2/Settlers",
+    title: "GG Weapon",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
+    queryPayload: {
+      query: {
+        status: { option: "online" },
+        stats: [
+          {
+            type: "and",
+            filters: [
+              { id: "explicit.stat_123", value: { min: 100 } },
+              { id: "explicit.stat_456", value: { min: 50 } },
+              { id: "explicit.stat_789", value: { min: 25 } },
+              { id: "explicit.stat_012", value: { min: 10 } },
+              { id: "explicit.stat_345", value: { min: 5 } },
+            ],
+          },
+          {
+            type: "weight",
+            filters: [
+              { id: "pseudo.pseudo_total_life", weight: 1 },
+              { id: "pseudo.pseudo_total_mana", weight: 0.5 },
+              { id: "pseudo.pseudo_total_energy_shield", weight: 0.8 },
+            ],
+          },
+        ],
+      },
+      sort: { dps: "desc" },
+    },
+    resultCount: 12,
+    source: "extension",
+  },
+  {
+    id: "sf4",
+    version: "2",
+    slug: "stat4",
+    type: "search",
+    league: "poe2/Standard",
+    title: "No Stats Search",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+    queryPayload: {
+      query: {
+        term: "Headhunter",
+        status: { option: "online" },
+      },
+      sort: { price: "asc" },
+    },
+    resultCount: 42,
+    source: "page",
+  },
+];
+
+export const WithStatFilters: Story = {
+  args: {
+    entries: mockEntriesWithStatFilters,
     executingId: null,
   },
 };

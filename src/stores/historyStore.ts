@@ -56,41 +56,8 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
 
     const { entries } = get();
 
-    // Check if this slug already exists
-    const existingIndex = entries.findIndex((e) => e.slug === location.slug);
-    if (existingIndex !== -1) {
-      const existingEntry = entries[existingIndex];
-
-      // Check if new sort is non-default (not just price:asc)
-      const newSort = queryPayload?.sort;
-      const isDefaultSort = !newSort || (Object.keys(newSort).length === 1 && newSort.price === "asc");
-
-      // Only update queryPayload if new sort is non-default (custom sort)
-      // This prevents the page's default sort from overwriting user's custom sort
-      const updatedEntry: TradeLocationHistoryStruct = {
-        ...existingEntry,
-        resultCount,
-        // Update queryPayload only if new sort is custom (non-default)
-        ...(isDefaultSort ? {} : { queryPayload }),
-      };
-
-      debug.log("addEntry: updating existing entry", {
-        slug: location.slug,
-        isDefaultSort,
-        updatedPayload: !isDefaultSort,
-      });
-
-      // Move updated entry to top of list
-      const newEntries = [
-        updatedEntry,
-        ...entries.slice(0, existingIndex),
-        ...entries.slice(existingIndex + 1),
-      ];
-      await storageService.setValue(HISTORY_KEY, newEntries);
-      set({ entries: newEntries });
-      return;
-    }
-
+    // Always create a new entry - no deduplication
+    // Each search change creates an independent history entry
     const newEntry: TradeLocationHistoryStruct = {
       id: uniqueId(),
       version: location.version,

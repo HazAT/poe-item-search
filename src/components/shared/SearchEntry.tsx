@@ -4,6 +4,7 @@ import type { TradeSiteVersion, TradeSearchQuery } from "@/types/tradeLocation";
 import type { BookmarksFolderStruct } from "@/types/bookmarks";
 import { getSortLabel, formatSortBadge } from "@/utils/sortLabel";
 import { getPriceLabel, formatPriceBadge } from "@/utils/priceLabel";
+import { getStatCount } from "@/utils/statCount";
 import { FolderPickerDropdown } from "./FolderPickerDropdown";
 
 /**
@@ -64,6 +65,7 @@ export function SearchEntry({
   const timeAgo = createdAt ? getRelativeTime(createdAt) : null;
   const sortInfo = getSortLabel(queryPayload?.sort);
   const priceInfo = getPriceLabel(queryPayload);
+  const statCount = getStatCount(queryPayload);
 
   const canBookmark = context === "history" && onBookmark && onCreateFolder;
 
@@ -108,6 +110,11 @@ export function SearchEntry({
             {priceInfo && (
               <span className="text-xs text-poe-accent shrink-0">
                 {formatPriceBadge(priceInfo)}
+              </span>
+            )}
+            {statCount && (
+              <span className="text-xs text-poe-gray-alt shrink-0">
+                {statCount} stats
               </span>
             )}
           </div>
