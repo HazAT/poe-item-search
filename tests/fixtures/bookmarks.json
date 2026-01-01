@@ -1,0 +1,176 @@
+{
+  "folders": [
+    {
+      "title": "Real",
+      "version": "2",
+      "icon": null,
+      "archivedAt": null,
+      "id": "z7aitoy01jmjvabm3j"
+    }
+  ],
+  "trades": {
+    "z7aitoy01jmjvabm3j": [
+      {
+        "title": "Expedition Logbook",
+        "location": {
+          "version": "2",
+          "type": "search",
+          "league": "poe2/Fate%20of%20the%20Vaal",
+          "slug": "vm2KBkMhE"
+        },
+        "createdAt": "2026-01-01T10:11:11.559Z",
+        "queryPayload": {
+          "query": {
+            "status": { "option": "securable" },
+            "type": "Expedition Logbook",
+            "stats": [{ "type": "and", "filters": [], "disabled": false }],
+            "filters": {
+              "misc_filters": {
+                "filters": { "area_level": { "min": 81, "max": null } },
+                "disabled": false
+              },
+              "trade_filters": {
+                "filters": { "price": { "min": null, "max": null, "option": "exalted" } },
+                "disabled": false
+              }
+            }
+          },
+          "sort": { "price": "asc" }
+        },
+        "resultCount": 240,
+        "previewImageUrl": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvTWFwcy9FeHBlZGl0aW9uQ2hyb25pY2xlMyIsInciOjEsImgiOjEsInNjYWxlIjoxLCJyZWFsbSI6InBvZTIifV0/f9b0f4c115/ExpeditionChronicle3.png",
+        "id": "gp2c2hp07hmjvabryf"
+      },
+      {
+        "title": "T15 Maps",
+        "location": {
+          "version": "2",
+          "type": "search",
+          "league": "poe2/Fate%20of%20the%20Vaal",
+          "slug": "3qLeeby9c5"
+        },
+        "createdAt": "2026-01-01T10:14:19.689Z",
+        "queryPayload": {
+          "query": {
+            "status": { "option": "securable" },
+            "stats": [
+              { "type": "and", "filters": [], "disabled": false },
+              {
+                "type": "not",
+                "filters": [
+                  { "id": "explicit.stat_92381065", "disabled": false },
+                  { "id": "explicit.stat_2200661314", "disabled": false },
+                  { "id": "explicit.stat_211727", "disabled": false },
+                  { "id": "explicit.stat_512071314", "disabled": false },
+                  { "id": "pseudo.pseudo_number_of_empty_affix_mods", "disabled": false },
+                  { "id": "explicit.stat_1994551050", "disabled": false },
+                  { "id": "explicit.stat_2753083623", "disabled": false }
+                ],
+                "disabled": false
+              }
+            ],
+            "filters": {
+              "map_filters": {
+                "filters": {
+                  "map_iir": { "min": 50, "max": null },
+                  "map_tier": { "min": 15, "max": null }
+                },
+                "disabled": false
+              },
+              "trade_filters": {
+                "filters": { "price": { "max": 5, "option": "chaos" } },
+                "disabled": false
+              }
+            }
+          },
+          "sort": { "map_iir": "desc" }
+        },
+        "resultCount": 9,
+        "previewImageUrl": "https://web.poecdn.com/gen/image/WzI4LDE0LHsiZiI6IjJESXRlbXMvTWFwcy9FbmRnYW1lTWFwcy9FbmRnYW1lTWFwMTUiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MSwicmVhbG0iOiJwb2UyIn1d/17149586aa/EndgameMap15.png",
+        "id": "pn2dw1mttrkmjvaft49"
+      },
+      {
+        "title": "Expedition Tablet",
+        "location": {
+          "version": "2",
+          "type": "search",
+          "league": "poe2/Fate%20of%20the%20Vaal",
+          "slug": "4mEEKXb8h9"
+        },
+        "createdAt": "2026-01-01T10:16:42.075Z",
+        "queryPayload": {
+          "query": {
+            "status": { "option": "securable" },
+            "stats": [
+              {
+                "type": "and",
+                "filters": [
+                  { "id": "explicit.stat_2306002879", "disabled": false, "value": { "min": 20 } },
+                  { "id": "implicit.stat_1714888636", "disabled": false, "value": { "min": 10 } },
+                  { "id": "explicit.stat_1714706956", "disabled": true },
+                  { "id": "explicit.stat_588512487", "disabled": true, "value": { "min": 1 } },
+                  { "id": "implicit.stat_4041853756", "disabled": true },
+                  { "id": "implicit.stat_2369421690", "disabled": true },
+                  { "id": "explicit.stat_1083387327", "disabled": true },
+                  { "id": "explicit.stat_1468737867", "disabled": false }
+                ],
+                "disabled": false
+              }
+            ],
+            "filters": {
+              "trade_filters": {
+                "filters": { "price": { "min": null, "max": 20, "option": null } },
+                "disabled": false
+              }
+            }
+          },
+          "sort": { "stat.explicit.stat_2306002879": "desc" }
+        },
+        "resultCount": 8,
+        "previewImageUrl": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQ3VycmVuY3kvUHJlY3Vyc29yVGFibGV0cy9QcmVjdXJzb3JUYWJsZXRFeHBlZGl0aW9uIiwidyI6MSwiaCI6MSwic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/1f8dc7fd47/PrecursorTabletExpedition.png",
+        "id": "7ksxg8zd3svmjvaiuzf"
+      },
+      {
+        "title": "Precursor Tablet",
+        "location": {
+          "version": "2",
+          "type": "search",
+          "league": "poe2/Fate%20of%20the%20Vaal",
+          "slug": "Klr8BZ8Ph5"
+        },
+        "createdAt": "2026-01-01T10:19:16.224Z",
+        "queryPayload": {
+          "query": {
+            "status": { "option": "securable" },
+            "stats": [
+              {
+                "type": "and",
+                "filters": [
+                  { "id": "explicit.stat_2306002879", "disabled": false, "value": { "min": 20 } },
+                  { "id": "implicit.stat_1714888636", "disabled": true },
+                  { "id": "explicit.stat_1714706956", "disabled": true },
+                  { "id": "explicit.stat_588512487", "disabled": true, "value": { "min": 1 } },
+                  { "id": "implicit.stat_4041853756", "disabled": false, "value": { "min": 10 } },
+                  { "id": "implicit.stat_2369421690", "disabled": true },
+                  { "id": "explicit.stat_1083387327", "disabled": true },
+                  { "id": "explicit.stat_1468737867", "disabled": false }
+                ],
+                "disabled": false
+              }
+            ],
+            "filters": {
+              "trade_filters": {
+                "filters": { "price": { "min": null, "max": 1, "option": "chaos" } },
+                "disabled": false
+              }
+            }
+          },
+          "sort": { "stat.explicit.stat_2306002879": "desc" }
+        },
+        "resultCount": 94,
+        "previewImageUrl": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQ3VycmVuY3kvUHJlY3Vyc29yVGFibGV0cy9QcmVjdXJzb3JUYWJsZXRHZW5lcmljIiwidyI6MSwiaCI6MSwic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/4fbc73f060/PrecursorTabletGeneric.png",
+        "id": "9ark5it50xhmjvam5xc"
+      }
+    ]
+  }
+}
