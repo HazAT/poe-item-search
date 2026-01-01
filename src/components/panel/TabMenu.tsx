@@ -1,10 +1,9 @@
 import { usePanelStore } from "@/stores/panelStore";
-import { Tabs, HistoryIcon, BookmarkIcon, PinIcon } from "@/components/ui";
+import { Tabs, HistoryIcon, BookmarkIcon } from "@/components/ui";
 
 const tabs = [
   { id: "history", label: "History", icon: <HistoryIcon /> },
   { id: "bookmarks", label: "Bookmarks", icon: <BookmarkIcon /> },
-  { id: "pinned", label: "Pinned", icon: <PinIcon /> },
 ] as const;
 
 export function TabMenu() {

@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { storageService } from "@/services/storage";
 import { debugPanel } from "@/utils/debug";
 
-type TabType = "history" | "bookmarks" | "pinned";
+type TabType = "history" | "bookmarks";
 
 interface PanelState {
   isCollapsed: boolean;

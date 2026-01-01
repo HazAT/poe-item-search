@@ -12,8 +12,6 @@ export type {
   BookmarksFolderStruct,
 } from "./bookmarks";
 
-export type { PinnedItemStruct } from "./pinned";
-
 export type {
   TradeItem,
   TradeItemProperty,

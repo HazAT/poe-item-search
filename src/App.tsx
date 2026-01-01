@@ -3,7 +3,6 @@ import { TabPanel } from "@/components/ui/Tabs";
 import { PasteInput } from "@/components/paste";
 import { HistoryTab } from "@/components/history";
 import { BookmarksTab } from "@/components/bookmarks";
-import { PinnedItemsTab } from "@/components/pinned";
 
 export function App() {
   const { activeTab } = usePanelStore();
@@ -20,9 +19,6 @@ export function App() {
         </TabPanel>
         <TabPanel isActive={activeTab === "bookmarks"}>
           <BookmarksTab />
-        </TabPanel>
-        <TabPanel isActive={activeTab === "pinned"}>
-          <PinnedItemsTab />
         </TabPanel>
       </div>
     </div>
