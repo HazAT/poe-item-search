@@ -40,8 +40,21 @@ export function enableLocalStorageFallback(): void {
 }
 
 export const extensionApi = (): ExtensionApi => {
-  // Always use localStorage - chrome.storage has reliability issues
-  // with extension context invalidation during development
+  // Use real Chrome APIs when available, fallback to localStorage for Storybook/tests
+  if (typeof chrome !== "undefined" && chrome.storage?.sync) {
+    return {
+      runtime: {
+        getURL: chrome.runtime?.getURL?.bind(chrome.runtime) ?? ((path: string) => path),
+        sendMessage: chrome.runtime?.sendMessage?.bind(chrome.runtime) ?? ((_query: object, callback: (payload: object | null) => void) => callback(null)),
+        lastError: chrome.runtime?.lastError ? { message: chrome.runtime.lastError.message ?? "Unknown error" } : null,
+      },
+      storage: {
+        local: chrome.storage.local,
+        sync: chrome.storage.sync as unknown as SyncStorageArea,
+      },
+    };
+  }
+  // Fallback for Storybook, tests, or when not in extension context
   return createLocalStorageFallback();
 };
 

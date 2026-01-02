@@ -87,11 +87,13 @@ class SyncService {
               debugSync(`migrateExistingData() - migrated ${trades.length} trades for folder ${folder.id}`);
             } catch (e) {
               debugSync("migrateExistingData() - failed to migrate trades for folder", folder.id, e);
+              captureException(e, { context: "sync-migration-trades", folderId: folder.id });
             }
           }
         }
       } catch (e) {
         debugSync("migrateExistingData() - failed to migrate folders:", e);
+        captureException(e, { context: "sync-migration-folders" });
       }
     }
 
