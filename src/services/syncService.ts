@@ -225,6 +225,185 @@ class SyncService {
       return null;
     }
   }
+
+  /**
+   * Merge local and cloud state using last-write-wins
+   * Returns merged state and whether new external data was found
+   */
+  private merge(local: SyncState, cloud: SyncState): { merged: SyncState; hasNewExternalData: boolean } {
+    debugSync("merge() - starting merge");
+    let hasNewExternalData = false;
+
+    // Merge tombstones (keep all, prune old ones later)
+    const allTombstones = [...local.tombstones];
+    for (const cloudTomb of cloud.tombstones) {
+      if (!allTombstones.find(t => t.id === cloudTomb.id)) {
+        allTombstones.push(cloudTomb);
+      }
+    }
+
+    // Prune old tombstones
+    const cutoff = Date.now() - (TOMBSTONE_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+    const mergedTombstones = allTombstones.filter(t => t.deletedAt > cutoff);
+
+    // Merge folders
+    const mergedFolders = this.mergeFolders(local.folders, cloud.folders, mergedTombstones);
+    if (mergedFolders.hasNew) {
+      hasNewExternalData = true;
+    }
+
+    // Merge trades
+    const mergedTrades = this.mergeTrades(local.trades, cloud.trades, mergedTombstones);
+    if (mergedTrades.hasNew) {
+      hasNewExternalData = true;
+    }
+
+    return {
+      merged: {
+        folders: mergedFolders.items,
+        trades: mergedTrades.items,
+        tombstones: mergedTombstones,
+        lastSyncedAt: Date.now(),
+      },
+      hasNewExternalData,
+    };
+  }
+
+  private mergeFolders(
+    local: BookmarksFolderStruct[],
+    cloud: BookmarksFolderStruct[],
+    tombstones: SyncTombstone[]
+  ): { items: BookmarksFolderStruct[]; hasNew: boolean } {
+    const merged: BookmarksFolderStruct[] = [];
+    let hasNew = false;
+
+    // Create lookup maps
+    const localById = new Map(local.map(f => [f.id, f]));
+    const cloudById = new Map(cloud.map(f => [f.id, f]));
+    const tombstoneIds = new Set(tombstones.filter(t => t.type === 'folder').map(t => t.id));
+    const allIds = new Set([...localById.keys(), ...cloudById.keys()]);
+
+    for (const id of allIds) {
+      if (!id) continue;
+
+      // Check if tombstoned
+      const tombstone = tombstones.find(t => t.id === id && t.type === 'folder');
+
+      const localFolder = localById.get(id);
+      const cloudFolder = cloudById.get(id);
+
+      // If tombstoned and tombstone is newer than both, skip
+      if (tombstone) {
+        const localTime = localFolder?.updatedAt ?? 0;
+        const cloudTime = cloudFolder?.updatedAt ?? 0;
+        if (tombstone.deletedAt > localTime && tombstone.deletedAt > cloudTime) {
+          continue;
+        }
+      }
+
+      // Both exist - take newer
+      if (localFolder && cloudFolder) {
+        const localTime = localFolder.updatedAt ?? 0;
+        const cloudTime = cloudFolder.updatedAt ?? 0;
+        merged.push(cloudTime > localTime ? cloudFolder : localFolder);
+      }
+      // Only local exists
+      else if (localFolder) {
+        merged.push(localFolder);
+      }
+      // Only cloud exists - this is new external data
+      else if (cloudFolder && !tombstoneIds.has(id)) {
+        merged.push(cloudFolder);
+        hasNew = true;
+      }
+    }
+
+    return { items: merged, hasNew };
+  }
+
+  private mergeTrades(
+    local: Record<string, BookmarksTradeStruct[]>,
+    cloud: Record<string, BookmarksTradeStruct[]>,
+    tombstones: SyncTombstone[]
+  ): { items: Record<string, BookmarksTradeStruct[]>; hasNew: boolean } {
+    const merged: Record<string, BookmarksTradeStruct[]> = {};
+    let hasNew = false;
+
+    const allFolderIds = new Set([...Object.keys(local), ...Object.keys(cloud)]);
+    const tombstoneIds = new Set(tombstones.filter(t => t.type === 'bookmark').map(t => t.id));
+
+    for (const folderId of allFolderIds) {
+      const localTrades = local[folderId] ?? [];
+      const cloudTrades = cloud[folderId] ?? [];
+
+      const localById = new Map(localTrades.map(t => [t.id, t]));
+      const cloudById = new Map(cloudTrades.map(t => [t.id, t]));
+      const allTradeIds = new Set([...localById.keys(), ...cloudById.keys()]);
+
+      const folderMerged: BookmarksTradeStruct[] = [];
+
+      for (const tradeId of allTradeIds) {
+        if (!tradeId) continue;
+
+        // Check if tombstoned
+        const tombstone = tombstones.find(t => t.id === tradeId && t.type === 'bookmark');
+
+        const localTrade = localById.get(tradeId);
+        const cloudTrade = cloudById.get(tradeId);
+
+        // If tombstoned and tombstone is newer than both, skip
+        if (tombstone) {
+          const localTime = localTrade?.updatedAt ?? 0;
+          const cloudTime = cloudTrade?.updatedAt ?? 0;
+          if (tombstone.deletedAt > localTime && tombstone.deletedAt > cloudTime) {
+            continue;
+          }
+        }
+
+        // Both exist - take newer
+        if (localTrade && cloudTrade) {
+          const localTime = localTrade.updatedAt ?? 0;
+          const cloudTime = cloudTrade.updatedAt ?? 0;
+          folderMerged.push(cloudTime > localTime ? cloudTrade : localTrade);
+        }
+        // Only local exists
+        else if (localTrade) {
+          folderMerged.push(localTrade);
+        }
+        // Only cloud exists - this is new external data
+        else if (cloudTrade && !tombstoneIds.has(tradeId)) {
+          folderMerged.push(cloudTrade);
+          hasNew = true;
+        }
+      }
+
+      if (folderMerged.length > 0) {
+        merged[folderId] = folderMerged;
+      }
+    }
+
+    return { items: merged, hasNew };
+  }
+
+  /**
+   * Save merged state back to localStorage
+   */
+  private async saveState(state: SyncState): Promise<void> {
+    debugSync("saveState() - saving merged state");
+
+    // Save folders
+    localStorage.setItem("poe-search-bookmark-folders", JSON.stringify({ value: state.folders, expiresAt: null }));
+
+    // Save trades per folder
+    for (const [folderId, trades] of Object.entries(state.trades)) {
+      localStorage.setItem(`poe-search-bookmark-trades-${folderId}`, JSON.stringify({ value: trades, expiresAt: null }));
+    }
+
+    // Save tombstones
+    localStorage.setItem("poe-search-sync-tombstones", JSON.stringify(state.tombstones));
+
+    debugSync("saveState() - complete");
+  }
 }
 
 export const syncService = new SyncService();
