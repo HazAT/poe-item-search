@@ -5,6 +5,7 @@ import { PanelContent } from "@/components/panel/PanelContent";
 import { usePanelStore } from "@/stores/panelStore";
 import { initSearchInterceptor } from "@/services/searchInterceptor";
 import { initSentry, captureException } from "@/services/sentry";
+import { syncService } from "@/services/syncService";
 import { getExtensionUrl } from "@/utils/extensionApi";
 import { App } from "./App";
 
@@ -107,6 +108,12 @@ async function initialize() {
 
     // Initialize interceptor listener in content script
     initSearchInterceptor();
+
+    // Initialize cloud sync
+    syncService.init().catch((e) => {
+      console.error("[PoE Item Search] Sync init failed:", e);
+      captureException(e, { context: "sync-init" });
+    });
 
     await waitForTradePage();
 
