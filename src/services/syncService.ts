@@ -144,7 +144,7 @@ class SyncService {
     useSyncStore.getState().setSyncing(true);
 
     try {
-      const state = this.getCurrentState();
+      const state = this.getLocalState();
       const compressed = this.compress(state);
 
       // Check if state actually changed
@@ -188,9 +188,9 @@ class SyncService {
   }
 
   /**
-   * Get current state from localStorage for pushing
+   * Get current local state (public for status display)
    */
-  private getCurrentState(): SyncState {
+  getLocalState(): SyncState {
     const foldersRaw = localStorage.getItem("poe-search-bookmark-folders");
     const tombstonesRaw = localStorage.getItem("poe-search-sync-tombstones");
 
@@ -219,6 +219,47 @@ class SyncService {
   }
 
   /**
+   * Get cloud state (fetches and decompresses)
+   */
+  async getCloudState(): Promise<SyncState | null> {
+    try {
+      const api = extensionApi();
+      const result = await new Promise<Record<string, unknown>>((resolve) => {
+        api.storage.sync.get([SYNC_KEY], resolve);
+      });
+
+      const compressed = result[SYNC_KEY] as string | undefined;
+      if (!compressed) {
+        return null;
+      }
+
+      return this.decompress(compressed);
+    } catch (e) {
+      debugSync("getCloudState() - error:", e);
+      captureException(e, { context: "sync-get-cloud-state" });
+      return null;
+    }
+  }
+
+  /**
+   * Get raw compressed cloud data (for debug/transfer)
+   */
+  async getCompressedCloudData(): Promise<string | null> {
+    try {
+      const api = extensionApi();
+      const result = await new Promise<Record<string, unknown>>((resolve) => {
+        api.storage.sync.get([SYNC_KEY], resolve);
+      });
+
+      return (result[SYNC_KEY] as string) ?? null;
+    } catch (e) {
+      debugSync("getCompressedCloudData() - error:", e);
+      captureException(e, { context: "sync-get-compressed-data" });
+      return null;
+    }
+  }
+
+  /**
    * Pull state from cloud storage and merge
    */
   async pull(): Promise<void> {
@@ -243,7 +284,7 @@ class SyncService {
         return;
       }
 
-      const localState = this.getCurrentState();
+      const localState = this.getLocalState();
       const { merged, hasNewExternalData } = this.merge(localState, cloudState);
 
       // Save merged state to localStorage
