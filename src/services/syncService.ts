@@ -1,6 +1,8 @@
 import LZString from "lz-string";
+import { extensionApi } from "@/utils/extensionApi";
+import { useSyncStore } from "@/stores/syncStore";
 import { captureException } from "@/services/sentry";
-import type { SyncState } from "@/types/bookmarks";
+import type { BookmarksFolderStruct, BookmarksTradeStruct, SyncTombstone, SyncState } from "@/types/bookmarks";
 
 // Constants for sync configuration
 export const SYNC_KEY = "bookmarks_v1";
@@ -30,6 +32,7 @@ export function getOrCreateMachineId(): string {
 
 class SyncService {
   private pushTimeout: ReturnType<typeof setTimeout> | null = null;
+  private lastPushedState: string | null = null;
 
   /**
    * Initialize sync - call on extension load
@@ -58,14 +61,129 @@ class SyncService {
    * Push current state to cloud storage
    */
   async push(): Promise<void> {
-    // Implementation in next task
+    debugSync("push() called");
+    useSyncStore.getState().setSyncing(true);
+
+    try {
+      const state = this.getCurrentState();
+      const compressed = this.compress(state);
+
+      // Check if state actually changed
+      if (compressed === this.lastPushedState) {
+        debugSync("push() - state unchanged, skipping");
+        return;
+      }
+
+      // Check size limits (chrome.storage.sync has 100KB total, 8KB per item)
+      const sizeBytes = new Blob([compressed]).size;
+      if (sizeBytes > 100000) {
+        debugSync("push() - WARNING: compressed size exceeds 100KB limit:", sizeBytes);
+        captureException(new Error("Sync data exceeds quota"), {
+          context: "sync-push",
+          sizeBytes,
+          folderCount: state.folders.length,
+          tradeCount: Object.values(state.trades).flat().length,
+        });
+      }
+
+      const api = extensionApi();
+      await new Promise<void>((resolve, reject) => {
+        api.storage.sync.set({ [SYNC_KEY]: compressed }, () => {
+          const error = api.runtime.lastError;
+          if (error) {
+            reject(new Error(error.message));
+          } else {
+            resolve();
+          }
+        });
+      });
+
+      this.lastPushedState = compressed;
+      debugSync("push() - success, size:", sizeBytes, "bytes");
+    } catch (e) {
+      debugSync("push() - error:", e);
+      captureException(e, { context: "sync-push" });
+    } finally {
+      useSyncStore.getState().setSyncing(false);
+    }
+  }
+
+  /**
+   * Get current state from localStorage for pushing
+   */
+  private getCurrentState(): SyncState {
+    const foldersRaw = localStorage.getItem("poe-search-bookmark-folders");
+    const tombstonesRaw = localStorage.getItem("poe-search-sync-tombstones");
+
+    const folders: BookmarksFolderStruct[] = foldersRaw ? JSON.parse(foldersRaw).value : [];
+    const tombstones: SyncTombstone[] = tombstonesRaw ? JSON.parse(tombstonesRaw) : [];
+
+    // Load all trades
+    const trades: Record<string, BookmarksTradeStruct[]> = {};
+    for (const folder of folders) {
+      if (folder.id) {
+        const tradesRaw = localStorage.getItem(`poe-search-bookmark-trades-${folder.id}`);
+        trades[folder.id] = tradesRaw ? JSON.parse(tradesRaw).value : [];
+      }
+    }
+
+    // Prune old tombstones
+    const cutoff = Date.now() - (TOMBSTONE_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+    const prunedTombstones = tombstones.filter(t => t.deletedAt > cutoff);
+
+    return {
+      folders,
+      trades,
+      tombstones: prunedTombstones,
+      lastSyncedAt: Date.now(),
+    };
   }
 
   /**
    * Pull state from cloud storage and merge
    */
   async pull(): Promise<void> {
-    // Implementation in next task
+    debugSync("pull() called");
+    useSyncStore.getState().setSyncing(true);
+
+    try {
+      const api = extensionApi();
+      const result = await new Promise<Record<string, unknown>>((resolve) => {
+        api.storage.sync.get([SYNC_KEY], resolve);
+      });
+
+      const compressed = result[SYNC_KEY] as string | undefined;
+      if (!compressed) {
+        debugSync("pull() - no cloud data found");
+        return;
+      }
+
+      const cloudState = this.decompress(compressed);
+      if (!cloudState) {
+        debugSync("pull() - failed to decompress cloud data");
+        return;
+      }
+
+      const localState = this.getCurrentState();
+      const { merged, hasNewExternalData } = this.merge(localState, cloudState);
+
+      // Save merged state to localStorage
+      await this.saveState(merged);
+
+      // Update UI if there's new external data
+      if (hasNewExternalData) {
+        useSyncStore.getState().setHasNewData(true);
+        useSyncStore.getState().setLastSyncAt(Date.now());
+        debugSync("pull() - new external data detected");
+      }
+
+      debugSync("pull() - complete");
+    } catch (e) {
+      debugSync("pull() - error:", e);
+      captureException(e, { context: "sync-pull" });
+    } finally {
+      useSyncStore.getState().setSyncing(false);
+    }
   }
 
   /**
