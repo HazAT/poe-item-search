@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { storageService } from "@/services/storage";
+import { syncService } from "@/services/syncService";
 import { uniqueId } from "@/utils/uniqueId";
 import { debugBookmarks } from "@/utils/debug";
 import { buildTradeUrl } from "@/services/tradeLocation";
@@ -92,19 +93,22 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => ({
     const newFolder: BookmarksFolderStruct = {
       ...folder,
       id: uniqueId(),
+      updatedAt: Date.now(),
     };
     const newFolders = [...folders, newFolder];
     await storageService.setValue(FOLDERS_KEY, newFolders);
     set({ folders: newFolders });
+    syncService.schedulePush();
   },
 
   updateFolder: async (id, updates) => {
     const { folders } = get();
     const newFolders = folders.map((folder) =>
-      folder.id === id ? { ...folder, ...updates } : folder
+      folder.id === id ? { ...folder, ...updates, updatedAt: Date.now() } : folder
     );
     await storageService.setValue(FOLDERS_KEY, newFolders);
     set({ folders: newFolders });
+    syncService.schedulePush();
   },
 
   deleteFolder: async (id) => {
@@ -115,6 +119,10 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => ({
     const newTrades = { ...trades };
     delete newTrades[id];
     set({ folders: newFolders, trades: newTrades });
+
+    // Add tombstone for sync
+    syncService.addTombstone(id, 'folder');
+    syncService.schedulePush();
   },
 
   archiveFolder: async (id) => {
@@ -146,24 +154,27 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => ({
     const newTrade: BookmarksTradeStruct = {
       ...trade,
       id: uniqueId(),
+      updatedAt: Date.now(),
     };
     const newFolderTrades = [...folderTrades, newTrade];
     await storageService.setValue(`${TRADES_KEY_PREFIX}-${folderId}`, newFolderTrades);
     set((state) => ({
       trades: { ...state.trades, [folderId]: newFolderTrades },
     }));
+    syncService.schedulePush();
   },
 
   updateTrade: async (folderId, tradeId, updates) => {
     const { trades } = get();
     const folderTrades = trades[folderId] ?? [];
     const newFolderTrades = folderTrades.map((trade) =>
-      trade.id === tradeId ? { ...trade, ...updates } : trade
+      trade.id === tradeId ? { ...trade, ...updates, updatedAt: Date.now() } : trade
     );
     await storageService.setValue(`${TRADES_KEY_PREFIX}-${folderId}`, newFolderTrades);
     set((state) => ({
       trades: { ...state.trades, [folderId]: newFolderTrades },
     }));
+    syncService.schedulePush();
   },
 
   deleteTrade: async (folderId, tradeId) => {
@@ -174,6 +185,10 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => ({
     set((state) => ({
       trades: { ...state.trades, [folderId]: newFolderTrades },
     }));
+
+    // Add tombstone for sync
+    syncService.addTombstone(tradeId, 'bookmark');
+    syncService.schedulePush();
   },
 
   executeSearch: async (folderId, tradeId) => {
