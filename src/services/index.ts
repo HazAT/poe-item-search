@@ -5,3 +5,4 @@ export {
   compareTradeLocations,
   getCurrentTradeLocation,
 } from "./tradeLocation";
+export { syncService } from "./syncService";
