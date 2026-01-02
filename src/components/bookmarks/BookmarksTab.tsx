@@ -12,6 +12,9 @@ import {
   ArchiveIcon,
   BookmarkIcon,
   EditIcon,
+  ExportIcon,
+  ImportIcon,
+  CheckIcon,
 } from "@/components/ui";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
@@ -30,6 +33,7 @@ export function BookmarksTab() {
     toggleShowArchived,
     createFolder,
     updateFolder,
+    importFolder,
   } = useBookmarksStore();
 
   const { clearNewDataIndicator } = useSyncStore();
@@ -46,6 +50,9 @@ export function BookmarksTab() {
   const [isRenameFolderOpen, setIsRenameFolderOpen] = useState(false);
   const [renamingFolder, setRenamingFolder] = useState<BookmarksFolderStruct | null>(null);
   const [renameFolderTitle, setRenameFolderTitle] = useState("");
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importString, setImportString] = useState("");
+  const [importError, setImportError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchFolders();
@@ -108,6 +115,18 @@ export function BookmarksTab() {
     setIsRenameFolderOpen(true);
   };
 
+  const handleImport = async () => {
+    if (!importString.trim()) return;
+    setImportError(null);
+    const result = await importFolder(importString.trim());
+    if (result.success) {
+      setImportString("");
+      setIsImportModalOpen(false);
+    } else {
+      setImportError(result.error || "Import failed");
+    }
+  };
+
   const visibleFolders = folders.filter((folder) =>
     showArchived ? true : !folder.archivedAt
   );
@@ -136,6 +155,14 @@ export function BookmarksTab() {
               {showArchived ? "Hide" : "Show"} archived ({archivedCount})
             </Button>
           )}
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setIsImportModalOpen(true)}
+          >
+            <ImportIcon className="w-4 h-4 mr-1" />
+            Import
+          </Button>
           <Button
             variant="primary"
             size="sm"
@@ -249,6 +276,51 @@ export function BookmarksTab() {
         isOpen={isBookmarkModalOpen}
         onClose={() => setIsBookmarkModalOpen(false)}
       />
+
+      {/* Import Modal */}
+      <Modal
+        isOpen={isImportModalOpen}
+        onClose={() => {
+          setIsImportModalOpen(false);
+          setImportString("");
+          setImportError(null);
+        }}
+        title="Import Folder"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => {
+              setIsImportModalOpen(false);
+              setImportString("");
+              setImportError(null);
+            }}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleImport}
+              disabled={!importString.trim()}
+            >
+              Import
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-2">
+          <label className="block text-sm text-poe-beige">
+            Paste exported folder string
+          </label>
+          <textarea
+            className="w-full h-24 px-3 py-2 text-sm bg-poe-black border border-poe-gray rounded text-poe-beige placeholder:text-poe-gray-alt focus:outline-none focus:border-poe-gold resize-none"
+            value={importString}
+            onChange={(e) => setImportString(e.target.value)}
+            placeholder="Paste the exported folder string here..."
+            autoFocus
+          />
+          {importError && (
+            <p className="text-sm text-red-400">{importError}</p>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }
@@ -259,9 +331,10 @@ interface BookmarkFolderProps {
 }
 
 function BookmarkFolder({ folder, onRename }: BookmarkFolderProps) {
-  const { trades, isExecuting, expandedFolders, toggleFolderExpanded, fetchTradesForFolder, deleteFolder, archiveFolder, unarchiveFolder } =
+  const { trades, isExecuting, expandedFolders, toggleFolderExpanded, fetchTradesForFolder, deleteFolder, archiveFolder, unarchiveFolder, exportFolder } =
     useBookmarksStore();
   const isExpanded = expandedFolders.includes(folder.id!);
+  const [exportedRecently, setExportedRecently] = useState(false);
 
   const folderTrades = trades[folder.id!] ?? [];
 
@@ -303,6 +376,20 @@ function BookmarkFolder({ folder, onRename }: BookmarkFolderProps) {
             title="Rename"
           >
             <EditIcon className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={async (e) => {
+              e.stopPropagation();
+              await exportFolder(folder.id!);
+              setExportedRecently(true);
+              setTimeout(() => setExportedRecently(false), 2000);
+            }}
+            title={exportedRecently ? "Copied!" : "Export"}
+            className={exportedRecently ? "text-green-500" : ""}
+          >
+            {exportedRecently ? <CheckIcon className="w-4 h-4" /> : <ExportIcon className="w-4 h-4" />}
           </Button>
           <Button
             variant="ghost"
