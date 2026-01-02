@@ -18,6 +18,7 @@ export interface BookmarksTradeStruct {
   queryPayload?: TradeSearchQuery;
   resultCount?: number;
   previewImageUrl?: string;
+  updatedAt?: number;  // Unix timestamp (ms) for sync
 }
 
 export interface BookmarksFolderStruct {
@@ -26,4 +27,18 @@ export interface BookmarksFolderStruct {
   version: TradeSiteVersion;
   icon: string | null;
   archivedAt: string | null;
+  updatedAt?: number;  // Unix timestamp (ms) for sync
+}
+
+export interface SyncTombstone {
+  id: string;
+  type: 'bookmark' | 'folder';
+  deletedAt: number;  // Unix timestamp (ms)
+}
+
+export interface SyncState {
+  folders: BookmarksFolderStruct[];
+  trades: Record<string, BookmarksTradeStruct[]>;
+  tombstones: SyncTombstone[];
+  lastSyncedAt: number;
 }
