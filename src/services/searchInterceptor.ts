@@ -59,6 +59,23 @@ async function handleInterceptedSearch(payload: TradeSearchInterceptedPayload) {
     id: responseBody.id,
   });
 
+  // Check if this search was extension-initiated (from PasteInput)
+  // If so, skip adding to history - PasteInput already added it
+  const extensionInitiated = localStorage.getItem("poe-search-extension-initiated");
+  if (extensionInitiated) {
+    const initiatedTime = parseInt(extensionInitiated, 10);
+    const now = Date.now();
+    // Clear the flag and skip if it was set within last 10 seconds
+    localStorage.removeItem("poe-search-extension-initiated");
+    if (now - initiatedTime < 10000) {
+      debug.log("handleInterceptedSearch: skipping extension-initiated search", {
+        id: responseBody.id,
+        ageMs: now - initiatedTime,
+      });
+      return;
+    }
+  }
+
   // Build the result URL to parse location
   // URL format: /api/trade2/search/poe2/Standard
   // Result URL: /trade2/search/poe2/Standard/{id}
@@ -170,8 +187,10 @@ function handleItemCopied(payload: ItemCopiedPayload) {
   debug.log("handleItemCopied: received", { itemName, itemId });
 
   // Log to Sentry
+  // Include base64 for easy copy/paste (Sentry UI doesn't preserve newlines well)
   logger.info("Item copied from results", {
     itemText,
+    itemTextBase64: btoa(unescape(encodeURIComponent(itemText))),
     itemName,
     itemId,
   });

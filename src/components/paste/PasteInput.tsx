@@ -4,6 +4,7 @@ import { useHistoryStore } from "@/stores/historyStore";
 import { parseTradeLocation } from "@/services/tradeLocation";
 import { debug } from "@/utils/debug";
 import { logger, captureException } from "@/services/sentry";
+import { tryDecodeBase64ItemText } from "@/utils/base64";
 // Import the existing search logic
 import { getSearchQuery } from "@/item.js";
 
@@ -19,12 +20,17 @@ export function PasteInput({ onSearch }: PasteInputProps) {
   const { addEntry } = useHistoryStore();
 
   const handleSearch = useCallback(async (textOverride?: string) => {
-    const searchText = textOverride ?? itemText;
-    if (!searchText.trim()) return;
+    const rawText = textOverride ?? itemText;
+    if (!rawText.trim()) return;
+
+    // Try to decode base64 (for pasting from Sentry logs)
+    const searchText = tryDecodeBase64ItemText(rawText);
 
     // Log pasted item to Sentry
+    // Include base64 for easy copy/paste (Sentry UI doesn't preserve newlines well)
     logger.info("Item pasted for search", {
       itemText: searchText,
+      itemTextBase64: btoa(unescape(encodeURIComponent(searchText))),
       itemLength: searchText.length,
     });
 
@@ -50,6 +56,23 @@ export function PasteInput({ onSearch }: PasteInputProps) {
       // Build the search query (getSearchQuery returns untyped JS object)
       const query = getSearchQuery(searchText, statsData) as unknown as Record<string, unknown>;
 
+      // Check if no meaningful filters were applied - log for debugging
+      const hasNoFilters =
+        !query.term && // not a unique item search
+        !query.filters && // no type/category filters
+        (!query.stats || (query.stats as unknown[]).length === 0); // no stat filters
+
+      if (hasNoFilters) {
+        // Log to Sentry for debugging - include base64 for easy copy/paste
+        // (Sentry UI doesn't preserve newlines well, base64 decode to get original)
+        logger.warn("Item pasted with no filters applied", {
+          itemText: searchText,
+          itemTextBase64: btoa(unescape(encodeURIComponent(searchText))),
+          itemLength: searchText.length,
+        });
+        debug.warn("PasteInput", "no filters applied to search query", { query, itemText: searchText });
+      }
+
       // Read user's status preference from PoE's localStorage
       // PoE stores this in lscache-trade2state (for trade2) or lscache-tradestate (for trade)
       const stateKey = tradeVersion === "trade2" ? "lscache-trade2state" : "lscache-tradestate";
@@ -70,6 +93,10 @@ export function PasteInput({ onSearch }: PasteInputProps) {
       if (userStatus) {
         query.status = { option: userStatus };
       }
+
+      // Set flag so interceptor knows to skip this search (extension-initiated)
+      // This prevents duplicate history entries
+      localStorage.setItem("poe-search-extension-initiated", Date.now().toString());
 
       // Execute the search
       const searchResponse = await fetch(
