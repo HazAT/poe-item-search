@@ -20,6 +20,7 @@
   "license": "MIT",
   "dependencies": {
     "@sentry/browser": "^10.32.1",
+    "lz-string": "^1.5.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zustand": "^5.0.2"
@@ -32,6 +33,7 @@
     "@storybook/react-vite": "^8.4.7",
     "@types/bun": "^1.3.5",
     "@types/chrome": "^0.0.287",
+    "@types/lz-string": "^1.5.0",
     "@types/node": "^25.0.3",
     "@types/react": "^18.3.14",
     "@types/react-dom": "^18.3.4",
