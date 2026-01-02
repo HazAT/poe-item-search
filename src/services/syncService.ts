@@ -39,9 +39,64 @@ class SyncService {
    */
   async init(): Promise<void> {
     debugSync("init() called");
+    this.migrateExistingData();
     await this.pull();
     this.setupVisibilityListener();
     debugSync("init() complete");
+  }
+
+  /**
+   * Migrate existing bookmarks to have updatedAt timestamps
+   * Called once on first sync init
+   */
+  private migrateExistingData(): void {
+    const migrationKey = "poe-search-sync-migrated-v1";
+    if (localStorage.getItem(migrationKey)) {
+      return; // Already migrated
+    }
+
+    debugSync("migrateExistingData() - running migration");
+    const now = Date.now();
+
+    // Migrate folders
+    const foldersRaw = localStorage.getItem("poe-search-bookmark-folders");
+    if (foldersRaw) {
+      try {
+        const parsed = JSON.parse(foldersRaw);
+        const folders: BookmarksFolderStruct[] = parsed.value ?? [];
+        const migratedFolders = folders.map(f => ({
+          ...f,
+          updatedAt: f.updatedAt ?? now,
+        }));
+        localStorage.setItem("poe-search-bookmark-folders", JSON.stringify({ value: migratedFolders, expiresAt: null }));
+        debugSync(`migrateExistingData() - migrated ${folders.length} folders`);
+
+        // Migrate trades for each folder
+        for (const folder of migratedFolders) {
+          if (!folder.id) continue;
+          const tradesRaw = localStorage.getItem(`poe-search-bookmark-trades-${folder.id}`);
+          if (tradesRaw) {
+            try {
+              const parsedTrades = JSON.parse(tradesRaw);
+              const trades: BookmarksTradeStruct[] = parsedTrades.value ?? [];
+              const migratedTrades = trades.map(t => ({
+                ...t,
+                updatedAt: t.updatedAt ?? now,
+              }));
+              localStorage.setItem(`poe-search-bookmark-trades-${folder.id}`, JSON.stringify({ value: migratedTrades, expiresAt: null }));
+              debugSync(`migrateExistingData() - migrated ${trades.length} trades for folder ${folder.id}`);
+            } catch (e) {
+              debugSync("migrateExistingData() - failed to migrate trades for folder", folder.id, e);
+            }
+          }
+        }
+      } catch (e) {
+        debugSync("migrateExistingData() - failed to migrate folders:", e);
+      }
+    }
+
+    localStorage.setItem(migrationKey, "true");
+    debugSync("migrateExistingData() - migration complete");
   }
 
   /**
