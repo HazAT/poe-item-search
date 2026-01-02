@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useBookmarksStore } from "@/stores/bookmarksStore";
 import { useHistoryStore } from "@/stores/historyStore";
+import { useSyncStore } from "@/stores/syncStore";
 import {
   Button,
   PlusIcon,
@@ -30,6 +31,13 @@ export function BookmarksTab() {
     createFolder,
     updateFolder,
   } = useBookmarksStore();
+
+  const { clearNewDataIndicator } = useSyncStore();
+
+  // Clear sync indicator when user views bookmarks tab
+  useEffect(() => {
+    clearNewDataIndicator();
+  }, [clearNewDataIndicator]);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
