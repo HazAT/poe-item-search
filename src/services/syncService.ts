@@ -45,6 +45,28 @@ class SyncService {
   }
 
   /**
+   * Add a tombstone for a deleted item
+   */
+  addTombstone(id: string, type: 'bookmark' | 'folder'): void {
+    const tombstonesRaw = localStorage.getItem("poe-search-sync-tombstones");
+    const tombstones: SyncTombstone[] = tombstonesRaw ? JSON.parse(tombstonesRaw) : [];
+
+    // Don't add duplicate tombstone
+    if (tombstones.find(t => t.id === id)) {
+      return;
+    }
+
+    tombstones.push({
+      id,
+      type,
+      deletedAt: Date.now(),
+    });
+
+    localStorage.setItem("poe-search-sync-tombstones", JSON.stringify(tombstones));
+    debugSync(`addTombstone() - added ${type} tombstone for`, id);
+  }
+
+  /**
    * Schedule a push to cloud storage (debounced)
    */
   schedulePush(): void {
