@@ -27,7 +27,7 @@ function extensionAssetsPlugin(): Plugin {
         manifest_version: 3,
         name: "PoE Item Search",
         version: APP_VERSION,
-        description: "Paste your item from ingame into the input field to search for it.",
+        description: "Paste item text from Path of Exile to instantly search the trade site. Includes search history, bookmarks, and persistent sort order.",
         icons: {
           "128": "assets/logo128.png",
         },
