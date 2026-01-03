@@ -14,23 +14,37 @@ function hashCode(str: string): number {
   return hash;
 }
 
+// All scripts to watch for changes
+const WATCHED_SCRIPTS = [
+  "content.js",
+  "interceptor.js",
+  "statIdExtractor.js",
+];
+
 async function checkForChanges() {
   try {
-    // Fetch the content.js file with cache busting
-    const response = await fetch(
-      chrome.runtime.getURL("content.js") + "?t=" + Date.now(),
-      { cache: "no-store" }
-    );
-    const text = await response.text();
-    const hash = hashCode(text); // Content-based hash
+    // Fetch all watched scripts and combine their hashes
+    let combinedHash = 0;
+    for (const script of WATCHED_SCRIPTS) {
+      try {
+        const response = await fetch(
+          chrome.runtime.getURL(script) + "?t=" + Date.now(),
+          { cache: "no-store" }
+        );
+        const text = await response.text();
+        combinedHash = combinedHash ^ hashCode(text); // XOR hashes together
+      } catch {
+        // Script might not exist, skip it
+      }
+    }
 
     // Check against stored hash
     const stored = await chrome.storage.local.get("_devHash");
-    if (stored._devHash && stored._devHash !== hash) {
+    if (stored._devHash && stored._devHash !== combinedHash) {
       console.log("[Extension Reload] Change detected, reloading tabs and extension...");
 
       // Store new hash FIRST to prevent reload loop
-      await chrome.storage.local.set({ _devHash: hash });
+      await chrome.storage.local.set({ _devHash: combinedHash });
 
       // Reload all matching tabs
       const tabs = await chrome.tabs.query({ url: "https://www.pathofexile.com/trade*" });
@@ -44,7 +58,7 @@ async function checkForChanges() {
       setTimeout(() => chrome.runtime.reload(), 100);
       return;
     }
-    await chrome.storage.local.set({ _devHash: hash });
+    await chrome.storage.local.set({ _devHash: combinedHash });
   } catch (e) {
     console.log("[Extension Reload] Error checking:", e);
   }
