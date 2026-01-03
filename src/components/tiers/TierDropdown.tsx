@@ -12,6 +12,7 @@ interface TierInfo {
 interface TierDropdownProps {
   tiers: TierInfo[];
   onSelect: (avgMin: number) => void;
+  containerElement?: HTMLElement | null;
 }
 
 // Inline styles for rendering outside Shadow DOM (Tailwind won't work)
@@ -71,17 +72,34 @@ const styles = {
   },
 };
 
-export function TierDropdown({ tiers, onSelect }: TierDropdownProps) {
+export function TierDropdown({ tiers, onSelect, containerElement }: TierDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
   const [hoveredTier, setHoveredTier] = useState<number | null>(null);
+
+  // Set z-index on container when dropdown opens/closes
+  const handleToggle = () => {
+    const newIsOpen = !isOpen;
+    setIsOpen(newIsOpen);
+    if (containerElement) {
+      containerElement.style.zIndex = newIsOpen ? '100' : '5';
+    }
+  };
+
+  const handleSelect = (avgMin: number) => {
+    onSelect(avgMin);
+    setIsOpen(false);
+    if (containerElement) {
+      containerElement.style.zIndex = '5';
+    }
+  };
 
   if (!tiers || tiers.length === 0) return null;
 
   return (
     <div style={styles.container}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         onMouseEnter={() => setIsButtonHovered(true)}
         onMouseLeave={() => setIsButtonHovered(false)}
         style={{
@@ -98,10 +116,7 @@ export function TierDropdown({ tiers, onSelect }: TierDropdownProps) {
           {tiers.map((tier) => (
             <button
               key={tier.tier}
-              onClick={() => {
-                onSelect(tier.avgMin);
-                setIsOpen(false);
-              }}
+              onClick={() => handleSelect(tier.avgMin)}
               onMouseEnter={() => setHoveredTier(tier.tier)}
               onMouseLeave={() => setHoveredTier(null)}
               style={{

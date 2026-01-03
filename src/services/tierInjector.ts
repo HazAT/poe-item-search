@@ -211,6 +211,7 @@ export function injectTierDropdowns(): void {
         onSelect: (avgMin: number) => {
           updateMinInput(minInput, avgMin);
         },
+        containerElement: container,
       })
     );
 
