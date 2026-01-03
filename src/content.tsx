@@ -6,7 +6,7 @@ import { usePanelStore } from "@/stores/panelStore";
 import { initSearchInterceptor } from "@/services/searchInterceptor";
 import { initSentry, captureException } from "@/services/sentry";
 import { syncService } from "@/services/syncService";
-import { injectTierDropdowns, observeFilterChanges } from "@/services/tierInjector";
+import { injectTierDropdowns, observeFilterChanges, injectStatIdExtractor } from "@/services/tierInjector";
 import { getExtensionUrl } from "@/utils/extensionApi";
 import { App } from "./App";
 
@@ -117,6 +117,9 @@ async function initialize() {
     });
 
     await waitForTradePage();
+
+    // Inject script to extract Vue stat IDs into data attributes
+    injectStatIdExtractor();
 
     // Create container for the collapsed toggle (outside shadow DOM)
     const toggleContainer = document.createElement("div");

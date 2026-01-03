@@ -3,9 +3,35 @@ import { createRoot, Root } from 'react-dom/client';
 import { createElement } from 'react';
 import { getTiersForStat, hasStatTiers } from './tierData';
 import { TierDropdown } from '@/components/tiers/TierDropdown';
+import { getExtensionUrl } from '@/utils/extensionApi';
 
 // Track React roots for cleanup
 const tierDropdownRoots = new Map<HTMLElement, Root>();
+
+/**
+ * Inject a script into the main world to extract Vue stat IDs
+ * and store them as data attributes on filter elements
+ */
+export function injectStatIdExtractor(): void {
+  console.log('[TierInjector] injectStatIdExtractor called');
+  const scriptUrl = getExtensionUrl('statIdExtractor.js');
+  console.log('[TierInjector] statIdExtractor URL:', scriptUrl);
+  if (!scriptUrl) {
+    console.warn('[TierInjector] Cannot inject stat ID extractor: not in extension context');
+    return;
+  }
+
+  const script = document.createElement('script');
+  script.src = scriptUrl;
+  script.onload = () => {
+    console.log('[TierInjector] Stat ID extractor script injected');
+    script.remove();
+  };
+  script.onerror = (e) => {
+    console.error('[TierInjector] Failed to inject stat ID extractor. URL was:', scriptUrl, 'Error:', e);
+  };
+  (document.head || document.documentElement).appendChild(script);
+}
 
 /**
  * Find the Stat Filters group element
@@ -26,19 +52,23 @@ function findStatFiltersGroup(): Element | null {
  */
 function findStatFilters(): HTMLElement[] {
   const statFiltersGroup = findStatFiltersGroup();
-  if (!statFiltersGroup) return [];
+  if (!statFiltersGroup) {
+    console.log('[TierInjector] findStatFilters: no group found');
+    return [];
+  }
 
   // Get all stat filter rows
   const filters = statFiltersGroup.querySelectorAll('.filter.full-span');
+  console.log('[TierInjector] findStatFilters: found', filters.length, 'in group');
   return Array.from(filters) as HTMLElement[];
 }
 
 /**
- * Get the stat ID from a filter element via Vue component data
+ * Get the stat ID from a filter element via data attribute
+ * (set by injected main world script)
  */
 function getStatIdFromFilter(filterElement: HTMLElement): string | null {
-  const vue = (filterElement as any).__vue__;
-  return vue?.$props?.filter?.id || vue?.$data?.lastMutable?.id || null;
+  return filterElement.dataset.statId || null;
 }
 
 /**
@@ -80,6 +110,18 @@ function updateMinInput(minInput: HTMLInputElement, value: number): void {
 }
 
 /**
+ * Check if any stat filter has stat ID extracted
+ */
+function hasStatIdsExtracted(): boolean {
+  const filters = findStatFilters();
+  if (filters.length === 0) return false;
+
+  const hasIds = filters.some(filter => !!filter.dataset.statId);
+  console.log('[TierInjector] hasStatIdsExtracted:', hasIds, 'of', filters.length, 'filters');
+  return hasIds;
+}
+
+/**
  * Inject tier dropdowns into stat filters that we have tier data for
  */
 export function injectTierDropdowns(): void {
@@ -88,9 +130,21 @@ export function injectTierDropdowns(): void {
   const statFiltersGroup = findStatFiltersGroup();
   console.log('[TierInjector] Stat Filters group:', statFiltersGroup ? 'found' : 'NOT FOUND');
 
-  const filters = findStatFilters();
-  const itemClass = getCurrentItemClass();
+  if (!statFiltersGroup) return;
 
+  const filters = findStatFilters();
+  if (filters.length === 0) {
+    console.log('[TierInjector] No stat filters found');
+    return;
+  }
+
+  // Check if stat IDs have been extracted yet
+  if (!hasStatIdsExtracted()) {
+    console.log('[TierInjector] Stat IDs not extracted yet, will retry via observer');
+    return;
+  }
+
+  const itemClass = getCurrentItemClass();
   console.log('[TierInjector] Found', filters.length, 'stat filters, item class:', itemClass);
 
   filters.forEach(filter => {
@@ -130,11 +184,24 @@ export function injectTierDropdowns(): void {
       return;
     }
 
-    // Create tier dropdown container
+    // Create a wrapper around the min input for positioning
+    const wrapper = document.createElement('span');
+    wrapper.className = 'tier-input-wrapper';
+    wrapper.style.cssText = 'position: relative; display: inline-block;';
+
+    // Wrap the min input
+    minInput.parentNode?.insertBefore(wrapper, minInput);
+    wrapper.appendChild(minInput);
+
+    // Create tier dropdown container positioned inside the wrapper
     const container = document.createElement('span');
     container.className = 'tier-dropdown-injected';
+    container.style.cssText = 'position: absolute; right: 2px; top: 50%; transform: translateY(-50%); z-index: 5;';
 
-    minInput.after(container);
+    // Add padding to min input so text doesn't overlap with button
+    minInput.style.paddingRight = '28px';
+
+    wrapper.appendChild(container);
 
     // Render TierDropdown React component
     const root = createRoot(container);
@@ -155,23 +222,53 @@ export function injectTierDropdowns(): void {
 }
 
 /**
- * Observe for new stat filters being added and inject dropdowns
+ * Observe for filter changes and inject dropdowns
+ * Watches the #trade container to catch when filters are shown/hidden
  */
 export function observeFilterChanges(): MutationObserver | null {
-  const statFiltersGroup = findStatFiltersGroup();
-
-  if (!statFiltersGroup) {
-    console.log('[TierInjector] Stat Filters group not found');
+  // Watch the #trade container which always exists
+  const tradeContainer = document.querySelector('#trade');
+  if (!tradeContainer) {
+    console.log('[TierInjector] #trade container not found');
     return null;
   }
 
-  const observer = new MutationObserver(() => {
-    // Re-inject dropdowns when filters change
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const tryInjectWithRetry = () => {
     injectTierDropdowns();
+    // If stat IDs weren't ready, retry a few times
+    const filters = findStatFilters();
+    if (filters.length > 0 && !hasStatIdsExtracted()) {
+      let retries = 0;
+      const retryInterval = setInterval(() => {
+        retries++;
+        if (hasStatIdsExtracted()) {
+          clearInterval(retryInterval);
+          console.log('[TierInjector] Stat IDs extracted after', retries * 100, 'ms retry');
+          injectTierDropdowns();
+        } else if (retries >= 20) {
+          clearInterval(retryInterval);
+          console.log('[TierInjector] Gave up waiting for stat IDs after 2s');
+        }
+      }, 100);
+    }
+  };
+
+  const observer = new MutationObserver(() => {
+    // Debounce to avoid excessive calls during DOM updates
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(tryInjectWithRetry, 100);
   });
 
-  observer.observe(statFiltersGroup, { childList: true, subtree: true });
-  console.log('[TierInjector] Observing filter changes');
+  observer.observe(tradeContainer, { childList: true, subtree: true });
+  console.log('[TierInjector] Observing #trade for filter changes');
+
+  // Also listen for custom event from stat ID extractor
+  document.addEventListener('poe-stat-ids-extracted', (e) => {
+    console.log('[TierInjector] Received stat-ids-extracted event:', (e as CustomEvent).detail);
+    injectTierDropdowns();
+  });
 
   return observer;
 }

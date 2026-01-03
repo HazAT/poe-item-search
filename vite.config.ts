@@ -41,7 +41,7 @@ function extensionAssetsPlugin(): Plugin {
         ],
         web_accessible_resources: [
           {
-            resources: ["interceptor.js"],
+            resources: ["interceptor.js", "statIdExtractor.js"],
             matches: ["https://www.pathofexile.com/*"],
           },
         ],
@@ -95,6 +95,7 @@ export default defineConfig({
       input: {
         content: path.resolve(__dirname, "src/content.tsx"),
         interceptor: path.resolve(__dirname, "src/injected/interceptor.ts"),
+        statIdExtractor: path.resolve(__dirname, "src/injected/statIdExtractor.ts"),
         "background/reload": path.resolve(__dirname, "src/background/reload.ts"),
       },
       output: {
