@@ -241,12 +241,32 @@ test("gloves2 - melee gloves with phys/fire/cold damage", () => {
   const regexStats = addRegexToStats(stats);
   const matched = matchStatsOnItem(gloves2, regexStats);
 
-  // Should match physical damage to attacks
+  // Should match physical damage to attacks with averaged value (10+20)/2 = 15
   expect(matched).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         id: "explicit.stat_3032590688", // Adds # to # Physical Damage to Attacks
-        value: { min: "10" },
+        value: { min: 15 },
+      }),
+    ])
+  );
+
+  // Should match fire damage to attacks with averaged value (23+34)/2 = 28.5
+  expect(matched).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: "explicit.stat_1573130764", // Adds # to # Fire damage to Attacks
+        value: { min: 28.5 },
+      }),
+    ])
+  );
+
+  // Should match cold damage to attacks with averaged value (3+5)/2 = 4
+  expect(matched).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: "explicit.stat_4067062424", // Adds # to # Cold damage to Attacks
+        value: { min: 4 },
       }),
     ])
   );

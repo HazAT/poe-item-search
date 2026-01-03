@@ -139,18 +139,37 @@ export function matchStatsOnItem(item, stats) {
         if (m.index === entry.regex.lastIndex) {
           entry.regex.lastIndex++;
         }
-        m.forEach((match, groupIndex) => {
-          if (groupIndex === 0) {
-            return;
+        // Collect all captured numeric values (groups 1, 2, etc.)
+        const capturedValues = [];
+        for (let i = 1; i < m.length; i++) {
+          if (m[i] !== undefined) {
+            capturedValues.push(parseFloat(m[i]));
           }
-          // Create a shallow copy of entry for each match
-          const matchedEntry = { ...entry, value: { min: match } };
-          // Check if the stat text contains '(implicit)' and set type accordingly
-          if (entry.text.includes("(implicit)")) {
-            matchedEntry.type = "implicit";
-          }
-          matched.push(matchedEntry);
-        });
+        }
+
+        if (capturedValues.length === 0) {
+          continue;
+        }
+
+        // Calculate the value to use:
+        // - For range stats (2 values like "Adds X to Y damage"), use the average
+        // - For single value stats, use that value
+        let minValue;
+        if (capturedValues.length === 2) {
+          // Average the two values for damage range stats
+          minValue = (capturedValues[0] + capturedValues[1]) / 2;
+        } else {
+          // Single value - keep as string for backwards compatibility with existing tests
+          minValue = m[1];
+        }
+
+        // Create a shallow copy of entry for the match
+        const matchedEntry = { ...entry, value: { min: minValue } };
+        // Check if the stat text contains '(implicit)' and set type accordingly
+        if (entry.text.includes("(implicit)")) {
+          matchedEntry.type = "implicit";
+        }
+        matched.push(matchedEntry);
       }
     }
   }
