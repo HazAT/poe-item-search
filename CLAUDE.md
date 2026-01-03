@@ -30,8 +30,26 @@ bun run build        # Production build (outputs to dist/)
 bun test             # Run tests with Bun's test runner
 bun run storybook    # Start Storybook dev server on port 6006
 bun run package      # Build and create extension.zip (prompts for version)
-bun run update-stats # Fetch latest stats.json from live PoE trade APIs
+bun run update-stats  # Fetch latest stats.json from live PoE trade APIs
+bun run generate-tiers # Regenerate tier data from mods.json
 ```
+
+## Updating Data Files
+
+### Stats Data
+```bash
+bun run update-stats  # Fetch latest stats.json from PoE trade APIs
+```
+
+### Tier Data
+```bash
+bun run generate-tiers  # Regenerate tier data from mods.json
+```
+
+**When to update:**
+- After major PoE patches that change mod tiers
+- Requires `tests/fixtures/mods.json` (download from poe-mods data source)
+- Output: `src/data/tiers.json` with tier mappings for whitelisted stats
 
 ## Project Structure
 
