@@ -6,6 +6,7 @@ import { usePanelStore } from "@/stores/panelStore";
 import { initSearchInterceptor } from "@/services/searchInterceptor";
 import { initSentry, captureException } from "@/services/sentry";
 import { syncService } from "@/services/syncService";
+import { injectTierDropdowns, observeFilterChanges } from "@/services/tierInjector";
 import { getExtensionUrl } from "@/utils/extensionApi";
 import { App } from "./App";
 
@@ -181,6 +182,16 @@ async function initialize() {
         </PanelContent>
       </StrictMode>
     );
+
+    // Initialize tier dropdowns for stat filters
+    // Small delay to ensure Vue components are mounted
+    console.log('[PoE Item Search] Scheduling tier dropdown injection...');
+    setTimeout(() => {
+      console.log('[PoE Item Search] Running tier dropdown injection now');
+      injectTierDropdowns();
+      const observer = observeFilterChanges();
+      console.log('[PoE Item Search] Filter observer:', observer ? 'active' : 'failed');
+    }, 500);
 
     console.log("PoE Item Search initialized successfully");
   } catch (error) {

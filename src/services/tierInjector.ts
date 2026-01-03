@@ -1,5 +1,11 @@
 // src/services/tierInjector.ts
+import { createRoot, Root } from 'react-dom/client';
+import { createElement } from 'react';
 import { getTiersForStat, hasStatTiers } from './tierData';
+import { TierDropdown } from '@/components/tiers/TierDropdown';
+
+// Track React roots for cleanup
+const tierDropdownRoots = new Map<HTMLElement, Root>();
 
 /**
  * Find the Stat Filters group element
@@ -58,9 +64,30 @@ function getCurrentItemClass(): string | null {
 }
 
 /**
+ * Update the min input value and dispatch events for Vue to pick up
+ */
+function updateMinInput(minInput: HTMLInputElement, value: number): void {
+  // Set the value
+  minInput.value = String(value);
+
+  // Dispatch input event for Vue reactivity
+  minInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+  // Also dispatch change event for good measure
+  minInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+  console.log('[TierInjector] Updated min input to', value);
+}
+
+/**
  * Inject tier dropdowns into stat filters that we have tier data for
  */
 export function injectTierDropdowns(): void {
+  console.log('[TierInjector] injectTierDropdowns called');
+
+  const statFiltersGroup = findStatFiltersGroup();
+  console.log('[TierInjector] Stat Filters group:', statFiltersGroup ? 'found' : 'NOT FOUND');
+
   const filters = findStatFilters();
   const itemClass = getCurrentItemClass();
 
@@ -68,27 +95,60 @@ export function injectTierDropdowns(): void {
 
   filters.forEach(filter => {
     // Skip if already has tier dropdown
-    if (filter.querySelector('.tier-dropdown-injected')) return;
+    if (filter.querySelector('.tier-dropdown-injected')) {
+      console.log('[TierInjector] Skipping filter - already has dropdown');
+      return;
+    }
 
     const statId = getStatIdFromFilter(filter);
-    if (!statId || !hasStatTiers(statId)) return;
+    console.log('[TierInjector] Processing filter, statId:', statId);
+
+    if (!statId) {
+      console.log('[TierInjector] Skipping - no statId');
+      return;
+    }
+
+    const hasTiers = hasStatTiers(statId);
+    console.log('[TierInjector] hasStatTiers:', hasTiers);
+
+    if (!hasTiers) {
+      console.log('[TierInjector] Skipping - no tier data for', statId);
+      return;
+    }
 
     const tiers = getTiersForStat(statId, itemClass || undefined);
-    if (!tiers || tiers.length === 0) return;
+    console.log('[TierInjector] Tiers for', statId, ':', tiers?.length || 0, 'tiers');
 
-    const minInput = filter.querySelector('input[placeholder="min"]');
-    if (!minInput) return;
+    if (!tiers || tiers.length === 0) {
+      console.log('[TierInjector] Skipping - no tiers available');
+      return;
+    }
+
+    const minInput = filter.querySelector('input[placeholder="min"]') as HTMLInputElement | null;
+    if (!minInput) {
+      console.log('[TierInjector] Skipping - no min input found');
+      return;
+    }
 
     // Create tier dropdown container
     const container = document.createElement('span');
     container.className = 'tier-dropdown-injected';
-    container.style.marginLeft = '4px';
-
-    // TODO: Render TierDropdown React component into container
-    // For now, just add a placeholder button
-    container.innerHTML = `<button style="padding: 2px 6px; font-size: 11px; background: #1a1a1d; border: 1px solid #3d3d3d; color: #c8b68b; cursor: pointer;" title="T1: ${tiers[0].name} (${tiers[0].avgMin}+)">T&#9662;</button>`;
 
     minInput.after(container);
+
+    // Render TierDropdown React component
+    const root = createRoot(container);
+    root.render(
+      createElement(TierDropdown, {
+        tiers,
+        onSelect: (avgMin: number) => {
+          updateMinInput(minInput, avgMin);
+        },
+      })
+    );
+
+    // Track root for cleanup
+    tierDropdownRoots.set(container, root);
 
     console.log('[TierInjector] Injected tier dropdown for', statId);
   });
