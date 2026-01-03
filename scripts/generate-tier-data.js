@@ -14,15 +14,15 @@ const STAT_WHITELIST = {
   'explicit.stat_4067062424': { pattern: 'attack_minimum_added_cold_damage', name: 'Cold Damage to Attacks' },
 
   // Resistances
-  'explicit.stat_3372524247': { pattern: 'fire_resistance_%', name: 'Fire Resistance' },
-  'explicit.stat_4220027924': { pattern: 'cold_resistance_%', name: 'Cold Resistance' },
-  'explicit.stat_1671376347': { pattern: 'lightning_resistance_%', name: 'Lightning Resistance' },
-  'explicit.stat_2923486259': { pattern: 'chaos_resistance_%', name: 'Chaos Resistance' },
+  'explicit.stat_3372524247': { pattern: 'base_fire_damage_resistance_%', name: 'Fire Resistance' },
+  'explicit.stat_4220027924': { pattern: 'base_cold_damage_resistance_%', name: 'Cold Resistance' },
+  'explicit.stat_1671376347': { pattern: 'base_lightning_damage_resistance_%', name: 'Lightning Resistance' },
+  'explicit.stat_2923486259': { pattern: 'base_chaos_damage_resistance_%', name: 'Chaos Resistance' },
 
   // Attributes
-  'explicit.stat_4080418644': { pattern: 'strength', name: 'Strength' },
-  'explicit.stat_3261801346': { pattern: 'dexterity', name: 'Dexterity' },
-  'explicit.stat_328541901': { pattern: 'intelligence', name: 'Intelligence' },
+  'explicit.stat_4080418644': { pattern: 'additional_strength', name: 'Strength' },
+  'explicit.stat_3261801346': { pattern: 'additional_dexterity', name: 'Dexterity' },
+  'explicit.stat_328541901': { pattern: 'additional_intelligence', name: 'Intelligence' },
 };
 
 // Item classes we care about (trade API names)
@@ -70,6 +70,57 @@ function canSpawnOnClass(mod, itemClass) {
   return false;
 }
 
+function calculateAvgMin(stats) {
+  // For damage stats with min/max (2 stats), average the minimums
+  if (stats.length === 2) {
+    const minStat = stats.find(s => s.id.includes('minimum'));
+    const maxStat = stats.find(s => s.id.includes('maximum'));
+    if (minStat && maxStat) {
+      return (minStat.min + maxStat.min) / 2;
+    }
+  }
+  // For single-value stats, use the minimum
+  if (stats.length === 1) {
+    return stats[0].min;
+  }
+  return stats[0].min;
+}
+
+function buildTiersForStat(mods, statConfig, itemClasses) {
+  const matches = findModsByStatPattern(mods, statConfig.pattern);
+
+  // Filter to prefix/suffix only (exclude corrupted, essence, etc.)
+  const craftable = matches.filter(m =>
+    m.generation_type === 'prefix' || m.generation_type === 'suffix'
+  );
+
+  // Sort by required_level descending (highest = T1)
+  craftable.sort((a, b) => b.required_level - a.required_level);
+
+  const tiersByClass = {};
+
+  for (const itemClass of itemClasses) {
+    const applicableMods = craftable.filter(m => canSpawnOnClass(m, itemClass));
+
+    if (applicableMods.length === 0) continue;
+
+    tiersByClass[itemClass] = applicableMods.map((mod, index) => ({
+      tier: index + 1,
+      name: mod.name,
+      min: mod.stats.length === 2
+        ? [mod.stats[0].min, mod.stats[1].min]
+        : mod.stats[0].min,
+      max: mod.stats.length === 2
+        ? [mod.stats[0].max, mod.stats[1].max]
+        : mod.stats[0].max,
+      avgMin: calculateAvgMin(mod.stats),
+      ilvl: mod.required_level,
+    }));
+  }
+
+  return tiersByClass;
+}
+
 async function main() {
   console.log('Generating tier data...\n');
 
@@ -85,19 +136,35 @@ async function main() {
 
   console.log(`Loaded ${Object.keys(mods).length} mods`);
 
+  const output = {};
+
   // Process each whitelisted stat
   for (const [statId, config] of Object.entries(STAT_WHITELIST)) {
-    const matches = findModsByStatPattern(mods, config.pattern);
-    console.log(`\n${config.name} (${statId}):`);
-    console.log(`  Found ${matches.length} matching mods`);
+    console.log(`Processing: ${config.name}`);
 
-    if (matches.length > 0) {
-      // Log first match for debugging
-      const first = matches[0];
-      console.log(`  Example: ${first.name} (lvl ${first.required_level})`);
-      console.log(`  Stats: ${JSON.stringify(first.stats)}`);
+    const tiers = buildTiersForStat(mods, config, ITEM_CLASSES);
+    const classCount = Object.keys(tiers).length;
+
+    if (classCount > 0) {
+      output[statId] = {
+        text: config.name,
+        tiers: tiers,
+      };
+      console.log(`  -> ${classCount} item classes with tiers`);
+    } else {
+      console.log(`  -> No tiers found (skipping)`);
     }
   }
+
+  // Write output
+  const outputDir = path.dirname(OUTPUT_PATH);
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
+  fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2));
+  console.log(`\nWritten to ${OUTPUT_PATH}`);
+  console.log(`Total stats: ${Object.keys(output).length}`);
 }
 
 main();

@@ -1,0 +1,2706 @@
+{
+  "explicit.stat_3032590688": {
+    "text": "Physical Damage to Attacks",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "Flaring",
+          "min": [
+            12,
+            22
+          ],
+          "max": [
+            19,
+            32
+          ],
+          "avgMin": 17,
+          "ilvl": 75
+        },
+        {
+          "tier": 2,
+          "name": "Tempered",
+          "min": [
+            10,
+            18
+          ],
+          "max": [
+            15,
+            26
+          ],
+          "avgMin": 14,
+          "ilvl": 65
+        },
+        {
+          "tier": 3,
+          "name": "Razor-sharp",
+          "min": [
+            7,
+            14
+          ],
+          "max": [
+            11,
+            20
+          ],
+          "avgMin": 10.5,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "Annealed",
+          "min": [
+            6,
+            12
+          ],
+          "max": [
+            10,
+            17
+          ],
+          "avgMin": 9,
+          "ilvl": 54
+        },
+        {
+          "tier": 5,
+          "name": "Gleaming",
+          "min": [
+            5,
+            9
+          ],
+          "max": [
+            7,
+            13
+          ],
+          "avgMin": 7,
+          "ilvl": 46
+        },
+        {
+          "tier": 6,
+          "name": "Honed",
+          "min": [
+            4,
+            8
+          ],
+          "max": [
+            6,
+            11
+          ],
+          "avgMin": 6,
+          "ilvl": 33
+        },
+        {
+          "tier": 7,
+          "name": "Polished",
+          "min": [
+            2,
+            5
+          ],
+          "max": [
+            4,
+            8
+          ],
+          "avgMin": 3.5,
+          "ilvl": 16
+        },
+        {
+          "tier": 8,
+          "name": "Burnished",
+          "min": [
+            2,
+            4
+          ],
+          "max": [
+            3,
+            6
+          ],
+          "avgMin": 3,
+          "ilvl": 8
+        },
+        {
+          "tier": 9,
+          "name": "Glinting",
+          "min": [
+            1,
+            3
+          ],
+          "max": [
+            2,
+            3
+          ],
+          "avgMin": 2,
+          "ilvl": 1
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "Flaring",
+          "min": [
+            12,
+            22
+          ],
+          "max": [
+            19,
+            32
+          ],
+          "avgMin": 17,
+          "ilvl": 75
+        },
+        {
+          "tier": 2,
+          "name": "Tempered",
+          "min": [
+            10,
+            18
+          ],
+          "max": [
+            15,
+            26
+          ],
+          "avgMin": 14,
+          "ilvl": 65
+        },
+        {
+          "tier": 3,
+          "name": "Razor-sharp",
+          "min": [
+            7,
+            14
+          ],
+          "max": [
+            11,
+            20
+          ],
+          "avgMin": 10.5,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "Annealed",
+          "min": [
+            6,
+            12
+          ],
+          "max": [
+            10,
+            17
+          ],
+          "avgMin": 9,
+          "ilvl": 54
+        },
+        {
+          "tier": 5,
+          "name": "Gleaming",
+          "min": [
+            5,
+            9
+          ],
+          "max": [
+            7,
+            13
+          ],
+          "avgMin": 7,
+          "ilvl": 46
+        },
+        {
+          "tier": 6,
+          "name": "Honed",
+          "min": [
+            4,
+            8
+          ],
+          "max": [
+            6,
+            11
+          ],
+          "avgMin": 6,
+          "ilvl": 33
+        },
+        {
+          "tier": 7,
+          "name": "Polished",
+          "min": [
+            2,
+            5
+          ],
+          "max": [
+            4,
+            8
+          ],
+          "avgMin": 3.5,
+          "ilvl": 16
+        },
+        {
+          "tier": 8,
+          "name": "Burnished",
+          "min": [
+            2,
+            4
+          ],
+          "max": [
+            3,
+            6
+          ],
+          "avgMin": 3,
+          "ilvl": 8
+        },
+        {
+          "tier": 9,
+          "name": "Glinting",
+          "min": [
+            1,
+            3
+          ],
+          "max": [
+            2,
+            3
+          ],
+          "avgMin": 2,
+          "ilvl": 1
+        }
+      ],
+      "Quivers": [
+        {
+          "tier": 1,
+          "name": "Flaring",
+          "min": [
+            12,
+            22
+          ],
+          "max": [
+            19,
+            32
+          ],
+          "avgMin": 17,
+          "ilvl": 75
+        },
+        {
+          "tier": 2,
+          "name": "Tempered",
+          "min": [
+            10,
+            18
+          ],
+          "max": [
+            15,
+            26
+          ],
+          "avgMin": 14,
+          "ilvl": 65
+        },
+        {
+          "tier": 3,
+          "name": "Razor-sharp",
+          "min": [
+            7,
+            14
+          ],
+          "max": [
+            11,
+            20
+          ],
+          "avgMin": 10.5,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "Annealed",
+          "min": [
+            6,
+            12
+          ],
+          "max": [
+            10,
+            17
+          ],
+          "avgMin": 9,
+          "ilvl": 54
+        },
+        {
+          "tier": 5,
+          "name": "Gleaming",
+          "min": [
+            5,
+            9
+          ],
+          "max": [
+            7,
+            13
+          ],
+          "avgMin": 7,
+          "ilvl": 46
+        },
+        {
+          "tier": 6,
+          "name": "Honed",
+          "min": [
+            4,
+            8
+          ],
+          "max": [
+            6,
+            11
+          ],
+          "avgMin": 6,
+          "ilvl": 33
+        },
+        {
+          "tier": 7,
+          "name": "Polished",
+          "min": [
+            2,
+            5
+          ],
+          "max": [
+            4,
+            8
+          ],
+          "avgMin": 3.5,
+          "ilvl": 16
+        },
+        {
+          "tier": 8,
+          "name": "Burnished",
+          "min": [
+            2,
+            4
+          ],
+          "max": [
+            3,
+            6
+          ],
+          "avgMin": 3,
+          "ilvl": 8
+        },
+        {
+          "tier": 9,
+          "name": "Glinting",
+          "min": [
+            1,
+            3
+          ],
+          "max": [
+            2,
+            3
+          ],
+          "avgMin": 2,
+          "ilvl": 1
+        }
+      ]
+    }
+  },
+  "explicit.stat_1573130764": {
+    "text": "Fire Damage to Attacks",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "Cremating",
+          "min": [
+            25,
+            37
+          ],
+          "max": [
+            29,
+            45
+          ],
+          "avgMin": 31,
+          "ilvl": 75
+        },
+        {
+          "tier": 2,
+          "name": "Blasting",
+          "min": [
+            20,
+            33
+          ],
+          "max": [
+            24,
+            36
+          ],
+          "avgMin": 26.5,
+          "ilvl": 65
+        },
+        {
+          "tier": 3,
+          "name": "Incinerating",
+          "min": [
+            13,
+            27
+          ],
+          "max": [
+            19,
+            32
+          ],
+          "avgMin": 20,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "Scorching",
+          "min": [
+            11,
+            21
+          ],
+          "max": [
+            16,
+            26
+          ],
+          "avgMin": 16,
+          "ilvl": 54
+        },
+        {
+          "tier": 5,
+          "name": "Flaming",
+          "min": [
+            12,
+            18
+          ],
+          "max": [
+            13,
+            20
+          ],
+          "avgMin": 15,
+          "ilvl": 46
+        },
+        {
+          "tier": 6,
+          "name": "Burning",
+          "min": [
+            9,
+            14
+          ],
+          "max": [
+            11,
+            17
+          ],
+          "avgMin": 11.5,
+          "ilvl": 33
+        },
+        {
+          "tier": 7,
+          "name": "Smoking",
+          "min": [
+            6,
+            10
+          ],
+          "max": [
+            8,
+            13
+          ],
+          "avgMin": 8,
+          "ilvl": 16
+        },
+        {
+          "tier": 8,
+          "name": "Smouldering",
+          "min": [
+            3,
+            6
+          ],
+          "max": [
+            5,
+            9
+          ],
+          "avgMin": 4.5,
+          "ilvl": 8
+        },
+        {
+          "tier": 9,
+          "name": "Heated",
+          "min": [
+            1,
+            3
+          ],
+          "max": [
+            2,
+            3
+          ],
+          "avgMin": 2,
+          "ilvl": 1
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "Cremating",
+          "min": [
+            25,
+            37
+          ],
+          "max": [
+            29,
+            45
+          ],
+          "avgMin": 31,
+          "ilvl": 75
+        },
+        {
+          "tier": 2,
+          "name": "Blasting",
+          "min": [
+            20,
+            33
+          ],
+          "max": [
+            24,
+            36
+          ],
+          "avgMin": 26.5,
+          "ilvl": 65
+        },
+        {
+          "tier": 3,
+          "name": "Incinerating",
+          "min": [
+            13,
+            27
+          ],
+          "max": [
+            19,
+            32
+          ],
+          "avgMin": 20,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "Scorching",
+          "min": [
+            11,
+            21
+          ],
+          "max": [
+            16,
+            26
+          ],
+          "avgMin": 16,
+          "ilvl": 54
+        },
+        {
+          "tier": 5,
+          "name": "Flaming",
+          "min": [
+            12,
+            18
+          ],
+          "max": [
+            13,
+            20
+          ],
+          "avgMin": 15,
+          "ilvl": 46
+        },
+        {
+          "tier": 6,
+          "name": "Burning",
+          "min": [
+            9,
+            14
+          ],
+          "max": [
+            11,
+            17
+          ],
+          "avgMin": 11.5,
+          "ilvl": 33
+        },
+        {
+          "tier": 7,
+          "name": "Smoking",
+          "min": [
+            6,
+            10
+          ],
+          "max": [
+            8,
+            13
+          ],
+          "avgMin": 8,
+          "ilvl": 16
+        },
+        {
+          "tier": 8,
+          "name": "Smouldering",
+          "min": [
+            3,
+            6
+          ],
+          "max": [
+            5,
+            9
+          ],
+          "avgMin": 4.5,
+          "ilvl": 8
+        },
+        {
+          "tier": 9,
+          "name": "Heated",
+          "min": [
+            1,
+            3
+          ],
+          "max": [
+            2,
+            3
+          ],
+          "avgMin": 2,
+          "ilvl": 1
+        }
+      ],
+      "Quivers": [
+        {
+          "tier": 1,
+          "name": "Cremating",
+          "min": [
+            25,
+            37
+          ],
+          "max": [
+            29,
+            45
+          ],
+          "avgMin": 31,
+          "ilvl": 75
+        },
+        {
+          "tier": 2,
+          "name": "Blasting",
+          "min": [
+            20,
+            33
+          ],
+          "max": [
+            24,
+            36
+          ],
+          "avgMin": 26.5,
+          "ilvl": 65
+        },
+        {
+          "tier": 3,
+          "name": "Incinerating",
+          "min": [
+            13,
+            27
+          ],
+          "max": [
+            19,
+            32
+          ],
+          "avgMin": 20,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "Scorching",
+          "min": [
+            11,
+            21
+          ],
+          "max": [
+            16,
+            26
+          ],
+          "avgMin": 16,
+          "ilvl": 54
+        },
+        {
+          "tier": 5,
+          "name": "Flaming",
+          "min": [
+            12,
+            18
+          ],
+          "max": [
+            13,
+            20
+          ],
+          "avgMin": 15,
+          "ilvl": 46
+        },
+        {
+          "tier": 6,
+          "name": "Burning",
+          "min": [
+            9,
+            14
+          ],
+          "max": [
+            11,
+            17
+          ],
+          "avgMin": 11.5,
+          "ilvl": 33
+        },
+        {
+          "tier": 7,
+          "name": "Smoking",
+          "min": [
+            6,
+            10
+          ],
+          "max": [
+            8,
+            13
+          ],
+          "avgMin": 8,
+          "ilvl": 16
+        },
+        {
+          "tier": 8,
+          "name": "Smouldering",
+          "min": [
+            3,
+            6
+          ],
+          "max": [
+            5,
+            9
+          ],
+          "avgMin": 4.5,
+          "ilvl": 8
+        },
+        {
+          "tier": 9,
+          "name": "Heated",
+          "min": [
+            1,
+            3
+          ],
+          "max": [
+            2,
+            3
+          ],
+          "avgMin": 2,
+          "ilvl": 1
+        }
+      ]
+    }
+  },
+  "explicit.stat_4067062424": {
+    "text": "Cold Damage to Attacks",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "Entombing",
+          "min": [
+            21,
+            32
+          ],
+          "max": [
+            24,
+            37
+          ],
+          "avgMin": 26.5,
+          "ilvl": 75
+        },
+        {
+          "tier": 2,
+          "name": "Polar",
+          "min": [
+            16,
+            25
+          ],
+          "max": [
+            20,
+            31
+          ],
+          "avgMin": 20.5,
+          "ilvl": 65
+        },
+        {
+          "tier": 3,
+          "name": "Glaciated",
+          "min": [
+            14,
+            22
+          ],
+          "max": [
+            15,
+            24
+          ],
+          "avgMin": 18,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "Frozen",
+          "min": [
+            11,
+            18
+          ],
+          "max": [
+            13,
+            21
+          ],
+          "avgMin": 14.5,
+          "ilvl": 54
+        },
+        {
+          "tier": 5,
+          "name": "Freezing",
+          "min": [
+            9,
+            15
+          ],
+          "max": [
+            10,
+            17
+          ],
+          "avgMin": 12,
+          "ilvl": 46
+        },
+        {
+          "tier": 6,
+          "name": "Frigid",
+          "min": [
+            7,
+            12
+          ],
+          "max": [
+            8,
+            14
+          ],
+          "avgMin": 9.5,
+          "ilvl": 33
+        },
+        {
+          "tier": 7,
+          "name": "Icy",
+          "min": [
+            5,
+            9
+          ],
+          "max": [
+            6,
+            11
+          ],
+          "avgMin": 7,
+          "ilvl": 16
+        },
+        {
+          "tier": 8,
+          "name": "Chilled",
+          "min": [
+            3,
+            5
+          ],
+          "max": [
+            4,
+            8
+          ],
+          "avgMin": 4,
+          "ilvl": 8
+        },
+        {
+          "tier": 9,
+          "name": "Frosted",
+          "min": [
+            1,
+            2
+          ],
+          "max": [
+            1,
+            3
+          ],
+          "avgMin": 1.5,
+          "ilvl": 1
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "Entombing",
+          "min": [
+            21,
+            32
+          ],
+          "max": [
+            24,
+            37
+          ],
+          "avgMin": 26.5,
+          "ilvl": 75
+        },
+        {
+          "tier": 2,
+          "name": "Polar",
+          "min": [
+            16,
+            25
+          ],
+          "max": [
+            20,
+            31
+          ],
+          "avgMin": 20.5,
+          "ilvl": 65
+        },
+        {
+          "tier": 3,
+          "name": "Glaciated",
+          "min": [
+            14,
+            22
+          ],
+          "max": [
+            15,
+            24
+          ],
+          "avgMin": 18,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "Frozen",
+          "min": [
+            11,
+            18
+          ],
+          "max": [
+            13,
+            21
+          ],
+          "avgMin": 14.5,
+          "ilvl": 54
+        },
+        {
+          "tier": 5,
+          "name": "Freezing",
+          "min": [
+            9,
+            15
+          ],
+          "max": [
+            10,
+            17
+          ],
+          "avgMin": 12,
+          "ilvl": 46
+        },
+        {
+          "tier": 6,
+          "name": "Frigid",
+          "min": [
+            7,
+            12
+          ],
+          "max": [
+            8,
+            14
+          ],
+          "avgMin": 9.5,
+          "ilvl": 33
+        },
+        {
+          "tier": 7,
+          "name": "Icy",
+          "min": [
+            5,
+            9
+          ],
+          "max": [
+            6,
+            11
+          ],
+          "avgMin": 7,
+          "ilvl": 16
+        },
+        {
+          "tier": 8,
+          "name": "Chilled",
+          "min": [
+            3,
+            5
+          ],
+          "max": [
+            4,
+            8
+          ],
+          "avgMin": 4,
+          "ilvl": 8
+        },
+        {
+          "tier": 9,
+          "name": "Frosted",
+          "min": [
+            1,
+            2
+          ],
+          "max": [
+            1,
+            3
+          ],
+          "avgMin": 1.5,
+          "ilvl": 1
+        }
+      ],
+      "Quivers": [
+        {
+          "tier": 1,
+          "name": "Entombing",
+          "min": [
+            21,
+            32
+          ],
+          "max": [
+            24,
+            37
+          ],
+          "avgMin": 26.5,
+          "ilvl": 75
+        },
+        {
+          "tier": 2,
+          "name": "Polar",
+          "min": [
+            16,
+            25
+          ],
+          "max": [
+            20,
+            31
+          ],
+          "avgMin": 20.5,
+          "ilvl": 65
+        },
+        {
+          "tier": 3,
+          "name": "Glaciated",
+          "min": [
+            14,
+            22
+          ],
+          "max": [
+            15,
+            24
+          ],
+          "avgMin": 18,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "Frozen",
+          "min": [
+            11,
+            18
+          ],
+          "max": [
+            13,
+            21
+          ],
+          "avgMin": 14.5,
+          "ilvl": 54
+        },
+        {
+          "tier": 5,
+          "name": "Freezing",
+          "min": [
+            9,
+            15
+          ],
+          "max": [
+            10,
+            17
+          ],
+          "avgMin": 12,
+          "ilvl": 46
+        },
+        {
+          "tier": 6,
+          "name": "Frigid",
+          "min": [
+            7,
+            12
+          ],
+          "max": [
+            8,
+            14
+          ],
+          "avgMin": 9.5,
+          "ilvl": 33
+        },
+        {
+          "tier": 7,
+          "name": "Icy",
+          "min": [
+            5,
+            9
+          ],
+          "max": [
+            6,
+            11
+          ],
+          "avgMin": 7,
+          "ilvl": 16
+        },
+        {
+          "tier": 8,
+          "name": "Chilled",
+          "min": [
+            3,
+            5
+          ],
+          "max": [
+            4,
+            8
+          ],
+          "avgMin": 4,
+          "ilvl": 8
+        },
+        {
+          "tier": 9,
+          "name": "Frosted",
+          "min": [
+            1,
+            2
+          ],
+          "max": [
+            1,
+            3
+          ],
+          "avgMin": 1.5,
+          "ilvl": 1
+        }
+      ]
+    }
+  },
+  "explicit.stat_3372524247": {
+    "text": "Fire Resistance",
+    "tiers": {
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "of Tzteosh",
+          "min": 41,
+          "max": 45,
+          "avgMin": 41,
+          "ilvl": 82
+        },
+        {
+          "tier": 2,
+          "name": "of Magma",
+          "min": 36,
+          "max": 40,
+          "avgMin": 36,
+          "ilvl": 71
+        },
+        {
+          "tier": 3,
+          "name": "of the Volcano",
+          "min": 31,
+          "max": 35,
+          "avgMin": 31,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "of the Furnace",
+          "min": 26,
+          "max": 30,
+          "avgMin": 26,
+          "ilvl": 48
+        },
+        {
+          "tier": 5,
+          "name": "of the Kiln",
+          "min": 21,
+          "max": 25,
+          "avgMin": 21,
+          "ilvl": 36
+        },
+        {
+          "tier": 6,
+          "name": "of the Drake",
+          "min": 16,
+          "max": 20,
+          "avgMin": 16,
+          "ilvl": 24
+        },
+        {
+          "tier": 7,
+          "name": "of the Salamander",
+          "min": 11,
+          "max": 15,
+          "avgMin": 11,
+          "ilvl": 12
+        },
+        {
+          "tier": 8,
+          "name": "of the Whelpling",
+          "min": 6,
+          "max": 10,
+          "avgMin": 6,
+          "ilvl": 1
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "of Tzteosh",
+          "min": 41,
+          "max": 45,
+          "avgMin": 41,
+          "ilvl": 82
+        },
+        {
+          "tier": 2,
+          "name": "of Magma",
+          "min": 36,
+          "max": 40,
+          "avgMin": 36,
+          "ilvl": 71
+        },
+        {
+          "tier": 3,
+          "name": "of the Volcano",
+          "min": 31,
+          "max": 35,
+          "avgMin": 31,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "of the Furnace",
+          "min": 26,
+          "max": 30,
+          "avgMin": 26,
+          "ilvl": 48
+        },
+        {
+          "tier": 5,
+          "name": "of the Kiln",
+          "min": 21,
+          "max": 25,
+          "avgMin": 21,
+          "ilvl": 36
+        },
+        {
+          "tier": 6,
+          "name": "of the Drake",
+          "min": 16,
+          "max": 20,
+          "avgMin": 16,
+          "ilvl": 24
+        },
+        {
+          "tier": 7,
+          "name": "of the Salamander",
+          "min": 11,
+          "max": 15,
+          "avgMin": 11,
+          "ilvl": 12
+        },
+        {
+          "tier": 8,
+          "name": "of the Whelpling",
+          "min": 6,
+          "max": 10,
+          "avgMin": 6,
+          "ilvl": 1
+        }
+      ],
+      "Belts": [
+        {
+          "tier": 1,
+          "name": "of Tzteosh",
+          "min": 41,
+          "max": 45,
+          "avgMin": 41,
+          "ilvl": 82
+        },
+        {
+          "tier": 2,
+          "name": "of Magma",
+          "min": 36,
+          "max": 40,
+          "avgMin": 36,
+          "ilvl": 71
+        },
+        {
+          "tier": 3,
+          "name": "of the Volcano",
+          "min": 31,
+          "max": 35,
+          "avgMin": 31,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "of the Furnace",
+          "min": 26,
+          "max": 30,
+          "avgMin": 26,
+          "ilvl": 48
+        },
+        {
+          "tier": 5,
+          "name": "of the Kiln",
+          "min": 21,
+          "max": 25,
+          "avgMin": 21,
+          "ilvl": 36
+        },
+        {
+          "tier": 6,
+          "name": "of the Drake",
+          "min": 16,
+          "max": 20,
+          "avgMin": 16,
+          "ilvl": 24
+        },
+        {
+          "tier": 7,
+          "name": "of the Salamander",
+          "min": 11,
+          "max": 15,
+          "avgMin": 11,
+          "ilvl": 12
+        },
+        {
+          "tier": 8,
+          "name": "of the Whelpling",
+          "min": 6,
+          "max": 10,
+          "avgMin": 6,
+          "ilvl": 1
+        }
+      ]
+    }
+  },
+  "explicit.stat_4220027924": {
+    "text": "Cold Resistance",
+    "tiers": {
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "of Haast",
+          "min": 41,
+          "max": 45,
+          "avgMin": 41,
+          "ilvl": 82
+        },
+        {
+          "tier": 2,
+          "name": "of the Ice",
+          "min": 36,
+          "max": 40,
+          "avgMin": 36,
+          "ilvl": 71
+        },
+        {
+          "tier": 3,
+          "name": "of the Polar Bear",
+          "min": 31,
+          "max": 35,
+          "avgMin": 31,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "of the Walrus",
+          "min": 26,
+          "max": 30,
+          "avgMin": 26,
+          "ilvl": 50
+        },
+        {
+          "tier": 5,
+          "name": "of the Yeti",
+          "min": 21,
+          "max": 25,
+          "avgMin": 21,
+          "ilvl": 38
+        },
+        {
+          "tier": 6,
+          "name": "of the Narwhal",
+          "min": 16,
+          "max": 20,
+          "avgMin": 16,
+          "ilvl": 26
+        },
+        {
+          "tier": 7,
+          "name": "of the Penguin",
+          "min": 11,
+          "max": 15,
+          "avgMin": 11,
+          "ilvl": 14
+        },
+        {
+          "tier": 8,
+          "name": "of the Seal",
+          "min": 6,
+          "max": 10,
+          "avgMin": 6,
+          "ilvl": 1
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "of Haast",
+          "min": 41,
+          "max": 45,
+          "avgMin": 41,
+          "ilvl": 82
+        },
+        {
+          "tier": 2,
+          "name": "of the Ice",
+          "min": 36,
+          "max": 40,
+          "avgMin": 36,
+          "ilvl": 71
+        },
+        {
+          "tier": 3,
+          "name": "of the Polar Bear",
+          "min": 31,
+          "max": 35,
+          "avgMin": 31,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "of the Walrus",
+          "min": 26,
+          "max": 30,
+          "avgMin": 26,
+          "ilvl": 50
+        },
+        {
+          "tier": 5,
+          "name": "of the Yeti",
+          "min": 21,
+          "max": 25,
+          "avgMin": 21,
+          "ilvl": 38
+        },
+        {
+          "tier": 6,
+          "name": "of the Narwhal",
+          "min": 16,
+          "max": 20,
+          "avgMin": 16,
+          "ilvl": 26
+        },
+        {
+          "tier": 7,
+          "name": "of the Penguin",
+          "min": 11,
+          "max": 15,
+          "avgMin": 11,
+          "ilvl": 14
+        },
+        {
+          "tier": 8,
+          "name": "of the Seal",
+          "min": 6,
+          "max": 10,
+          "avgMin": 6,
+          "ilvl": 1
+        }
+      ],
+      "Belts": [
+        {
+          "tier": 1,
+          "name": "of Haast",
+          "min": 41,
+          "max": 45,
+          "avgMin": 41,
+          "ilvl": 82
+        },
+        {
+          "tier": 2,
+          "name": "of the Ice",
+          "min": 36,
+          "max": 40,
+          "avgMin": 36,
+          "ilvl": 71
+        },
+        {
+          "tier": 3,
+          "name": "of the Polar Bear",
+          "min": 31,
+          "max": 35,
+          "avgMin": 31,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "of the Walrus",
+          "min": 26,
+          "max": 30,
+          "avgMin": 26,
+          "ilvl": 50
+        },
+        {
+          "tier": 5,
+          "name": "of the Yeti",
+          "min": 21,
+          "max": 25,
+          "avgMin": 21,
+          "ilvl": 38
+        },
+        {
+          "tier": 6,
+          "name": "of the Narwhal",
+          "min": 16,
+          "max": 20,
+          "avgMin": 16,
+          "ilvl": 26
+        },
+        {
+          "tier": 7,
+          "name": "of the Penguin",
+          "min": 11,
+          "max": 15,
+          "avgMin": 11,
+          "ilvl": 14
+        },
+        {
+          "tier": 8,
+          "name": "of the Seal",
+          "min": 6,
+          "max": 10,
+          "avgMin": 6,
+          "ilvl": 1
+        }
+      ]
+    }
+  },
+  "explicit.stat_1671376347": {
+    "text": "Lightning Resistance",
+    "tiers": {
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "of Ephij",
+          "min": 41,
+          "max": 45,
+          "avgMin": 41,
+          "ilvl": 82
+        },
+        {
+          "tier": 2,
+          "name": "of the Lightning",
+          "min": 36,
+          "max": 40,
+          "avgMin": 36,
+          "ilvl": 71
+        },
+        {
+          "tier": 3,
+          "name": "of the Maelstrom",
+          "min": 31,
+          "max": 35,
+          "avgMin": 31,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "of the Tempest",
+          "min": 26,
+          "max": 30,
+          "avgMin": 26,
+          "ilvl": 49
+        },
+        {
+          "tier": 5,
+          "name": "of the Thunderhead",
+          "min": 21,
+          "max": 25,
+          "avgMin": 21,
+          "ilvl": 37
+        },
+        {
+          "tier": 6,
+          "name": "of the Storm",
+          "min": 16,
+          "max": 20,
+          "avgMin": 16,
+          "ilvl": 25
+        },
+        {
+          "tier": 7,
+          "name": "of the Squall",
+          "min": 11,
+          "max": 15,
+          "avgMin": 11,
+          "ilvl": 13
+        },
+        {
+          "tier": 8,
+          "name": "of the Cloud",
+          "min": 6,
+          "max": 10,
+          "avgMin": 6,
+          "ilvl": 1
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "of Ephij",
+          "min": 41,
+          "max": 45,
+          "avgMin": 41,
+          "ilvl": 82
+        },
+        {
+          "tier": 2,
+          "name": "of the Lightning",
+          "min": 36,
+          "max": 40,
+          "avgMin": 36,
+          "ilvl": 71
+        },
+        {
+          "tier": 3,
+          "name": "of the Maelstrom",
+          "min": 31,
+          "max": 35,
+          "avgMin": 31,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "of the Tempest",
+          "min": 26,
+          "max": 30,
+          "avgMin": 26,
+          "ilvl": 49
+        },
+        {
+          "tier": 5,
+          "name": "of the Thunderhead",
+          "min": 21,
+          "max": 25,
+          "avgMin": 21,
+          "ilvl": 37
+        },
+        {
+          "tier": 6,
+          "name": "of the Storm",
+          "min": 16,
+          "max": 20,
+          "avgMin": 16,
+          "ilvl": 25
+        },
+        {
+          "tier": 7,
+          "name": "of the Squall",
+          "min": 11,
+          "max": 15,
+          "avgMin": 11,
+          "ilvl": 13
+        },
+        {
+          "tier": 8,
+          "name": "of the Cloud",
+          "min": 6,
+          "max": 10,
+          "avgMin": 6,
+          "ilvl": 1
+        }
+      ],
+      "Belts": [
+        {
+          "tier": 1,
+          "name": "of Ephij",
+          "min": 41,
+          "max": 45,
+          "avgMin": 41,
+          "ilvl": 82
+        },
+        {
+          "tier": 2,
+          "name": "of the Lightning",
+          "min": 36,
+          "max": 40,
+          "avgMin": 36,
+          "ilvl": 71
+        },
+        {
+          "tier": 3,
+          "name": "of the Maelstrom",
+          "min": 31,
+          "max": 35,
+          "avgMin": 31,
+          "ilvl": 60
+        },
+        {
+          "tier": 4,
+          "name": "of the Tempest",
+          "min": 26,
+          "max": 30,
+          "avgMin": 26,
+          "ilvl": 49
+        },
+        {
+          "tier": 5,
+          "name": "of the Thunderhead",
+          "min": 21,
+          "max": 25,
+          "avgMin": 21,
+          "ilvl": 37
+        },
+        {
+          "tier": 6,
+          "name": "of the Storm",
+          "min": 16,
+          "max": 20,
+          "avgMin": 16,
+          "ilvl": 25
+        },
+        {
+          "tier": 7,
+          "name": "of the Squall",
+          "min": 11,
+          "max": 15,
+          "avgMin": 11,
+          "ilvl": 13
+        },
+        {
+          "tier": 8,
+          "name": "of the Cloud",
+          "min": 6,
+          "max": 10,
+          "avgMin": 6,
+          "ilvl": 1
+        }
+      ]
+    }
+  },
+  "explicit.stat_2923486259": {
+    "text": "Chaos Resistance",
+    "tiers": {
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "of Bameth",
+          "min": 24,
+          "max": 27,
+          "avgMin": 24,
+          "ilvl": 81
+        },
+        {
+          "tier": 2,
+          "name": "of Exile",
+          "min": 20,
+          "max": 23,
+          "avgMin": 20,
+          "ilvl": 68
+        },
+        {
+          "tier": 3,
+          "name": "of Expulsion",
+          "min": 16,
+          "max": 19,
+          "avgMin": 16,
+          "ilvl": 56
+        },
+        {
+          "tier": 4,
+          "name": "of Eviction",
+          "min": 12,
+          "max": 15,
+          "avgMin": 12,
+          "ilvl": 44
+        },
+        {
+          "tier": 5,
+          "name": "of Banishment",
+          "min": 8,
+          "max": 11,
+          "avgMin": 8,
+          "ilvl": 30
+        },
+        {
+          "tier": 6,
+          "name": "of the Lost",
+          "min": 4,
+          "max": 7,
+          "avgMin": 4,
+          "ilvl": 16
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "of Bameth",
+          "min": 24,
+          "max": 27,
+          "avgMin": 24,
+          "ilvl": 81
+        },
+        {
+          "tier": 2,
+          "name": "of Exile",
+          "min": 20,
+          "max": 23,
+          "avgMin": 20,
+          "ilvl": 68
+        },
+        {
+          "tier": 3,
+          "name": "of Expulsion",
+          "min": 16,
+          "max": 19,
+          "avgMin": 16,
+          "ilvl": 56
+        },
+        {
+          "tier": 4,
+          "name": "of Eviction",
+          "min": 12,
+          "max": 15,
+          "avgMin": 12,
+          "ilvl": 44
+        },
+        {
+          "tier": 5,
+          "name": "of Banishment",
+          "min": 8,
+          "max": 11,
+          "avgMin": 8,
+          "ilvl": 30
+        },
+        {
+          "tier": 6,
+          "name": "of the Lost",
+          "min": 4,
+          "max": 7,
+          "avgMin": 4,
+          "ilvl": 16
+        }
+      ],
+      "Belts": [
+        {
+          "tier": 1,
+          "name": "of Bameth",
+          "min": 24,
+          "max": 27,
+          "avgMin": 24,
+          "ilvl": 81
+        },
+        {
+          "tier": 2,
+          "name": "of Exile",
+          "min": 20,
+          "max": 23,
+          "avgMin": 20,
+          "ilvl": 68
+        },
+        {
+          "tier": 3,
+          "name": "of Expulsion",
+          "min": 16,
+          "max": 19,
+          "avgMin": 16,
+          "ilvl": 56
+        },
+        {
+          "tier": 4,
+          "name": "of Eviction",
+          "min": 12,
+          "max": 15,
+          "avgMin": 12,
+          "ilvl": 44
+        },
+        {
+          "tier": 5,
+          "name": "of Banishment",
+          "min": 8,
+          "max": 11,
+          "avgMin": 8,
+          "ilvl": 30
+        },
+        {
+          "tier": 6,
+          "name": "of the Lost",
+          "min": 4,
+          "max": 7,
+          "avgMin": 4,
+          "ilvl": 16
+        }
+      ]
+    }
+  },
+  "explicit.stat_4080418644": {
+    "text": "Strength",
+    "tiers": {
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "of the Titan",
+          "min": 31,
+          "max": 33,
+          "avgMin": 31,
+          "ilvl": 74
+        },
+        {
+          "tier": 2,
+          "name": "of the Leviathan",
+          "min": 28,
+          "max": 30,
+          "avgMin": 28,
+          "ilvl": 66
+        },
+        {
+          "tier": 3,
+          "name": "of Ulaman",
+          "min": 9,
+          "max": 15,
+          "avgMin": 9,
+          "ilvl": 65
+        },
+        {
+          "tier": 4,
+          "name": "of Amanamu",
+          "min": 9,
+          "max": 15,
+          "avgMin": 9,
+          "ilvl": 65
+        },
+        {
+          "tier": 5,
+          "name": "of the Goliath",
+          "min": 25,
+          "max": 27,
+          "avgMin": 25,
+          "ilvl": 55
+        },
+        {
+          "tier": 6,
+          "name": "of the Gorilla",
+          "min": 21,
+          "max": 24,
+          "avgMin": 21,
+          "ilvl": 44
+        },
+        {
+          "tier": 7,
+          "name": "of the Lion",
+          "min": 17,
+          "max": 20,
+          "avgMin": 17,
+          "ilvl": 33
+        },
+        {
+          "tier": 8,
+          "name": "of the Bear",
+          "min": 13,
+          "max": 16,
+          "avgMin": 13,
+          "ilvl": 22
+        },
+        {
+          "tier": 9,
+          "name": "of the Wrestler",
+          "min": 9,
+          "max": 12,
+          "avgMin": 9,
+          "ilvl": 11
+        },
+        {
+          "tier": 10,
+          "name": "of the Brute",
+          "min": 5,
+          "max": 8,
+          "avgMin": 5,
+          "ilvl": 1
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "of the Titan",
+          "min": 31,
+          "max": 33,
+          "avgMin": 31,
+          "ilvl": 74
+        },
+        {
+          "tier": 2,
+          "name": "of the Leviathan",
+          "min": 28,
+          "max": 30,
+          "avgMin": 28,
+          "ilvl": 66
+        },
+        {
+          "tier": 3,
+          "name": "of Ulaman",
+          "min": 9,
+          "max": 15,
+          "avgMin": 9,
+          "ilvl": 65
+        },
+        {
+          "tier": 4,
+          "name": "of Amanamu",
+          "min": 9,
+          "max": 15,
+          "avgMin": 9,
+          "ilvl": 65
+        },
+        {
+          "tier": 5,
+          "name": "of the Goliath",
+          "min": 25,
+          "max": 27,
+          "avgMin": 25,
+          "ilvl": 55
+        },
+        {
+          "tier": 6,
+          "name": "of the Gorilla",
+          "min": 21,
+          "max": 24,
+          "avgMin": 21,
+          "ilvl": 44
+        },
+        {
+          "tier": 7,
+          "name": "of the Lion",
+          "min": 17,
+          "max": 20,
+          "avgMin": 17,
+          "ilvl": 33
+        },
+        {
+          "tier": 8,
+          "name": "of the Bear",
+          "min": 13,
+          "max": 16,
+          "avgMin": 13,
+          "ilvl": 22
+        },
+        {
+          "tier": 9,
+          "name": "of the Wrestler",
+          "min": 9,
+          "max": 12,
+          "avgMin": 9,
+          "ilvl": 11
+        },
+        {
+          "tier": 10,
+          "name": "of the Brute",
+          "min": 5,
+          "max": 8,
+          "avgMin": 5,
+          "ilvl": 1
+        }
+      ],
+      "Belts": [
+        {
+          "tier": 1,
+          "name": "of the Gods",
+          "min": 34,
+          "max": 36,
+          "avgMin": 34,
+          "ilvl": 81
+        },
+        {
+          "tier": 2,
+          "name": "of the Titan",
+          "min": 31,
+          "max": 33,
+          "avgMin": 31,
+          "ilvl": 74
+        },
+        {
+          "tier": 3,
+          "name": "of the Leviathan",
+          "min": 28,
+          "max": 30,
+          "avgMin": 28,
+          "ilvl": 66
+        },
+        {
+          "tier": 4,
+          "name": "of Ulaman",
+          "min": 9,
+          "max": 15,
+          "avgMin": 9,
+          "ilvl": 65
+        },
+        {
+          "tier": 5,
+          "name": "of Amanamu",
+          "min": 9,
+          "max": 15,
+          "avgMin": 9,
+          "ilvl": 65
+        },
+        {
+          "tier": 6,
+          "name": "of the Goliath",
+          "min": 25,
+          "max": 27,
+          "avgMin": 25,
+          "ilvl": 55
+        },
+        {
+          "tier": 7,
+          "name": "of the Gorilla",
+          "min": 21,
+          "max": 24,
+          "avgMin": 21,
+          "ilvl": 44
+        },
+        {
+          "tier": 8,
+          "name": "of the Lion",
+          "min": 17,
+          "max": 20,
+          "avgMin": 17,
+          "ilvl": 33
+        },
+        {
+          "tier": 9,
+          "name": "of the Bear",
+          "min": 13,
+          "max": 16,
+          "avgMin": 13,
+          "ilvl": 22
+        },
+        {
+          "tier": 10,
+          "name": "of the Wrestler",
+          "min": 9,
+          "max": 12,
+          "avgMin": 9,
+          "ilvl": 11
+        },
+        {
+          "tier": 11,
+          "name": "of the Brute",
+          "min": 5,
+          "max": 8,
+          "avgMin": 5,
+          "ilvl": 1
+        }
+      ]
+    }
+  },
+  "explicit.stat_3261801346": {
+    "text": "Dexterity",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "of the Wind",
+          "min": 34,
+          "max": 36,
+          "avgMin": 34,
+          "ilvl": 81
+        },
+        {
+          "tier": 2,
+          "name": "of the Phantom",
+          "min": 31,
+          "max": 33,
+          "avgMin": 31,
+          "ilvl": 74
+        },
+        {
+          "tier": 3,
+          "name": "of the Jaguar",
+          "min": 28,
+          "max": 30,
+          "avgMin": 28,
+          "ilvl": 66
+        },
+        {
+          "tier": 4,
+          "name": "of the Leopard",
+          "min": 25,
+          "max": 27,
+          "avgMin": 25,
+          "ilvl": 55
+        },
+        {
+          "tier": 5,
+          "name": "of the Panther",
+          "min": 21,
+          "max": 24,
+          "avgMin": 21,
+          "ilvl": 44
+        },
+        {
+          "tier": 6,
+          "name": "of the Falcon",
+          "min": 17,
+          "max": 20,
+          "avgMin": 17,
+          "ilvl": 33
+        },
+        {
+          "tier": 7,
+          "name": "of the Fox",
+          "min": 13,
+          "max": 16,
+          "avgMin": 13,
+          "ilvl": 22
+        },
+        {
+          "tier": 8,
+          "name": "of the Lynx",
+          "min": 9,
+          "max": 12,
+          "avgMin": 9,
+          "ilvl": 11
+        },
+        {
+          "tier": 9,
+          "name": "of the Mongoose",
+          "min": 5,
+          "max": 8,
+          "avgMin": 5,
+          "ilvl": 1
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "of the Phantom",
+          "min": 31,
+          "max": 33,
+          "avgMin": 31,
+          "ilvl": 74
+        },
+        {
+          "tier": 2,
+          "name": "of the Jaguar",
+          "min": 28,
+          "max": 30,
+          "avgMin": 28,
+          "ilvl": 66
+        },
+        {
+          "tier": 3,
+          "name": "of Kurgal",
+          "min": 9,
+          "max": 15,
+          "avgMin": 9,
+          "ilvl": 65
+        },
+        {
+          "tier": 4,
+          "name": "of the Leopard",
+          "min": 25,
+          "max": 27,
+          "avgMin": 25,
+          "ilvl": 55
+        },
+        {
+          "tier": 5,
+          "name": "of the Panther",
+          "min": 21,
+          "max": 24,
+          "avgMin": 21,
+          "ilvl": 44
+        },
+        {
+          "tier": 6,
+          "name": "of the Falcon",
+          "min": 17,
+          "max": 20,
+          "avgMin": 17,
+          "ilvl": 33
+        },
+        {
+          "tier": 7,
+          "name": "of the Fox",
+          "min": 13,
+          "max": 16,
+          "avgMin": 13,
+          "ilvl": 22
+        },
+        {
+          "tier": 8,
+          "name": "of the Lynx",
+          "min": 9,
+          "max": 12,
+          "avgMin": 9,
+          "ilvl": 11
+        },
+        {
+          "tier": 9,
+          "name": "of the Mongoose",
+          "min": 5,
+          "max": 8,
+          "avgMin": 5,
+          "ilvl": 1
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "of the Phantom",
+          "min": 31,
+          "max": 33,
+          "avgMin": 31,
+          "ilvl": 74
+        },
+        {
+          "tier": 2,
+          "name": "of the Jaguar",
+          "min": 28,
+          "max": 30,
+          "avgMin": 28,
+          "ilvl": 66
+        },
+        {
+          "tier": 3,
+          "name": "of Kurgal",
+          "min": 9,
+          "max": 15,
+          "avgMin": 9,
+          "ilvl": 65
+        },
+        {
+          "tier": 4,
+          "name": "of the Leopard",
+          "min": 25,
+          "max": 27,
+          "avgMin": 25,
+          "ilvl": 55
+        },
+        {
+          "tier": 5,
+          "name": "of the Panther",
+          "min": 21,
+          "max": 24,
+          "avgMin": 21,
+          "ilvl": 44
+        },
+        {
+          "tier": 6,
+          "name": "of the Falcon",
+          "min": 17,
+          "max": 20,
+          "avgMin": 17,
+          "ilvl": 33
+        },
+        {
+          "tier": 7,
+          "name": "of the Fox",
+          "min": 13,
+          "max": 16,
+          "avgMin": 13,
+          "ilvl": 22
+        },
+        {
+          "tier": 8,
+          "name": "of the Lynx",
+          "min": 9,
+          "max": 12,
+          "avgMin": 9,
+          "ilvl": 11
+        },
+        {
+          "tier": 9,
+          "name": "of the Mongoose",
+          "min": 5,
+          "max": 8,
+          "avgMin": 5,
+          "ilvl": 1
+        }
+      ],
+      "Belts": [
+        {
+          "tier": 1,
+          "name": "of Kurgal",
+          "min": 9,
+          "max": 15,
+          "avgMin": 9,
+          "ilvl": 65
+        }
+      ],
+      "Quivers": [
+        {
+          "tier": 1,
+          "name": "of the Phantom",
+          "min": 31,
+          "max": 33,
+          "avgMin": 31,
+          "ilvl": 74
+        },
+        {
+          "tier": 2,
+          "name": "of the Jaguar",
+          "min": 28,
+          "max": 30,
+          "avgMin": 28,
+          "ilvl": 66
+        },
+        {
+          "tier": 3,
+          "name": "of the Leopard",
+          "min": 25,
+          "max": 27,
+          "avgMin": 25,
+          "ilvl": 55
+        },
+        {
+          "tier": 4,
+          "name": "of the Panther",
+          "min": 21,
+          "max": 24,
+          "avgMin": 21,
+          "ilvl": 44
+        },
+        {
+          "tier": 5,
+          "name": "of the Falcon",
+          "min": 17,
+          "max": 20,
+          "avgMin": 17,
+          "ilvl": 33
+        },
+        {
+          "tier": 6,
+          "name": "of the Fox",
+          "min": 13,
+          "max": 16,
+          "avgMin": 13,
+          "ilvl": 22
+        },
+        {
+          "tier": 7,
+          "name": "of the Lynx",
+          "min": 9,
+          "max": 12,
+          "avgMin": 9,
+          "ilvl": 11
+        },
+        {
+          "tier": 8,
+          "name": "of the Mongoose",
+          "min": 5,
+          "max": 8,
+          "avgMin": 5,
+          "ilvl": 1
+        }
+      ]
+    }
+  },
+  "explicit.stat_328541901": {
+    "text": "Intelligence",
+    "tiers": {
+      "Helmets": [
+        {
+          "tier": 1,
+          "name": "of the Genius",
+          "min": 34,
+          "max": 36,
+          "avgMin": 34,
+          "ilvl": 81
+        },
+        {
+          "tier": 2,
+          "name": "of the Virtuoso",
+          "min": 31,
+          "max": 33,
+          "avgMin": 31,
+          "ilvl": 74
+        },
+        {
+          "tier": 3,
+          "name": "of the Savant",
+          "min": 28,
+          "max": 30,
+          "avgMin": 28,
+          "ilvl": 66
+        },
+        {
+          "tier": 4,
+          "name": "of the Sage",
+          "min": 25,
+          "max": 27,
+          "avgMin": 25,
+          "ilvl": 55
+        },
+        {
+          "tier": 5,
+          "name": "of the Philosopher",
+          "min": 21,
+          "max": 24,
+          "avgMin": 21,
+          "ilvl": 44
+        },
+        {
+          "tier": 6,
+          "name": "of the Augur",
+          "min": 17,
+          "max": 20,
+          "avgMin": 17,
+          "ilvl": 33
+        },
+        {
+          "tier": 7,
+          "name": "of the Prodigy",
+          "min": 13,
+          "max": 16,
+          "avgMin": 13,
+          "ilvl": 22
+        },
+        {
+          "tier": 8,
+          "name": "of the Student",
+          "min": 9,
+          "max": 12,
+          "avgMin": 9,
+          "ilvl": 11
+        },
+        {
+          "tier": 9,
+          "name": "of the Pupil",
+          "min": 5,
+          "max": 8,
+          "avgMin": 5,
+          "ilvl": 1
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "of the Virtuoso",
+          "min": 31,
+          "max": 33,
+          "avgMin": 31,
+          "ilvl": 74
+        },
+        {
+          "tier": 2,
+          "name": "of the Savant",
+          "min": 28,
+          "max": 30,
+          "avgMin": 28,
+          "ilvl": 66
+        },
+        {
+          "tier": 3,
+          "name": "of the Sage",
+          "min": 25,
+          "max": 27,
+          "avgMin": 25,
+          "ilvl": 55
+        },
+        {
+          "tier": 4,
+          "name": "of the Philosopher",
+          "min": 21,
+          "max": 24,
+          "avgMin": 21,
+          "ilvl": 44
+        },
+        {
+          "tier": 5,
+          "name": "of the Augur",
+          "min": 17,
+          "max": 20,
+          "avgMin": 17,
+          "ilvl": 33
+        },
+        {
+          "tier": 6,
+          "name": "of the Prodigy",
+          "min": 13,
+          "max": 16,
+          "avgMin": 13,
+          "ilvl": 22
+        },
+        {
+          "tier": 7,
+          "name": "of the Student",
+          "min": 9,
+          "max": 12,
+          "avgMin": 9,
+          "ilvl": 11
+        },
+        {
+          "tier": 8,
+          "name": "of the Pupil",
+          "min": 5,
+          "max": 8,
+          "avgMin": 5,
+          "ilvl": 1
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "of the Virtuoso",
+          "min": 31,
+          "max": 33,
+          "avgMin": 31,
+          "ilvl": 74
+        },
+        {
+          "tier": 2,
+          "name": "of the Savant",
+          "min": 28,
+          "max": 30,
+          "avgMin": 28,
+          "ilvl": 66
+        },
+        {
+          "tier": 3,
+          "name": "of the Sage",
+          "min": 25,
+          "max": 27,
+          "avgMin": 25,
+          "ilvl": 55
+        },
+        {
+          "tier": 4,
+          "name": "of the Philosopher",
+          "min": 21,
+          "max": 24,
+          "avgMin": 21,
+          "ilvl": 44
+        },
+        {
+          "tier": 5,
+          "name": "of the Augur",
+          "min": 17,
+          "max": 20,
+          "avgMin": 17,
+          "ilvl": 33
+        },
+        {
+          "tier": 6,
+          "name": "of the Prodigy",
+          "min": 13,
+          "max": 16,
+          "avgMin": 13,
+          "ilvl": 22
+        },
+        {
+          "tier": 7,
+          "name": "of the Student",
+          "min": 9,
+          "max": 12,
+          "avgMin": 9,
+          "ilvl": 11
+        },
+        {
+          "tier": 8,
+          "name": "of the Pupil",
+          "min": 5,
+          "max": 8,
+          "avgMin": 5,
+          "ilvl": 1
+        }
+      ]
+    }
+  }
+}
