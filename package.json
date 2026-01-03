@@ -14,6 +14,7 @@
     "test": "bun test",
     "package": "bun scripts/package.js",
     "update-stats": "bun scripts/fetch-stats.js",
+    "generate-tiers": "bun scripts/generate-tier-data.js",
     "typecheck": "tsc --noEmit"
   },
   "author": "Daniel Griesser",
