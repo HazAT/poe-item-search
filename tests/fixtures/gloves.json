@@ -1,0 +1,245 @@
+{
+  "result": [
+    {
+      "id": "1606dbb78a571baf5d194a466e6fe8fe23e67e9f461d1b55ec8ba22f53f81b19",
+      "listing": {
+        "method": "psapi",
+        "indexed": "2026-01-03T16:30:47Z",
+        "stash": { "name": "Hi", "x": 6, "y": 0 },
+        "price": { "type": "~b/o", "amount": 250, "currency": "divine" },
+        "fee": 41872,
+        "account": { "name": "Danny31#5040", "online": null },
+        "hideout_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI2MDBjYzA0MjZjNTg1M2E4ZjkzMDY4NDA1MWJiNmRjYyIsImlzcyI6IlBQYlk2WDlHc0wiLCJhdWQiOiI3MTE2NmIzZC1mN2Q4LTQ5ZTktYWM0MS05N2U3MWJlYTg2MmQiLCJ0b2siOiJoaWRlb3V0Iiwic3ViIjoiMTYwNmRiYjc4YTU3MWJhZjVkMTk0YTQ2NmU2ZmU4ZmUyM2U2N2U5ZjQ2MWQxYjU1ZWM4YmEyMmY1M2Y4MWIxOSIsImRhdCI6ImFkNjhiZWVmZGJkNTY3ZTc2OGIxNzE0YjhiZWRmZDRlIiwiaWF0IjoxNzY3NDYwMDYyLCJleHAiOjE3Njc0NjAzNjJ9.nuJ42Yee8hgVZE3X0x8PBe2bm8-hEZC6Mf04S2_9z-U"
+      },
+      "item": {
+        "realm": "poe2",
+        "verified": true,
+        "w": 2,
+        "h": 2,
+        "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9HbG92ZXMvQmFzZXR5cGVzL0dsb3Zlc0RleEludDA0IiwidyI6MiwiaCI6Miwic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/f43ef07a0c/GlovesDexInt04.png",
+        "league": "Fate of the Vaal",
+        "id": "1606dbb78a571baf5d194a466e6fe8fe23e67e9f461d1b55ec8ba22f53f81b19",
+        "fractured": true,
+        "sockets": [{ "group": 0, "type": "rune", "item": "vividtalisman" }],
+        "name": "Rune Palm",
+        "typeLine": "Secured Wraps",
+        "baseType": "Secured Wraps",
+        "rarity": "Rare",
+        "ilvl": 82,
+        "identified": true,
+        "note": "~b/o 250 divine",
+        "corrupted": true,
+        "properties": [
+          { "name": "Gloves", "values": [], "displayMode": 0 },
+          {
+            "name": "[Quality]",
+            "values": [["+27%", 1]],
+            "displayMode": 0,
+            "type": 6
+          },
+          {
+            "name": "[Evasion|Evasion Rating]",
+            "values": [["100", 1]],
+            "displayMode": 0,
+            "type": 17
+          },
+          {
+            "name": "[EnergyShield|Energy Shield]",
+            "values": [["38", 1]],
+            "displayMode": 0,
+            "type": 18
+          }
+        ],
+        "requirements": [
+          {
+            "name": "Level",
+            "values": [["80", 0]],
+            "displayMode": 0,
+            "type": 62
+          },
+          {
+            "name": "[Dexterity|Dex]",
+            "values": [["55", 0]],
+            "displayMode": 1,
+            "type": 64
+          },
+          {
+            "name": "[Intelligence|Int]",
+            "values": [["55", 0]],
+            "displayMode": 1,
+            "type": 65
+          }
+        ],
+        "runeMods": [
+          "8% increased [Attack] Speed",
+          "[ShamanOnlyMods|Bonded]: 15% reduced [Slow|Slowing] Potency of [Debuff|Debuffs] on You"
+        ],
+        "explicitMods": [
+          "Adds 13 to 31 [Physical|Physical] Damage to [Attack|Attacks]",
+          "Adds 27 to 45 [Fire] damage to [Attack|Attacks]",
+          "Adds 15 to 24 [Cold] damage to [Attack|Attacks]",
+          "[ManaLeech|Leech] 6.36% of [Physical] [Attack] Damage as Mana"
+        ],
+        "fracturedMods": ["+2 to Level of all [Melee|Melee] Skills"],
+        "desecratedMods": ["+36% to [Resistances|Lightning Resistance]"],
+        "desecrated": true,
+        "frameType": 2,
+        "socketedItems": [
+          {
+            "realm": "poe2",
+            "verified": true,
+            "w": 1,
+            "h": 1,
+            "icon": "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQ3VycmVuY3kvVG9ybWVudGVkU3Bpcml0U29ja2V0YWJsZXMvQXptZXJpU29ja2V0YWJsZVdvbGZTcGVjaWFsIiwidyI6MSwiaCI6MSwic2NhbGUiOjEsInJlYWxtIjoicG9lMiJ9XQ/1d5e1dd650/AzmeriSocketableWolfSpecial.png",
+            "stackSize": 1,
+            "maxStackSize": 10,
+            "league": "Fate of the Vaal",
+            "id": "4447ba748b69b6590a610d86ba4bf825c53f1673a91419828ed7df56b4777014",
+            "name": "",
+            "typeLine": "Idol of Sirrius",
+            "baseType": "Idol of Sirrius",
+            "ilvl": 0,
+            "identified": true,
+            "properties": [
+              {
+                "name": "Stack Size",
+                "values": [["1/10", 0]],
+                "displayMode": 0,
+                "type": 32
+              },
+              { "name": "[Idol]", "values": [], "displayMode": 0 },
+              { "name": "Limited to", "values": [["1", 0]], "displayMode": 0 }
+            ],
+            "requirements": [
+              {
+                "name": "Level",
+                "values": [["50", 0]],
+                "displayMode": 0,
+                "type": 62
+              }
+            ],
+            "explicitMods": ["Gloves: 8% increased [Attack] Speed"],
+            "bondedMods": [
+              "[ShamanOnlyMods|Bonded]:",
+              "Gloves: 15% reduced [Slow|Slowing] Potency of [Debuff|Debuffs] on You"
+            ],
+            "descrText": "Place into an empty [Augment] Socket in a pair of Gloves to apply its effect to that item. Once socketed it cannot be retrieved but can be replaced by other [Augment] items.",
+            "frameType": 5,
+            "socket": 0
+          }
+        ],
+        "extended": {
+          "ev": 100,
+          "es": 38,
+          "mods": {
+            "explicit": [
+              {
+                "name": "Cremating",
+                "tier": "P1",
+                "level": 75,
+                "magnitudes": [
+                  {
+                    "hash": "explicit.stat_1573130764",
+                    "min": "25",
+                    "max": "29"
+                  },
+                  {
+                    "hash": "explicit.stat_1573130764",
+                    "min": "37",
+                    "max": "45"
+                  }
+                ]
+              },
+              {
+                "name": "Flaring",
+                "tier": "P1",
+                "level": 75,
+                "magnitudes": [
+                  {
+                    "hash": "explicit.stat_3032590688",
+                    "min": "12",
+                    "max": "19"
+                  },
+                  {
+                    "hash": "explicit.stat_3032590688",
+                    "min": "22",
+                    "max": "32"
+                  }
+                ]
+              },
+              {
+                "name": "Glaciated",
+                "tier": "P3",
+                "level": 60,
+                "magnitudes": [
+                  {
+                    "hash": "explicit.stat_4067062424",
+                    "min": "14",
+                    "max": "15"
+                  },
+                  {
+                    "hash": "explicit.stat_4067062424",
+                    "min": "22",
+                    "max": "24"
+                  }
+                ]
+              },
+              {
+                "name": "of the Arid",
+                "tier": "S3",
+                "level": 54,
+                "magnitudes": [
+                  {
+                    "hash": "explicit.stat_707457662",
+                    "min": "6",
+                    "max": "6.9"
+                  }
+                ]
+              }
+            ],
+            "fractured": [
+              {
+                "name": "of Dueling",
+                "tier": "S1",
+                "level": 41,
+                "magnitudes": [
+                  { "hash": "fractured.stat_9187492", "min": "2", "max": "2" }
+                ]
+              }
+            ],
+            "desecrated": [
+              {
+                "name": "of the Lightning",
+                "tier": "S2",
+                "level": 71,
+                "magnitudes": [
+                  {
+                    "hash": "desecrated.stat_1671376347",
+                    "min": "36",
+                    "max": "40"
+                  }
+                ]
+              }
+            ]
+          },
+          "hashes": {
+            "explicit": [
+              ["explicit.stat_3032590688", [1]],
+              ["explicit.stat_1573130764", [0]],
+              ["explicit.stat_4067062424", [2]],
+              ["explicit.stat_707457662", [3]]
+            ],
+            "fractured": [["fractured.stat_9187492", [0]]],
+            "rune": [
+              ["rune.stat_681332047", null],
+              ["rune.stat_165746512", null]
+            ],
+            "desecrated": [["desecrated.stat_1671376347", [0]]],
+            "pseudo": [["statgroup.0", null]]
+          }
+        },
+        "pseudoMods": ["Sum: 0"]
+      }
+    }
+  ]
+}
