@@ -2,19 +2,13 @@ import LZString from "lz-string";
 import { extensionApi } from "@/utils/extensionApi";
 import { useSyncStore } from "@/stores/syncStore";
 import { captureException } from "@/services/sentry";
+import { debug } from "@/utils/debug";
 import type { BookmarksFolderStruct, BookmarksTradeStruct, SyncTombstone, SyncState } from "@/types/bookmarks";
 
 // Constants for sync configuration
 export const SYNC_KEY = "bookmarks_v1";
 export const TOMBSTONE_RETENTION_DAYS = 30;
 export const DEBOUNCE_MS = 5000;
-
-// Debug logging for sync
-const debugSync = (msg: string, ...args: unknown[]) => {
-  if (localStorage.getItem("poe-search-debug") === "true") {
-    console.log(`[PoE Search] [Sync] ${msg}`, ...args);
-  }
-};
 
 /**
  * Get or create a unique machine ID for this browser instance.
@@ -38,11 +32,11 @@ class SyncService {
    * Initialize sync - call on extension load
    */
   async init(): Promise<void> {
-    debugSync("init() called");
+    debug.log("[Sync] init() called");
     this.migrateExistingData();
     await this.pull();
     this.setupVisibilityListener();
-    debugSync("init() complete");
+    debug.log("[Sync] init() complete");
   }
 
   /**
@@ -55,7 +49,7 @@ class SyncService {
       return; // Already migrated
     }
 
-    debugSync("migrateExistingData() - running migration");
+    debug.log("[Sync] migrateExistingData() - running migration");
     const now = Date.now();
 
     // Migrate folders
@@ -69,7 +63,7 @@ class SyncService {
           updatedAt: f.updatedAt ?? now,
         }));
         localStorage.setItem("poe-search-bookmark-folders", JSON.stringify({ value: migratedFolders, expiresAt: null }));
-        debugSync(`migrateExistingData() - migrated ${folders.length} folders`);
+        debug.log(`[Sync] migrateExistingData() - migrated ${folders.length} folders`);
 
         // Migrate trades for each folder
         for (const folder of migratedFolders) {
@@ -84,21 +78,21 @@ class SyncService {
                 updatedAt: t.updatedAt ?? now,
               }));
               localStorage.setItem(`poe-search-bookmark-trades-${folder.id}`, JSON.stringify({ value: migratedTrades, expiresAt: null }));
-              debugSync(`migrateExistingData() - migrated ${trades.length} trades for folder ${folder.id}`);
+              debug.log(`[Sync] migrateExistingData() - migrated ${trades.length} trades for folder ${folder.id}`);
             } catch (e) {
-              debugSync("migrateExistingData() - failed to migrate trades for folder", folder.id, e);
+              debug.log("[Sync] migrateExistingData() - failed to migrate trades for folder", folder.id, e);
               captureException(e, { context: "sync-migration-trades", folderId: folder.id });
             }
           }
         }
       } catch (e) {
-        debugSync("migrateExistingData() - failed to migrate folders:", e);
+        debug.log("[Sync] migrateExistingData() - failed to migrate folders:", e);
         captureException(e, { context: "sync-migration-folders" });
       }
     }
 
     localStorage.setItem(migrationKey, "true");
-    debugSync("migrateExistingData() - migration complete");
+    debug.log("[Sync] migrateExistingData() - migration complete");
   }
 
   /**
@@ -120,7 +114,7 @@ class SyncService {
     });
 
     localStorage.setItem("poe-search-sync-tombstones", JSON.stringify(tombstones));
-    debugSync(`addTombstone() - added ${type} tombstone for`, id);
+    debug.log(`[Sync] addTombstone() - added ${type} tombstone for`, id);
   }
 
   /**
@@ -133,14 +127,14 @@ class SyncService {
     this.pushTimeout = setTimeout(() => {
       this.push();
     }, DEBOUNCE_MS);
-    debugSync("schedulePush() - push scheduled in", DEBOUNCE_MS, "ms");
+    debug.log("[Sync] schedulePush() - push scheduled in", DEBOUNCE_MS, "ms");
   }
 
   /**
    * Push current state to cloud storage
    */
   async push(): Promise<void> {
-    debugSync("push() called");
+    debug.log("[Sync] push() called");
     useSyncStore.getState().setSyncing(true);
 
     try {
@@ -149,14 +143,14 @@ class SyncService {
 
       // Check if state actually changed
       if (compressed === this.lastPushedState) {
-        debugSync("push() - state unchanged, skipping");
+        debug.log("[Sync] push() - state unchanged, skipping");
         return;
       }
 
       // Check size limits (chrome.storage.sync has 100KB total, 8KB per item)
       const sizeBytes = new Blob([compressed]).size;
       if (sizeBytes > 100000) {
-        debugSync("push() - WARNING: compressed size exceeds 100KB limit:", sizeBytes);
+        debug.log("[Sync] push() - WARNING: compressed size exceeds 100KB limit:", sizeBytes);
         captureException(new Error("Sync data exceeds quota"), {
           context: "sync-push",
           sizeBytes,
@@ -178,9 +172,9 @@ class SyncService {
       });
 
       this.lastPushedState = compressed;
-      debugSync("push() - success, size:", sizeBytes, "bytes");
+      debug.log("[Sync] push() - success, size:", sizeBytes, "bytes");
     } catch (e) {
-      debugSync("push() - error:", e);
+      debug.log("[Sync] push() - error:", e);
       captureException(e, { context: "sync-push" });
     } finally {
       useSyncStore.getState().setSyncing(false);
@@ -235,7 +229,7 @@ class SyncService {
 
       return this.decompress(compressed);
     } catch (e) {
-      debugSync("getCloudState() - error:", e);
+      debug.log("[Sync] getCloudState() - error:", e);
       captureException(e, { context: "sync-get-cloud-state" });
       return null;
     }
@@ -253,7 +247,7 @@ class SyncService {
 
       return (result[SYNC_KEY] as string) ?? null;
     } catch (e) {
-      debugSync("getCompressedCloudData() - error:", e);
+      debug.log("[Sync] getCompressedCloudData() - error:", e);
       captureException(e, { context: "sync-get-compressed-data" });
       return null;
     }
@@ -263,7 +257,7 @@ class SyncService {
    * Pull state from cloud storage and merge
    */
   async pull(): Promise<void> {
-    debugSync("pull() called");
+    debug.log("[Sync] pull() called");
     useSyncStore.getState().setSyncing(true);
 
     try {
@@ -274,13 +268,13 @@ class SyncService {
 
       const compressed = result[SYNC_KEY] as string | undefined;
       if (!compressed) {
-        debugSync("pull() - no cloud data found");
+        debug.log("[Sync] pull() - no cloud data found");
         return;
       }
 
       const cloudState = this.decompress(compressed);
       if (!cloudState) {
-        debugSync("pull() - failed to decompress cloud data");
+        debug.log("[Sync] pull() - failed to decompress cloud data");
         return;
       }
 
@@ -294,12 +288,12 @@ class SyncService {
       if (hasNewExternalData) {
         useSyncStore.getState().setHasNewData(true);
         useSyncStore.getState().setLastSyncAt(Date.now());
-        debugSync("pull() - new external data detected");
+        debug.log("[Sync] pull() - new external data detected");
       }
 
-      debugSync("pull() - complete");
+      debug.log("[Sync] pull() - complete");
     } catch (e) {
-      debugSync("pull() - error:", e);
+      debug.log("[Sync] pull() - error:", e);
       captureException(e, { context: "sync-pull" });
     } finally {
       useSyncStore.getState().setSyncing(false);
@@ -312,7 +306,7 @@ class SyncService {
   private setupVisibilityListener(): void {
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") {
-        debugSync("Tab became visible, pulling from cloud");
+        debug.log("[Sync] Tab became visible, pulling from cloud");
         this.pull();
       }
     });
@@ -324,7 +318,7 @@ class SyncService {
   compress(state: SyncState): string {
     const json = JSON.stringify(state);
     const compressed = LZString.compressToEncodedURIComponent(json);
-    debugSync(`compress() - ${json.length} chars -> ${compressed.length} chars (${((1 - compressed.length / json.length) * 100).toFixed(1)}% reduction)`);
+    debug.log(`[Sync] compress() - ${json.length} chars -> ${compressed.length} chars (${((1 - compressed.length / json.length) * 100).toFixed(1)}% reduction)`);
     return compressed;
   }
 
@@ -335,12 +329,12 @@ class SyncService {
     try {
       const json = LZString.decompressFromEncodedURIComponent(compressed);
       if (!json) {
-        debugSync("decompress() - decompression returned null");
+        debug.log("[Sync] decompress() - decompression returned null");
         return null;
       }
       return JSON.parse(json) as SyncState;
     } catch (e) {
-      debugSync("decompress() - failed:", e);
+      debug.log("[Sync] decompress() - failed:", e);
       captureException(e, { context: "sync-decompress" });
       return null;
     }
@@ -351,7 +345,7 @@ class SyncService {
    * Returns merged state and whether new external data was found
    */
   private merge(local: SyncState, cloud: SyncState): { merged: SyncState; hasNewExternalData: boolean } {
-    debugSync("merge() - starting merge");
+    debug.log("[Sync] merge() - starting merge");
     let hasNewExternalData = false;
 
     // Merge tombstones (keep all, prune old ones later)
@@ -509,7 +503,7 @@ class SyncService {
    * Save merged state back to localStorage
    */
   private async saveState(state: SyncState): Promise<void> {
-    debugSync("saveState() - saving merged state");
+    debug.log("[Sync] saveState() - saving merged state");
 
     // Save folders
     localStorage.setItem("poe-search-bookmark-folders", JSON.stringify({ value: state.folders, expiresAt: null }));
@@ -522,7 +516,7 @@ class SyncService {
     // Save tombstones
     localStorage.setItem("poe-search-sync-tombstones", JSON.stringify(state.tombstones));
 
-    debugSync("saveState() - complete");
+    debug.log("[Sync] saveState() - complete");
   }
 }
 
