@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { CollapsedToggle } from "@/components/panel";
 import { PanelContent } from "@/components/panel/PanelContent";
 import { usePanelStore } from "@/stores/panelStore";
+import { useSettingsStore } from "@/stores/settingsStore";
 import { initSearchInterceptor } from "@/services/searchInterceptor";
 import { initSentry, captureException } from "@/services/sentry";
 import { syncService } from "@/services/syncService";
@@ -14,9 +15,7 @@ import { App } from "./App";
 // Import CSS as string for Shadow DOM injection
 import styles from "@/index.css?inline";
 
-// Log version
 const version = "1.3.0";
-debug.log(`[Init] PoE Item Search v${version}`);
 
 /**
  * Inject the interceptor script into the page's MAIN world.
@@ -101,8 +100,13 @@ function PageLayoutManager() {
 
 // Initialize the extension
 async function initialize() {
-  // Initialize Sentry FIRST for error tracking
+  // Initialize settings FIRST so debug logging works from the start
+  await useSettingsStore.getState().initialize();
+
+  // Initialize Sentry for error tracking
   initSentry();
+
+  debug.log(`[Init] PoE Item Search v${version}`);
 
   try {
     // Inject interceptor script FIRST (before page makes any requests)

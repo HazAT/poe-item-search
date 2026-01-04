@@ -23,8 +23,7 @@ function formatArgs(args: unknown[]): unknown[] {
 
 function createLogger(level: LogLevel, alwaysConsole = false) {
   return (message: string, ...args: unknown[]) => {
-    const timestamp = new Date().toISOString().split("T")[1].slice(0, 12);
-    const formatted = `${PREFIX} [${timestamp}] ${message}`;
+    const formatted = `${PREFIX} ${message}`;
     const formattedArgs = formatArgs(args);
 
     // Console: always for errors/critical, otherwise only when debug ON

@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
@@ -11,13 +10,8 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-  const { debugLogging, setDebugLogging, isLoading, initialize } = useSettingsStore();
-
-  useEffect(() => {
-    if (isOpen) {
-      initialize();
-    }
-  }, [isOpen, initialize]);
+  // Settings are initialized at extension startup in content.tsx
+  const { debugLogging, setDebugLogging, isLoading } = useSettingsStore();
 
   const handleToggleDebug = () => {
     setDebugLogging(!debugLogging);
