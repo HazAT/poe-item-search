@@ -7,7 +7,8 @@
  */
 
 // Logger that forwards to content script via postMessage
-const injectedLogger = {
+// Note: Named uniquely to avoid collision with interceptor.js in MAIN world
+const statIdLogger = {
   log: (message: string, data?: unknown) =>
     window.postMessage({ type: "poe-search-debug-log", payload: { level: "log", message: `[StatIdExtractor] ${message}`, data } }, "*"),
 };
@@ -26,7 +27,7 @@ function extractStatIds(): void {
     }
   });
   if (extracted > 0) {
-    injectedLogger.log('Extracted ' + extracted + ' stat IDs');
+    statIdLogger.log('Extracted ' + extracted + ' stat IDs');
     // Dispatch event so content script knows stat IDs are ready
     document.dispatchEvent(new CustomEvent('poe-stat-ids-extracted', { detail: { count: extracted } }));
   }
@@ -43,7 +44,7 @@ function setupObserver(): void {
     // Only log occasionally to avoid spam
     const now = Date.now();
     if (!((window as any).__lastMutationLog) || now - (window as any).__lastMutationLog > 1000) {
-      injectedLogger.log('Mutation detected, extracting...');
+      statIdLogger.log('Mutation detected, extracting...');
       (window as any).__lastMutationLog = now;
     }
 
@@ -53,7 +54,7 @@ function setupObserver(): void {
   });
 
   observer.observe(target, { childList: true, subtree: true, attributes: true });
-  injectedLogger.log('Observing ' + (target === document.body ? 'body' : '#trade'));
+  statIdLogger.log('Observing ' + (target === document.body ? 'body' : '#trade'));
 }
 
 // Wait for #trade to exist, or fall back to body
@@ -86,4 +87,4 @@ setInterval(() => {
 // Expose for debugging
 (window as any).__extractStatIds = extractStatIds;
 
-injectedLogger.log('Initialized');
+statIdLogger.log('Initialized');
