@@ -46,6 +46,22 @@ export const Resistance: Story = {
   },
 };
 
+export const WithCurrentTier: Story = {
+  args: {
+    tiers: mockPhysDamageTiers,
+    onSelect: (avgMin) => console.log('Selected tier with avgMin:', avgMin),
+    currentTier: 2,
+  },
+};
+
+export const NoTierMatch: Story = {
+  args: {
+    tiers: mockPhysDamageTiers,
+    onSelect: (avgMin) => console.log('Selected tier with avgMin:', avgMin),
+    currentTier: null,
+  },
+};
+
 export const NoTiers: Story = {
   args: {
     tiers: [],

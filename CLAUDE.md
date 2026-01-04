@@ -130,6 +130,11 @@ The overlay panel uses Shadow DOM for style isolation. Key considerations:
 
 ## Development Workflow
 
+### Git Branching
+- **Use normal feature branches** (not git worktrees) in this repo
+- Create feature branch, implement, merge back to main
+- The repo is small enough that worktrees add unnecessary complexity
+
 ### Auto-Reload Development
 - Run `bun run dev` to build in dev mode (includes background reload script)
 - Background service worker polls bundled files every 1 second for changes
