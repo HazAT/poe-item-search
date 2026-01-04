@@ -24,8 +24,7 @@ Features a React-based overlay panel (inspired by better-trading) with:
 ## Commands
 
 ```bash
-bun run dev          # Build watch + Storybook together (auto-reload enabled)
-bun run dev:build    # Build watch only (auto-reload enabled)
+bun run dev          # Dev build (with auto-reload background script)
 bun run build        # Production build (outputs to dist/)
 bun test             # Run tests with Bun's test runner
 bun run storybook    # Start Storybook dev server on port 6006
@@ -132,15 +131,12 @@ The overlay panel uses Shadow DOM for style isolation. Key considerations:
 ## Development Workflow
 
 ### Auto-Reload Development
-- **Always run `bun run dev` first** - runs build watch + Storybook concurrently (color-coded output)
-- **Don't run `bun run build` manually** - rely on the dev server for builds
-- This ensures you have build output available and can see any compilation errors
-- Run `bun run dev:build` for build watch only (if you don't need Storybook)
-- Changes to source files trigger automatic rebuild (~1 second)
-- Extension and all PoE trade tabs auto-reload when changes are detected
-- Background service worker polls content.js hash every 1 second
-- **First time setup:** After running dev, manually reload extension once in chrome://extensions to register the background script
+- Run `bun run dev` to build in dev mode (includes background reload script)
+- Background service worker polls bundled files every 1 second for changes
+- When you run `bun run dev` again after code changes, the extension auto-reloads
+- **First time setup:** After first dev build, manually reload extension once in chrome://extensions to register the background script
 - Dev mode adds `tabs` permission and background script (not included in production builds)
+- Run `bun run storybook` separately if you need Storybook for component development
 
 ### Dev Mode Indicator
 - In dev builds, a "DEV" indicator appears in the panel header (next to version number)
@@ -163,7 +159,7 @@ The overlay panel uses Shadow DOM for style isolation. Key considerations:
 - Use Playwriter to interact with Storybook components and verify behavior
 - Use Playwriter to test the extension on live PoE trade pages
 - Playwriter can take accessibility snapshots, click elements, and verify state changes
-- With `bun run dev` running, changes auto-reload - no manual refresh needed
+- After running `bun run dev`, the extension auto-reloads when it detects new builds
 - **If no pages are connected**, use `mcp__playwriter__reset` to reset the connection
 - **When debugging and can't find the dedicated page**: Prompt the user to connect Playwriter MCP to both:
   1. A PoE trade page (pathofexile.com/trade or trade2) for testing the extension
