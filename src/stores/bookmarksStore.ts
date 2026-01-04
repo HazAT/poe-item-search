@@ -3,7 +3,6 @@ import LZString from "lz-string";
 import { storageService } from "@/services/storage";
 import { syncService } from "@/services/syncService";
 import { uniqueId } from "@/utils/uniqueId";
-import { debugBookmarks } from "@/utils/debug";
 import { buildTradeUrl } from "@/services/tradeLocation";
 import { debug } from "@/utils/debug";
 import type { BookmarksFolderStruct, BookmarksTradeStruct } from "@/types/bookmarks";
@@ -70,22 +69,20 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => ({
     // Prevent repeated fetches - only fetch once
     const state = get();
     if (state.isLoading || state.hasFetched) {
-      console.log("[PoE Search] [Bookmarks] fetchFolders() skipped - already fetched or loading");
+      debug.log("[Bookmarks] fetchFolders() skipped - already fetched or loading");
       return;
     }
-    console.log("[PoE Search] [Bookmarks] fetchFolders() called");
-    debugBookmarks("fetchFolders() called");
+    debug.log("[Bookmarks] fetchFolders() called");
     set({ isLoading: true });
     try {
       const [folders, expandedFolders] = await Promise.all([
         storageService.getValue<BookmarksFolderStruct[]>(FOLDERS_KEY),
         storageService.getValue<string[]>(EXPANDED_FOLDERS_KEY),
       ]);
-      console.log("[PoE Search] [Bookmarks] fetchFolders() loaded", folders?.length ?? 0, "folders");
-      debugBookmarks(`fetchFolders() loaded ${folders?.length ?? 0} folders`);
+      debug.log(`[Bookmarks] fetchFolders() loaded ${folders?.length ?? 0} folders`);
       set({ folders: folders ?? [], expandedFolders: expandedFolders ?? [], isLoading: false, hasFetched: true });
     } catch (e) {
-      console.error("[PoE Search] [Bookmarks] fetchFolders() error:", e);
+      debug.error("[Bookmarks] fetchFolders() error:", e);
       set({ isLoading: false, hasFetched: true });
     }
   },

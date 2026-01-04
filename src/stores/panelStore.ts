@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { storageService } from "@/services/storage";
-import { debugPanel } from "@/utils/debug";
+import { debug } from "@/utils/debug";
 
 type TabType = "history" | "bookmarks";
 
@@ -37,21 +37,21 @@ export const usePanelStore = create<PanelState>((set, get) => ({
   initialize: async () => {
     // Prevent re-initialization
     if (!get().isLoading) {
-      debugPanel("initialize() skipped - already initialized");
+      debug.log("[Panel] initialize() skipped - already initialized");
       return;
     }
-    debugPanel("initialize() called");
+    debug.log("[Panel] initialize() called");
     const [collapsed, activeTab] = await Promise.all([
       storageService.getValue<boolean>(COLLAPSED_KEY),
       storageService.getValue<TabType>(ACTIVE_TAB_KEY),
     ]);
 
-    debugPanel(`initialize() loaded - collapsed: ${collapsed}, activeTab: ${activeTab}`);
+    debug.log(`[Panel] initialize() loaded - collapsed: ${collapsed}, activeTab: ${activeTab}`);
     set({
       isCollapsed: collapsed ?? false,
       activeTab: activeTab ?? "history",
       isLoading: false,
     });
-    debugPanel("initialize() complete");
+    debug.log("[Panel] initialize() complete");
   },
 }));

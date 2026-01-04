@@ -1,9 +1,11 @@
 // Debug logging utility
-// Checks the settings store flag and logs only when debug is enabled
+// - Always sends to Sentry for production visibility
+// - Console output respects debugLogging setting (except errors)
 
+import { logger as sentryLogger, isSentryInitialized } from "@/services/sentry";
 import { getDebugLogging } from "@/stores/settingsStore";
 
-type LogLevel = "log" | "warn" | "error" | "info";
+type LogLevel = "log" | "info" | "warn" | "error";
 
 const PREFIX = "[PoE Search]";
 
@@ -20,24 +22,34 @@ function formatArgs(args: unknown[]): unknown[] {
   });
 }
 
-function createLogger(level: LogLevel) {
+function createLogger(level: LogLevel, alwaysConsole = false) {
   return (message: string, ...args: unknown[]) => {
-    if (!getDebugLogging()) return;
-
     const timestamp = new Date().toISOString().split("T")[1].slice(0, 12);
+    const formatted = `${PREFIX} [${timestamp}] ${message}`;
     const formattedArgs = formatArgs(args);
 
-    console[level](`${PREFIX} [${timestamp}] ${message}`, ...formattedArgs);
+    // Always send to Sentry (if initialized)
+    if (isSentryInitialized()) {
+      const sentryLevel = level === "log" ? "info" : level;
+      const attrs = args.length ? { args: formattedArgs } : undefined;
+      sentryLogger[sentryLevel](formatted, attrs);
+    }
+
+    // Console: always for errors/critical, otherwise only when debug ON
+    if (alwaysConsole || getDebugLogging()) {
+      console[level](formatted, ...formattedArgs);
+    }
   };
 }
 
 export const debug = {
   log: createLogger("log"),
-  warn: createLogger("warn"),
-  error: createLogger("error"),
   info: createLogger("info"),
+  warn: createLogger("warn"),
+  error: createLogger("error", true), // always shows in console
+  critical: createLogger("error", true), // alias for error, always shows
 
-  // Group related logs together
+  // Group related logs together (console only)
   group: (label: string, fn: () => void) => {
     if (!getDebugLogging()) return;
     console.group(`${PREFIX} ${label}`);
@@ -45,23 +57,10 @@ export const debug = {
     console.groupEnd();
   },
 
-  // Always log regardless of debug setting (for critical errors)
-  critical: (message: string, ...args: unknown[]) => {
-    console.error(`${PREFIX} [CRITICAL] ${message}`, ...formatArgs(args));
-  },
-
-  // Table output for arrays/objects
+  // Table output for arrays/objects (console only)
   table: (label: string, data: unknown) => {
     if (!getDebugLogging()) return;
     console.log(`${PREFIX} ${label}:`);
     console.table(data);
   },
 };
-
-// Shorthand for common categories
-export const debugStorage = (message: string, ...args: unknown[]) => debug.log(`[Storage] ${message}`, ...args);
-export const debugPanel = (message: string, ...args: unknown[]) => debug.log(`[Panel] ${message}`, ...args);
-export const debugBookmarks = (message: string, ...args: unknown[]) => debug.log(`[Bookmarks] ${message}`, ...args);
-export const debugHistory = (message: string, ...args: unknown[]) => debug.log(`[History] ${message}`, ...args);
-export const debugSearch = (message: string, ...args: unknown[]) => debug.log(`[Search] ${message}`, ...args);
-export const debugInit = (message: string, ...args: unknown[]) => debug.log(`[Init] ${message}`, ...args);
