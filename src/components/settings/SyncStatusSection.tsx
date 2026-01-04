@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { syncService } from "@/services/syncService";
+import { syncService, type SyncQuotaInfo } from "@/services/syncService";
 import { useSyncStore } from "@/stores/syncStore";
 import type { SyncState } from "@/types/bookmarks";
 
@@ -8,6 +8,12 @@ interface CloudDataState {
   compressed: string | null;
   error: boolean;
   loading: boolean;
+}
+
+interface SyncStatus {
+  quotaInfo: SyncQuotaInfo | null;
+  lastError: string | null;
+  isSyncing: boolean;
 }
 
 function formatTime(timestamp: number | null): string {
@@ -27,7 +33,7 @@ function truncateString(str: string, maxLength: number): string {
 }
 
 export function SyncStatusSection() {
-  const { lastSyncAt } = useSyncStore();
+  const { lastSyncAt, isSyncing } = useSyncStore();
   const [localState, setLocalState] = useState<SyncState | null>(null);
   const [cloudData, setCloudData] = useState<CloudDataState>({
     state: null,
@@ -35,26 +41,45 @@ export function SyncStatusSection() {
     error: false,
     loading: true,
   });
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>({
+    quotaInfo: null,
+    lastError: null,
+    isSyncing: false,
+  });
   const [debugExpanded, setDebugExpanded] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
-    // Get local state (synchronous)
-    const local = syncService.getLocalState();
-    setLocalState(local);
-
     // Get cloud state (async)
     setCloudData((prev) => ({ ...prev, loading: true, error: false }));
     try {
-      const [state, compressed] = await Promise.all([
+      const [local, state, compressed, quotaInfo] = await Promise.all([
+        syncService.getLocalState(),
         syncService.getCloudState(),
         syncService.getCompressedCloudData(),
+        syncService.getQuotaInfo(),
       ]);
+      setLocalState(local);
       setCloudData({ state, compressed, error: false, loading: false });
+      setSyncStatus((prev) => ({ ...prev, quotaInfo }));
     } catch {
       setCloudData({ state: null, compressed: null, error: true, loading: false });
     }
   }, []);
+
+  const handleForceSync = useCallback(async () => {
+    setSyncStatus((prev) => ({ ...prev, isSyncing: true, lastError: null }));
+    const result = await syncService.forceSync();
+    setSyncStatus({
+      quotaInfo: result.quotaInfo ?? null,
+      lastError: result.success ? null : (result.error ?? "Unknown error"),
+      isSyncing: false,
+    });
+    if (result.success) {
+      // Reload data to show updated cloud state
+      loadData();
+    }
+  }, [loadData]);
 
   useEffect(() => {
     loadData();
@@ -79,9 +104,37 @@ export function SyncStatusSection() {
   const localJson = localState ? JSON.stringify(localState, null, 2) : "";
   const cloudJson = cloudData.state ? JSON.stringify(cloudData.state, null, 2) : "";
 
+  const formatBytes = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  };
+
+  const quotaPercentage = syncStatus.quotaInfo?.percentUsed ?? 0;
+  const isNearQuota = quotaPercentage >= 80;
+  const isOverQuota = quotaPercentage >= 100;
+  const actualSyncing = isSyncing || syncStatus.isSyncing;
+
   return (
     <div className="space-y-3">
       <div className="text-sm text-poe-beige font-fontin">Cloud Sync</div>
+
+      {/* Quota Indicator */}
+      {syncStatus.quotaInfo && (
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs">
+            <span className="text-poe-gray-alt">Storage used</span>
+            <span className={isOverQuota ? "text-poe-red" : isNearQuota ? "text-yellow-500" : "text-poe-beige"}>
+              {formatBytes(syncStatus.quotaInfo.usedBytes)} / {formatBytes(syncStatus.quotaInfo.totalBytes)}
+            </span>
+          </div>
+          <div className="h-1.5 bg-poe-gray rounded-full overflow-hidden">
+            <div
+              className={`h-full transition-all ${isOverQuota ? "bg-poe-red" : isNearQuota ? "bg-yellow-500" : "bg-blue-500"}`}
+              style={{ width: `${Math.min(quotaPercentage, 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Comparison View */}
       <div className="grid grid-cols-2 gap-4 text-sm">
@@ -107,10 +160,26 @@ export function SyncStatusSection() {
         </div>
       </div>
 
-      {/* Last Sync Time */}
-      <div className="text-xs text-poe-gray-alt">
-        Last synced: {formatTime(lastSyncAt)}
+      {/* Last Sync Time + Force Sync Button */}
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-poe-gray-alt">
+          Last synced: {formatTime(lastSyncAt)}
+        </div>
+        <button
+          onClick={handleForceSync}
+          disabled={actualSyncing}
+          className="px-2 py-1 text-xs bg-poe-gray hover:bg-poe-gray-alt text-poe-beige rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {actualSyncing ? "Syncing..." : "Sync Now"}
+        </button>
       </div>
+
+      {/* Error Message */}
+      {syncStatus.lastError && (
+        <div className="text-xs text-poe-red bg-poe-red/10 rounded p-2">
+          {syncStatus.lastError}
+        </div>
+      )}
 
       {/* Debug Info Toggle */}
       <button

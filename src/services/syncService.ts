@@ -9,6 +9,19 @@ import type { BookmarksFolderStruct, BookmarksTradeStruct, SyncTombstone, SyncSt
 export const SYNC_KEY = "bookmarks_v1";
 export const TOMBSTONE_RETENTION_DAYS = 30;
 export const DEBOUNCE_MS = 5000;
+export const SYNC_QUOTA_BYTES = 102400; // 100KB
+
+export interface SyncQuotaInfo {
+  usedBytes: number;
+  totalBytes: number;
+  percentUsed: number;
+}
+
+export interface ForceSyncResult {
+  success: boolean;
+  error?: string;
+  quotaInfo?: SyncQuotaInfo;
+}
 
 /**
  * Get or create a unique machine ID for this browser instance.
@@ -33,66 +46,9 @@ class SyncService {
    */
   async init(): Promise<void> {
     debug.log("[Sync] init() called");
-    this.migrateExistingData();
     await this.pull();
     this.setupVisibilityListener();
     debug.log("[Sync] init() complete");
-  }
-
-  /**
-   * Migrate existing bookmarks to have updatedAt timestamps
-   * Called once on first sync init
-   */
-  private migrateExistingData(): void {
-    const migrationKey = "poe-search-sync-migrated-v1";
-    if (localStorage.getItem(migrationKey)) {
-      return; // Already migrated
-    }
-
-    debug.log("[Sync] migrateExistingData() - running migration");
-    const now = Date.now();
-
-    // Migrate folders
-    const foldersRaw = localStorage.getItem("poe-search-bookmark-folders");
-    if (foldersRaw) {
-      try {
-        const parsed = JSON.parse(foldersRaw);
-        const folders: BookmarksFolderStruct[] = parsed.value ?? [];
-        const migratedFolders = folders.map(f => ({
-          ...f,
-          updatedAt: f.updatedAt ?? now,
-        }));
-        localStorage.setItem("poe-search-bookmark-folders", JSON.stringify({ value: migratedFolders, expiresAt: null }));
-        debug.log(`[Sync] migrateExistingData() - migrated ${folders.length} folders`);
-
-        // Migrate trades for each folder
-        for (const folder of migratedFolders) {
-          if (!folder.id) continue;
-          const tradesRaw = localStorage.getItem(`poe-search-bookmark-trades-${folder.id}`);
-          if (tradesRaw) {
-            try {
-              const parsedTrades = JSON.parse(tradesRaw);
-              const trades: BookmarksTradeStruct[] = parsedTrades.value ?? [];
-              const migratedTrades = trades.map(t => ({
-                ...t,
-                updatedAt: t.updatedAt ?? now,
-              }));
-              localStorage.setItem(`poe-search-bookmark-trades-${folder.id}`, JSON.stringify({ value: migratedTrades, expiresAt: null }));
-              debug.log(`[Sync] migrateExistingData() - migrated ${trades.length} trades for folder ${folder.id}`);
-            } catch (e) {
-              debug.log("[Sync] migrateExistingData() - failed to migrate trades for folder", folder.id, e);
-              captureException(e, { context: "sync-migration-trades", folderId: folder.id });
-            }
-          }
-        }
-      } catch (e) {
-        debug.log("[Sync] migrateExistingData() - failed to migrate folders:", e);
-        captureException(e, { context: "sync-migration-folders" });
-      }
-    }
-
-    localStorage.setItem(migrationKey, "true");
-    debug.log("[Sync] migrateExistingData() - migration complete");
   }
 
   /**
@@ -138,7 +94,7 @@ class SyncService {
     useSyncStore.getState().setSyncing(true);
 
     try {
-      const state = this.getLocalState();
+      const state = await this.getLocalState();
       const compressed = this.compress(state);
 
       // Check if state actually changed
@@ -184,19 +140,29 @@ class SyncService {
   /**
    * Get current local state (public for status display)
    */
-  getLocalState(): SyncState {
-    const foldersRaw = localStorage.getItem("poe-search-bookmark-folders");
-    const tombstonesRaw = localStorage.getItem("poe-search-sync-tombstones");
+  async getLocalState(): Promise<SyncState> {
+    const api = extensionApi();
 
-    const folders: BookmarksFolderStruct[] = foldersRaw ? JSON.parse(foldersRaw).value : [];
+    // Read folders from chrome.storage.local (where storageService writes them)
+    const foldersResult = await new Promise<Record<string, unknown>>((resolve) => {
+      api.storage.local.get(["poe-search-bookmark-folders"], resolve);
+    });
+    const foldersPayload = foldersResult["poe-search-bookmark-folders"] as { value: BookmarksFolderStruct[] } | undefined;
+    const folders: BookmarksFolderStruct[] = foldersPayload?.value ?? [];
+
+    // Tombstones stay in localStorage (sync-specific metadata)
+    const tombstonesRaw = localStorage.getItem("poe-search-sync-tombstones");
     const tombstones: SyncTombstone[] = tombstonesRaw ? JSON.parse(tombstonesRaw) : [];
 
-    // Load all trades
+    // Load all trades from chrome.storage.local
     const trades: Record<string, BookmarksTradeStruct[]> = {};
     for (const folder of folders) {
       if (folder.id) {
-        const tradesRaw = localStorage.getItem(`poe-search-bookmark-trades-${folder.id}`);
-        trades[folder.id] = tradesRaw ? JSON.parse(tradesRaw).value : [];
+        const tradesResult = await new Promise<Record<string, unknown>>((resolve) => {
+          api.storage.local.get([`poe-search-bookmark-trades-${folder.id}`], resolve);
+        });
+        const tradesPayload = tradesResult[`poe-search-bookmark-trades-${folder.id}`] as { value: BookmarksTradeStruct[] } | undefined;
+        trades[folder.id] = tradesPayload?.value ?? [];
       }
     }
 
@@ -278,7 +244,7 @@ class SyncService {
         return;
       }
 
-      const localState = this.getLocalState();
+      const localState = await this.getLocalState();
       const { merged, hasNewExternalData } = this.merge(localState, cloudState);
 
       // Save merged state to localStorage
@@ -500,23 +466,157 @@ class SyncService {
   }
 
   /**
-   * Save merged state back to localStorage
+   * Save merged state back to chrome.storage.local
    */
   private async saveState(state: SyncState): Promise<void> {
     debug.log("[Sync] saveState() - saving merged state");
+    const api = extensionApi();
 
-    // Save folders
-    localStorage.setItem("poe-search-bookmark-folders", JSON.stringify({ value: state.folders, expiresAt: null }));
+    // Save folders to chrome.storage.local
+    await new Promise<void>((resolve) => {
+      api.storage.local.set({
+        "poe-search-bookmark-folders": { value: state.folders, expiresAt: null }
+      }, resolve);
+    });
 
-    // Save trades per folder
+    // Save trades per folder to chrome.storage.local
     for (const [folderId, trades] of Object.entries(state.trades)) {
-      localStorage.setItem(`poe-search-bookmark-trades-${folderId}`, JSON.stringify({ value: trades, expiresAt: null }));
+      await new Promise<void>((resolve) => {
+        api.storage.local.set({
+          [`poe-search-bookmark-trades-${folderId}`]: { value: trades, expiresAt: null }
+        }, resolve);
+      });
     }
 
-    // Save tombstones
+    // Tombstones stay in localStorage (sync-specific metadata)
     localStorage.setItem("poe-search-sync-tombstones", JSON.stringify(state.tombstones));
 
     debug.log("[Sync] saveState() - complete");
+  }
+
+  /**
+   * Get quota info for cloud storage
+   * Returns null if sync is not available (e.g., unpacked extension)
+   */
+  async getQuotaInfo(): Promise<SyncQuotaInfo | null> {
+    try {
+      const api = extensionApi();
+      const state = await this.getLocalState();
+      const compressed = this.compress(state);
+      const usedBytes = new Blob([compressed]).size;
+
+      return {
+        usedBytes,
+        totalBytes: SYNC_QUOTA_BYTES,
+        percentUsed: (usedBytes / SYNC_QUOTA_BYTES) * 100,
+      };
+    } catch (e) {
+      debug.log("[Sync] getQuotaInfo() - error:", e);
+      return null;
+    }
+  }
+
+  /**
+   * Force an immediate sync (push local state to cloud)
+   * Returns detailed result with error info for UI feedback
+   */
+  async forceSync(): Promise<ForceSyncResult> {
+    debug.log("[Sync] forceSync() called");
+    useSyncStore.getState().setSyncing(true);
+
+    try {
+      const api = extensionApi();
+
+      // Check if chrome.storage.sync is available
+      if (!api.storage?.sync) {
+        return {
+          success: false,
+          error: "Cloud sync is not available. Install from Chrome Web Store to enable sync.",
+        };
+      }
+
+      const state = await this.getLocalState();
+      const compressed = this.compress(state);
+      const sizeBytes = new Blob([compressed]).size;
+
+      // Check size limits
+      if (sizeBytes > SYNC_QUOTA_BYTES) {
+        return {
+          success: false,
+          error: `Data size (${this.formatBytes(sizeBytes)}) exceeds sync quota (${this.formatBytes(SYNC_QUOTA_BYTES)}). Remove some bookmarks to enable sync.`,
+          quotaInfo: {
+            usedBytes: sizeBytes,
+            totalBytes: SYNC_QUOTA_BYTES,
+            percentUsed: (sizeBytes / SYNC_QUOTA_BYTES) * 100,
+          },
+        };
+      }
+
+      // Attempt to push to cloud
+      await new Promise<void>((resolve, reject) => {
+        api.storage.sync.set({ [SYNC_KEY]: compressed }, () => {
+          const error = api.runtime.lastError;
+          if (error) {
+            reject(new Error(error.message));
+          } else {
+            resolve();
+          }
+        });
+      });
+
+      this.lastPushedState = compressed;
+      useSyncStore.getState().setLastSyncAt(Date.now());
+
+      debug.log("[Sync] forceSync() - success, size:", sizeBytes, "bytes");
+
+      return {
+        success: true,
+        quotaInfo: {
+          usedBytes: sizeBytes,
+          totalBytes: SYNC_QUOTA_BYTES,
+          percentUsed: (sizeBytes / SYNC_QUOTA_BYTES) * 100,
+        },
+      };
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : "Unknown error";
+      debug.log("[Sync] forceSync() - error:", e);
+      captureException(e, { context: "sync-force-push" });
+
+      // Detect common error patterns
+      if (errorMessage.includes("QUOTA_BYTES")) {
+        return {
+          success: false,
+          error: "Storage quota exceeded. Remove some bookmarks to enable sync.",
+        };
+      }
+
+      if (errorMessage.includes("MAX_ITEMS") || errorMessage.includes("MAX_WRITE_OPERATIONS")) {
+        return {
+          success: false,
+          error: "Too many sync operations. Please try again later.",
+        };
+      }
+
+      // For unpacked extensions or other access issues
+      if (errorMessage.includes("not available") || errorMessage.includes("not allowed")) {
+        return {
+          success: false,
+          error: "Cloud sync is not available. Install from Chrome Web Store to enable sync.",
+        };
+      }
+
+      return {
+        success: false,
+        error: `Sync failed: ${errorMessage}`,
+      };
+    } finally {
+      useSyncStore.getState().setSyncing(false);
+    }
+  }
+
+  private formatBytes(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    return `${(bytes / 1024).toFixed(1)} KB`;
   }
 }
 
