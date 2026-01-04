@@ -5,6 +5,8 @@
  * Can fetch categories dynamically from the trade API
  */
 
+import { debug } from "@/utils/debug";
+
 // Cache for fetched categories
 let cachedCategories = null;
 let cacheTimestamp = 0;
@@ -218,7 +220,7 @@ export async function getCategories({ forceRefresh = false, poe2 = true } = {}) 
 
     return cachedCategories;
   } catch (error) {
-    console.warn("Failed to fetch categories, using static mapping:", error.message);
+    debug.warn("[ItemClass] Failed to fetch categories, using static mapping:", error.message);
     return ITEM_CLASS_TO_CATEGORY;
   }
 }

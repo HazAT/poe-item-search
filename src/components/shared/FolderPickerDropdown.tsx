@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { FolderIcon, PlusIcon, CheckIcon } from "@/components/ui";
 import type { BookmarksFolderStruct } from "@/types/bookmarks";
+import { debug } from "@/utils/debug";
 
 export interface FolderPickerDropdownProps {
   folders: BookmarksFolderStruct[];
@@ -74,7 +75,7 @@ export function FolderPickerDropdown({
       onSelect(folderId);
       onClose();
     } catch (error) {
-      console.error("Failed to create folder:", error);
+      debug.error("[FolderPicker] Failed to create folder:", error);
     } finally {
       setIsSubmitting(false);
     }
