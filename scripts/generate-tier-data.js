@@ -23,6 +23,24 @@ const STAT_WHITELIST = {
   'explicit.stat_4080418644': { pattern: 'additional_strength', name: 'Strength' },
   'explicit.stat_3261801346': { pattern: 'additional_dexterity', name: 'Dexterity' },
   'explicit.stat_328541901': { pattern: 'additional_intelligence', name: 'Intelligence' },
+
+  // Life
+  'explicit.stat_3299347043': { pattern: 'base_maximum_life', name: 'Maximum Life' },
+  'explicit.stat_983749596': { pattern: 'maximum_life_+%', name: 'Increased Maximum Life' },
+
+  // Life Regeneration (game data is per minute, trade API is per second - divide by 60)
+  'explicit.stat_3325883026': { pattern: 'base_life_regeneration_rate_per_minute', name: 'Life Regeneration per Second', divisor: 60 },
+  'explicit.stat_44972811': { pattern: 'life_regeneration_rate_+%', name: 'Increased Life Regeneration Rate' },
+
+  // Mana
+  'explicit.stat_1050105434': { pattern: 'base_maximum_mana', name: 'Maximum Mana' },
+  'explicit.stat_2748665614': { pattern: 'maximum_mana_+%', name: 'Increased Maximum Mana' },
+
+  // NOTE: Armour/Evasion/Energy Shield stats are NOT included because:
+  // - Trade API uses global stat IDs even for local mods on armor pieces
+  // - But the game data has different tiers for global (jewelry) vs local (armor) mods
+  // - This causes item class mismatch: helmet uses global stat ID but needs local tier data
+  // - Until we can properly map armor slots to their defense tier data, these are excluded
 };
 
 // Item classes we care about (trade API names)
@@ -70,7 +88,7 @@ function canSpawnOnClass(mod, itemClass) {
   return false;
 }
 
-function calculateAvgMin(stats) {
+function calculateAvgMin(stats, pattern) {
   // For damage stats with min/max (2 stats), average the minimums
   if (stats.length === 2) {
     const minStat = stats.find(s => s.id.includes('minimum'));
@@ -79,6 +97,15 @@ function calculateAvgMin(stats) {
       return (minStat.min + maxStat.min) / 2;
     }
   }
+
+  // If pattern provided, find the matching stat
+  if (pattern) {
+    const matchingStat = stats.find(s => s.id.includes(pattern));
+    if (matchingStat) {
+      return matchingStat.min;
+    }
+  }
+
   // For single-value stats, use the minimum
   if (stats.length === 1) {
     return stats[0].min;
@@ -86,36 +113,89 @@ function calculateAvgMin(stats) {
   return stats[0].min;
 }
 
+function getStatValues(stats, pattern) {
+  // For damage stats with min/max ranges, return array
+  if (stats.length === 2) {
+    const minStat = stats.find(s => s.id.includes('minimum'));
+    const maxStat = stats.find(s => s.id.includes('maximum'));
+    if (minStat && maxStat) {
+      return {
+        min: [minStat.min, maxStat.min],
+        max: [minStat.max, maxStat.max],
+      };
+    }
+  }
+
+  // If pattern provided, find the matching stat
+  if (pattern) {
+    const matchingStat = stats.find(s => s.id.includes(pattern));
+    if (matchingStat) {
+      return { min: matchingStat.min, max: matchingStat.max };
+    }
+  }
+
+  // Single stat
+  if (stats.length === 1) {
+    return { min: stats[0].min, max: stats[0].max };
+  }
+
+  return { min: stats[0].min, max: stats[0].max };
+}
+
 function buildTiersForStat(mods, statConfig, itemClasses) {
   const matches = findModsByStatPattern(mods, statConfig.pattern);
+  const divisor = statConfig.divisor || 1;
 
   // Filter to prefix/suffix only (exclude corrupted, essence, etc.)
-  const craftable = matches.filter(m =>
+  let craftable = matches.filter(m =>
     m.generation_type === 'prefix' || m.generation_type === 'suffix'
   );
+
+  // Filter out hybrid mods (mods with unrelated stats) unless explicitly allowed
+  // Keep mods where: single stat, or all stats match the pattern (for range stats like damage)
+  if (!statConfig.includeHybrids) {
+    craftable = craftable.filter(m => {
+      if (m.stats.length === 1) return true;
+      // For 2-stat mods, check if it's a min/max range (both stats should contain 'minimum' or 'maximum')
+      if (m.stats.length === 2) {
+        const hasMinMax = m.stats.some(s => s.id.includes('minimum')) &&
+                         m.stats.some(s => s.id.includes('maximum'));
+        if (hasMinMax) return true;
+      }
+      // Otherwise it's a hybrid mod - exclude it
+      return false;
+    });
+  }
 
   // Sort by required_level descending (highest = T1)
   craftable.sort((a, b) => b.required_level - a.required_level);
 
   const tiersByClass = {};
 
+  // Helper to apply divisor and round to 1 decimal place
+  const applyDivisor = (value) => {
+    if (Array.isArray(value)) {
+      return value.map(v => Math.round((v / divisor) * 10) / 10);
+    }
+    return Math.round((value / divisor) * 10) / 10;
+  };
+
   for (const itemClass of itemClasses) {
     const applicableMods = craftable.filter(m => canSpawnOnClass(m, itemClass));
 
     if (applicableMods.length === 0) continue;
 
-    tiersByClass[itemClass] = applicableMods.map((mod, index) => ({
-      tier: index + 1,
-      name: mod.name,
-      min: mod.stats.length === 2
-        ? [mod.stats[0].min, mod.stats[1].min]
-        : mod.stats[0].min,
-      max: mod.stats.length === 2
-        ? [mod.stats[0].max, mod.stats[1].max]
-        : mod.stats[0].max,
-      avgMin: calculateAvgMin(mod.stats),
-      ilvl: mod.required_level,
-    }));
+    tiersByClass[itemClass] = applicableMods.map((mod, index) => {
+      const values = getStatValues(mod.stats, statConfig.pattern);
+      return {
+        tier: index + 1,
+        name: mod.name,
+        min: applyDivisor(values.min),
+        max: applyDivisor(values.max),
+        avgMin: applyDivisor(calculateAvgMin(mod.stats, statConfig.pattern)),
+        ilvl: mod.required_level,
+      };
+    });
   }
 
   return tiersByClass;

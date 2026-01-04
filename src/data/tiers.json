@@ -2702,5 +2702,1609 @@
         }
       ]
     }
+  },
+  "explicit.stat_3299347043": {
+    "text": "Maximum Life",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "Athlete's",
+          "min": 120,
+          "max": 149,
+          "avgMin": 120,
+          "ilvl": 60
+        },
+        {
+          "tier": 2,
+          "name": "Virile",
+          "min": 100,
+          "max": 119,
+          "avgMin": 100,
+          "ilvl": 54
+        },
+        {
+          "tier": 3,
+          "name": "Rotund",
+          "min": 85,
+          "max": 99,
+          "avgMin": 85,
+          "ilvl": 46
+        },
+        {
+          "tier": 4,
+          "name": "Robust",
+          "min": 70,
+          "max": 84,
+          "avgMin": 70,
+          "ilvl": 38
+        },
+        {
+          "tier": 5,
+          "name": "Stout",
+          "min": 60,
+          "max": 69,
+          "avgMin": 60,
+          "ilvl": 33
+        },
+        {
+          "tier": 6,
+          "name": "Stalwart",
+          "min": 40,
+          "max": 59,
+          "avgMin": 40,
+          "ilvl": 24
+        },
+        {
+          "tier": 7,
+          "name": "Sanguine",
+          "min": 30,
+          "max": 39,
+          "avgMin": 30,
+          "ilvl": 16
+        },
+        {
+          "tier": 8,
+          "name": "Healthy",
+          "min": 20,
+          "max": 29,
+          "avgMin": 20,
+          "ilvl": 6
+        },
+        {
+          "tier": 9,
+          "name": "Hale",
+          "min": 10,
+          "max": 19,
+          "avgMin": 10,
+          "ilvl": 1
+        }
+      ],
+      "Boots": [
+        {
+          "tier": 1,
+          "name": "Athlete's",
+          "min": 120,
+          "max": 149,
+          "avgMin": 120,
+          "ilvl": 60
+        },
+        {
+          "tier": 2,
+          "name": "Virile",
+          "min": 100,
+          "max": 119,
+          "avgMin": 100,
+          "ilvl": 54
+        },
+        {
+          "tier": 3,
+          "name": "Rotund",
+          "min": 85,
+          "max": 99,
+          "avgMin": 85,
+          "ilvl": 46
+        },
+        {
+          "tier": 4,
+          "name": "Robust",
+          "min": 70,
+          "max": 84,
+          "avgMin": 70,
+          "ilvl": 38
+        },
+        {
+          "tier": 5,
+          "name": "Stout",
+          "min": 60,
+          "max": 69,
+          "avgMin": 60,
+          "ilvl": 33
+        },
+        {
+          "tier": 6,
+          "name": "Stalwart",
+          "min": 40,
+          "max": 59,
+          "avgMin": 40,
+          "ilvl": 24
+        },
+        {
+          "tier": 7,
+          "name": "Sanguine",
+          "min": 30,
+          "max": 39,
+          "avgMin": 30,
+          "ilvl": 16
+        },
+        {
+          "tier": 8,
+          "name": "Healthy",
+          "min": 20,
+          "max": 29,
+          "avgMin": 20,
+          "ilvl": 6
+        },
+        {
+          "tier": 9,
+          "name": "Hale",
+          "min": 10,
+          "max": 19,
+          "avgMin": 10,
+          "ilvl": 1
+        }
+      ],
+      "Body Armours": [
+        {
+          "tier": 1,
+          "name": "Prime",
+          "min": 200,
+          "max": 214,
+          "avgMin": 200,
+          "ilvl": 80
+        },
+        {
+          "tier": 2,
+          "name": "Rapturous",
+          "min": 190,
+          "max": 199,
+          "avgMin": 190,
+          "ilvl": 75
+        },
+        {
+          "tier": 3,
+          "name": "Vigorous",
+          "min": 175,
+          "max": 189,
+          "avgMin": 175,
+          "ilvl": 70
+        },
+        {
+          "tier": 4,
+          "name": "Fecund",
+          "min": 150,
+          "max": 174,
+          "avgMin": 150,
+          "ilvl": 65
+        },
+        {
+          "tier": 5,
+          "name": "Athlete's",
+          "min": 120,
+          "max": 149,
+          "avgMin": 120,
+          "ilvl": 60
+        },
+        {
+          "tier": 6,
+          "name": "Virile",
+          "min": 100,
+          "max": 119,
+          "avgMin": 100,
+          "ilvl": 54
+        },
+        {
+          "tier": 7,
+          "name": "Rotund",
+          "min": 85,
+          "max": 99,
+          "avgMin": 85,
+          "ilvl": 46
+        },
+        {
+          "tier": 8,
+          "name": "Robust",
+          "min": 70,
+          "max": 84,
+          "avgMin": 70,
+          "ilvl": 38
+        },
+        {
+          "tier": 9,
+          "name": "Stout",
+          "min": 60,
+          "max": 69,
+          "avgMin": 60,
+          "ilvl": 33
+        },
+        {
+          "tier": 10,
+          "name": "Stalwart",
+          "min": 40,
+          "max": 59,
+          "avgMin": 40,
+          "ilvl": 24
+        },
+        {
+          "tier": 11,
+          "name": "Sanguine",
+          "min": 30,
+          "max": 39,
+          "avgMin": 30,
+          "ilvl": 16
+        },
+        {
+          "tier": 12,
+          "name": "Healthy",
+          "min": 20,
+          "max": 29,
+          "avgMin": 20,
+          "ilvl": 6
+        },
+        {
+          "tier": 13,
+          "name": "Hale",
+          "min": 10,
+          "max": 19,
+          "avgMin": 10,
+          "ilvl": 1
+        }
+      ],
+      "Helmets": [
+        {
+          "tier": 1,
+          "name": "Fecund",
+          "min": 150,
+          "max": 174,
+          "avgMin": 150,
+          "ilvl": 65
+        },
+        {
+          "tier": 2,
+          "name": "Athlete's",
+          "min": 120,
+          "max": 149,
+          "avgMin": 120,
+          "ilvl": 60
+        },
+        {
+          "tier": 3,
+          "name": "Virile",
+          "min": 100,
+          "max": 119,
+          "avgMin": 100,
+          "ilvl": 54
+        },
+        {
+          "tier": 4,
+          "name": "Rotund",
+          "min": 85,
+          "max": 99,
+          "avgMin": 85,
+          "ilvl": 46
+        },
+        {
+          "tier": 5,
+          "name": "Robust",
+          "min": 70,
+          "max": 84,
+          "avgMin": 70,
+          "ilvl": 38
+        },
+        {
+          "tier": 6,
+          "name": "Stout",
+          "min": 60,
+          "max": 69,
+          "avgMin": 60,
+          "ilvl": 33
+        },
+        {
+          "tier": 7,
+          "name": "Stalwart",
+          "min": 40,
+          "max": 59,
+          "avgMin": 40,
+          "ilvl": 24
+        },
+        {
+          "tier": 8,
+          "name": "Sanguine",
+          "min": 30,
+          "max": 39,
+          "avgMin": 30,
+          "ilvl": 16
+        },
+        {
+          "tier": 9,
+          "name": "Healthy",
+          "min": 20,
+          "max": 29,
+          "avgMin": 20,
+          "ilvl": 6
+        },
+        {
+          "tier": 10,
+          "name": "Hale",
+          "min": 10,
+          "max": 19,
+          "avgMin": 10,
+          "ilvl": 1
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "Virile",
+          "min": 100,
+          "max": 119,
+          "avgMin": 100,
+          "ilvl": 54
+        },
+        {
+          "tier": 2,
+          "name": "Rotund",
+          "min": 85,
+          "max": 99,
+          "avgMin": 85,
+          "ilvl": 46
+        },
+        {
+          "tier": 3,
+          "name": "Robust",
+          "min": 70,
+          "max": 84,
+          "avgMin": 70,
+          "ilvl": 38
+        },
+        {
+          "tier": 4,
+          "name": "Stout",
+          "min": 60,
+          "max": 69,
+          "avgMin": 60,
+          "ilvl": 33
+        },
+        {
+          "tier": 5,
+          "name": "Stalwart",
+          "min": 40,
+          "max": 59,
+          "avgMin": 40,
+          "ilvl": 24
+        },
+        {
+          "tier": 6,
+          "name": "Sanguine",
+          "min": 30,
+          "max": 39,
+          "avgMin": 30,
+          "ilvl": 16
+        },
+        {
+          "tier": 7,
+          "name": "Healthy",
+          "min": 20,
+          "max": 29,
+          "avgMin": 20,
+          "ilvl": 6
+        },
+        {
+          "tier": 8,
+          "name": "Hale",
+          "min": 10,
+          "max": 19,
+          "avgMin": 10,
+          "ilvl": 1
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "Athlete's",
+          "min": 120,
+          "max": 149,
+          "avgMin": 120,
+          "ilvl": 60
+        },
+        {
+          "tier": 2,
+          "name": "Virile",
+          "min": 100,
+          "max": 119,
+          "avgMin": 100,
+          "ilvl": 54
+        },
+        {
+          "tier": 3,
+          "name": "Rotund",
+          "min": 85,
+          "max": 99,
+          "avgMin": 85,
+          "ilvl": 46
+        },
+        {
+          "tier": 4,
+          "name": "Robust",
+          "min": 70,
+          "max": 84,
+          "avgMin": 70,
+          "ilvl": 38
+        },
+        {
+          "tier": 5,
+          "name": "Stout",
+          "min": 60,
+          "max": 69,
+          "avgMin": 60,
+          "ilvl": 33
+        },
+        {
+          "tier": 6,
+          "name": "Stalwart",
+          "min": 40,
+          "max": 59,
+          "avgMin": 40,
+          "ilvl": 24
+        },
+        {
+          "tier": 7,
+          "name": "Sanguine",
+          "min": 30,
+          "max": 39,
+          "avgMin": 30,
+          "ilvl": 16
+        },
+        {
+          "tier": 8,
+          "name": "Healthy",
+          "min": 20,
+          "max": 29,
+          "avgMin": 20,
+          "ilvl": 6
+        },
+        {
+          "tier": 9,
+          "name": "Hale",
+          "min": 10,
+          "max": 19,
+          "avgMin": 10,
+          "ilvl": 1
+        }
+      ],
+      "Belts": [
+        {
+          "tier": 1,
+          "name": "Fecund",
+          "min": 150,
+          "max": 174,
+          "avgMin": 150,
+          "ilvl": 65
+        },
+        {
+          "tier": 2,
+          "name": "Athlete's",
+          "min": 120,
+          "max": 149,
+          "avgMin": 120,
+          "ilvl": 60
+        },
+        {
+          "tier": 3,
+          "name": "Virile",
+          "min": 100,
+          "max": 119,
+          "avgMin": 100,
+          "ilvl": 54
+        },
+        {
+          "tier": 4,
+          "name": "Rotund",
+          "min": 85,
+          "max": 99,
+          "avgMin": 85,
+          "ilvl": 46
+        },
+        {
+          "tier": 5,
+          "name": "Robust",
+          "min": 70,
+          "max": 84,
+          "avgMin": 70,
+          "ilvl": 38
+        },
+        {
+          "tier": 6,
+          "name": "Stout",
+          "min": 60,
+          "max": 69,
+          "avgMin": 60,
+          "ilvl": 33
+        },
+        {
+          "tier": 7,
+          "name": "Stalwart",
+          "min": 40,
+          "max": 59,
+          "avgMin": 40,
+          "ilvl": 24
+        },
+        {
+          "tier": 8,
+          "name": "Sanguine",
+          "min": 30,
+          "max": 39,
+          "avgMin": 30,
+          "ilvl": 16
+        },
+        {
+          "tier": 9,
+          "name": "Healthy",
+          "min": 20,
+          "max": 29,
+          "avgMin": 20,
+          "ilvl": 6
+        },
+        {
+          "tier": 10,
+          "name": "Hale",
+          "min": 10,
+          "max": 19,
+          "avgMin": 10,
+          "ilvl": 1
+        }
+      ]
+    }
+  },
+  "explicit.stat_983749596": {
+    "text": "Increased Maximum Life",
+    "tiers": {
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "Confident",
+          "min": 7,
+          "max": 8,
+          "avgMin": 7,
+          "ilvl": 75
+        },
+        {
+          "tier": 2,
+          "name": "Optimistic",
+          "min": 5,
+          "max": 6,
+          "avgMin": 5,
+          "ilvl": 60
+        },
+        {
+          "tier": 3,
+          "name": "Hopeful",
+          "min": 3,
+          "max": 4,
+          "avgMin": 3,
+          "ilvl": 33
+        }
+      ]
+    }
+  },
+  "explicit.stat_3325883026": {
+    "text": "Life Regeneration per Second",
+    "tiers": {
+      "Boots": [
+        {
+          "tier": 1,
+          "name": "of Recuperation",
+          "min": 18.1,
+          "max": 23,
+          "avgMin": 18.1,
+          "ilvl": 58
+        },
+        {
+          "tier": 2,
+          "name": "of Convalescence",
+          "min": 13.1,
+          "max": 18,
+          "avgMin": 13.1,
+          "ilvl": 47
+        },
+        {
+          "tier": 3,
+          "name": "of the Troll",
+          "min": 9.1,
+          "max": 13,
+          "avgMin": 9.1,
+          "ilvl": 35
+        },
+        {
+          "tier": 4,
+          "name": "of the Hydra",
+          "min": 6.1,
+          "max": 9,
+          "avgMin": 6.1,
+          "ilvl": 26
+        },
+        {
+          "tier": 5,
+          "name": "of the Starfish",
+          "min": 4.1,
+          "max": 6,
+          "avgMin": 4.1,
+          "ilvl": 17
+        },
+        {
+          "tier": 6,
+          "name": "of the Flatworm",
+          "min": 3.1,
+          "max": 4,
+          "avgMin": 3.1,
+          "ilvl": 11
+        },
+        {
+          "tier": 7,
+          "name": "of the Lizard",
+          "min": 2.1,
+          "max": 3,
+          "avgMin": 2.1,
+          "ilvl": 5
+        },
+        {
+          "tier": 8,
+          "name": "of the Newt",
+          "min": 1,
+          "max": 2,
+          "avgMin": 1,
+          "ilvl": 1
+        }
+      ],
+      "Body Armours": [
+        {
+          "tier": 1,
+          "name": "of the Phoenix",
+          "min": 33.1,
+          "max": 36,
+          "avgMin": 33.1,
+          "ilvl": 81
+        },
+        {
+          "tier": 2,
+          "name": "of Immortality",
+          "min": 29.1,
+          "max": 33,
+          "avgMin": 29.1,
+          "ilvl": 75
+        },
+        {
+          "tier": 3,
+          "name": "of Resurgence",
+          "min": 23.1,
+          "max": 29,
+          "avgMin": 23.1,
+          "ilvl": 68
+        },
+        {
+          "tier": 4,
+          "name": "of Recuperation",
+          "min": 18.1,
+          "max": 23,
+          "avgMin": 18.1,
+          "ilvl": 58
+        },
+        {
+          "tier": 5,
+          "name": "of Convalescence",
+          "min": 13.1,
+          "max": 18,
+          "avgMin": 13.1,
+          "ilvl": 47
+        },
+        {
+          "tier": 6,
+          "name": "of the Troll",
+          "min": 9.1,
+          "max": 13,
+          "avgMin": 9.1,
+          "ilvl": 35
+        },
+        {
+          "tier": 7,
+          "name": "of the Hydra",
+          "min": 6.1,
+          "max": 9,
+          "avgMin": 6.1,
+          "ilvl": 26
+        },
+        {
+          "tier": 8,
+          "name": "of the Starfish",
+          "min": 4.1,
+          "max": 6,
+          "avgMin": 4.1,
+          "ilvl": 17
+        },
+        {
+          "tier": 9,
+          "name": "of the Flatworm",
+          "min": 3.1,
+          "max": 4,
+          "avgMin": 3.1,
+          "ilvl": 11
+        },
+        {
+          "tier": 10,
+          "name": "of the Lizard",
+          "min": 2.1,
+          "max": 3,
+          "avgMin": 2.1,
+          "ilvl": 5
+        },
+        {
+          "tier": 11,
+          "name": "of the Newt",
+          "min": 1,
+          "max": 2,
+          "avgMin": 1,
+          "ilvl": 1
+        }
+      ],
+      "Helmets": [
+        {
+          "tier": 1,
+          "name": "of Recuperation",
+          "min": 18.1,
+          "max": 23,
+          "avgMin": 18.1,
+          "ilvl": 58
+        },
+        {
+          "tier": 2,
+          "name": "of Convalescence",
+          "min": 13.1,
+          "max": 18,
+          "avgMin": 13.1,
+          "ilvl": 47
+        },
+        {
+          "tier": 3,
+          "name": "of the Troll",
+          "min": 9.1,
+          "max": 13,
+          "avgMin": 9.1,
+          "ilvl": 35
+        },
+        {
+          "tier": 4,
+          "name": "of the Hydra",
+          "min": 6.1,
+          "max": 9,
+          "avgMin": 6.1,
+          "ilvl": 26
+        },
+        {
+          "tier": 5,
+          "name": "of the Starfish",
+          "min": 4.1,
+          "max": 6,
+          "avgMin": 4.1,
+          "ilvl": 17
+        },
+        {
+          "tier": 6,
+          "name": "of the Flatworm",
+          "min": 3.1,
+          "max": 4,
+          "avgMin": 3.1,
+          "ilvl": 11
+        },
+        {
+          "tier": 7,
+          "name": "of the Lizard",
+          "min": 2.1,
+          "max": 3,
+          "avgMin": 2.1,
+          "ilvl": 5
+        },
+        {
+          "tier": 8,
+          "name": "of the Newt",
+          "min": 1,
+          "max": 2,
+          "avgMin": 1,
+          "ilvl": 1
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "of Convalescence",
+          "min": 13.1,
+          "max": 18,
+          "avgMin": 13.1,
+          "ilvl": 47
+        },
+        {
+          "tier": 2,
+          "name": "of the Troll",
+          "min": 9.1,
+          "max": 13,
+          "avgMin": 9.1,
+          "ilvl": 35
+        },
+        {
+          "tier": 3,
+          "name": "of the Hydra",
+          "min": 6.1,
+          "max": 9,
+          "avgMin": 6.1,
+          "ilvl": 26
+        },
+        {
+          "tier": 4,
+          "name": "of the Starfish",
+          "min": 4.1,
+          "max": 6,
+          "avgMin": 4.1,
+          "ilvl": 17
+        },
+        {
+          "tier": 5,
+          "name": "of the Flatworm",
+          "min": 3.1,
+          "max": 4,
+          "avgMin": 3.1,
+          "ilvl": 11
+        },
+        {
+          "tier": 6,
+          "name": "of the Lizard",
+          "min": 2.1,
+          "max": 3,
+          "avgMin": 2.1,
+          "ilvl": 5
+        },
+        {
+          "tier": 7,
+          "name": "of the Newt",
+          "min": 1,
+          "max": 2,
+          "avgMin": 1,
+          "ilvl": 1
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "of Immortality",
+          "min": 29.1,
+          "max": 33,
+          "avgMin": 29.1,
+          "ilvl": 75
+        },
+        {
+          "tier": 2,
+          "name": "of Resurgence",
+          "min": 23.1,
+          "max": 29,
+          "avgMin": 23.1,
+          "ilvl": 68
+        },
+        {
+          "tier": 3,
+          "name": "of Recuperation",
+          "min": 18.1,
+          "max": 23,
+          "avgMin": 18.1,
+          "ilvl": 58
+        },
+        {
+          "tier": 4,
+          "name": "of Convalescence",
+          "min": 13.1,
+          "max": 18,
+          "avgMin": 13.1,
+          "ilvl": 47
+        },
+        {
+          "tier": 5,
+          "name": "of the Troll",
+          "min": 9.1,
+          "max": 13,
+          "avgMin": 9.1,
+          "ilvl": 35
+        },
+        {
+          "tier": 6,
+          "name": "of the Hydra",
+          "min": 6.1,
+          "max": 9,
+          "avgMin": 6.1,
+          "ilvl": 26
+        },
+        {
+          "tier": 7,
+          "name": "of the Starfish",
+          "min": 4.1,
+          "max": 6,
+          "avgMin": 4.1,
+          "ilvl": 17
+        },
+        {
+          "tier": 8,
+          "name": "of the Flatworm",
+          "min": 3.1,
+          "max": 4,
+          "avgMin": 3.1,
+          "ilvl": 11
+        },
+        {
+          "tier": 9,
+          "name": "of the Lizard",
+          "min": 2.1,
+          "max": 3,
+          "avgMin": 2.1,
+          "ilvl": 5
+        },
+        {
+          "tier": 10,
+          "name": "of the Newt",
+          "min": 1,
+          "max": 2,
+          "avgMin": 1,
+          "ilvl": 1
+        }
+      ],
+      "Belts": [
+        {
+          "tier": 1,
+          "name": "of Resurgence",
+          "min": 23.1,
+          "max": 29,
+          "avgMin": 23.1,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "of Recuperation",
+          "min": 18.1,
+          "max": 23,
+          "avgMin": 18.1,
+          "ilvl": 58
+        },
+        {
+          "tier": 3,
+          "name": "of Convalescence",
+          "min": 13.1,
+          "max": 18,
+          "avgMin": 13.1,
+          "ilvl": 47
+        },
+        {
+          "tier": 4,
+          "name": "of the Troll",
+          "min": 9.1,
+          "max": 13,
+          "avgMin": 9.1,
+          "ilvl": 35
+        },
+        {
+          "tier": 5,
+          "name": "of the Hydra",
+          "min": 6.1,
+          "max": 9,
+          "avgMin": 6.1,
+          "ilvl": 26
+        },
+        {
+          "tier": 6,
+          "name": "of the Starfish",
+          "min": 4.1,
+          "max": 6,
+          "avgMin": 4.1,
+          "ilvl": 17
+        },
+        {
+          "tier": 7,
+          "name": "of the Flatworm",
+          "min": 3.1,
+          "max": 4,
+          "avgMin": 3.1,
+          "ilvl": 11
+        },
+        {
+          "tier": 8,
+          "name": "of the Lizard",
+          "min": 2.1,
+          "max": 3,
+          "avgMin": 2.1,
+          "ilvl": 5
+        },
+        {
+          "tier": 9,
+          "name": "of the Newt",
+          "min": 1,
+          "max": 2,
+          "avgMin": 1,
+          "ilvl": 1
+        }
+      ]
+    }
+  },
+  "explicit.stat_44972811": {
+    "text": "Increased Life Regeneration Rate",
+    "tiers": {
+      "Boots": [
+        {
+          "tier": 1,
+          "name": "of Ulaman",
+          "min": 40,
+          "max": 50,
+          "avgMin": 40,
+          "ilvl": 65
+        }
+      ],
+      "Belts": [
+        {
+          "tier": 1,
+          "name": "Ulaman's",
+          "min": 20,
+          "max": 30,
+          "avgMin": 20,
+          "ilvl": 65
+        }
+      ]
+    }
+  },
+  "explicit.stat_1050105434": {
+    "text": "Maximum Mana",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "Chalybeous",
+          "min": 105,
+          "max": 124,
+          "avgMin": 105,
+          "ilvl": 60
+        },
+        {
+          "tier": 2,
+          "name": "Gentian",
+          "min": 90,
+          "max": 104,
+          "avgMin": 90,
+          "ilvl": 54
+        },
+        {
+          "tier": 3,
+          "name": "Opalescent",
+          "min": 80,
+          "max": 89,
+          "avgMin": 80,
+          "ilvl": 46
+        },
+        {
+          "tier": 4,
+          "name": "Aqua",
+          "min": 65,
+          "max": 79,
+          "avgMin": 65,
+          "ilvl": 38
+        },
+        {
+          "tier": 5,
+          "name": "Cerulean",
+          "min": 55,
+          "max": 64,
+          "avgMin": 55,
+          "ilvl": 33
+        },
+        {
+          "tier": 6,
+          "name": "Teal",
+          "min": 35,
+          "max": 54,
+          "avgMin": 35,
+          "ilvl": 25
+        },
+        {
+          "tier": 7,
+          "name": "Azure",
+          "min": 25,
+          "max": 34,
+          "avgMin": 25,
+          "ilvl": 16
+        },
+        {
+          "tier": 8,
+          "name": "Cobalt",
+          "min": 15,
+          "max": 24,
+          "avgMin": 15,
+          "ilvl": 6
+        },
+        {
+          "tier": 9,
+          "name": "Beryl",
+          "min": 10,
+          "max": 14,
+          "avgMin": 10,
+          "ilvl": 1
+        }
+      ],
+      "Boots": [
+        {
+          "tier": 1,
+          "name": "Chalybeous",
+          "min": 105,
+          "max": 124,
+          "avgMin": 105,
+          "ilvl": 60
+        },
+        {
+          "tier": 2,
+          "name": "Gentian",
+          "min": 90,
+          "max": 104,
+          "avgMin": 90,
+          "ilvl": 54
+        },
+        {
+          "tier": 3,
+          "name": "Opalescent",
+          "min": 80,
+          "max": 89,
+          "avgMin": 80,
+          "ilvl": 46
+        },
+        {
+          "tier": 4,
+          "name": "Aqua",
+          "min": 65,
+          "max": 79,
+          "avgMin": 65,
+          "ilvl": 38
+        },
+        {
+          "tier": 5,
+          "name": "Cerulean",
+          "min": 55,
+          "max": 64,
+          "avgMin": 55,
+          "ilvl": 33
+        },
+        {
+          "tier": 6,
+          "name": "Teal",
+          "min": 35,
+          "max": 54,
+          "avgMin": 35,
+          "ilvl": 25
+        },
+        {
+          "tier": 7,
+          "name": "Azure",
+          "min": 25,
+          "max": 34,
+          "avgMin": 25,
+          "ilvl": 16
+        },
+        {
+          "tier": 8,
+          "name": "Cobalt",
+          "min": 15,
+          "max": 24,
+          "avgMin": 15,
+          "ilvl": 6
+        },
+        {
+          "tier": 9,
+          "name": "Beryl",
+          "min": 10,
+          "max": 14,
+          "avgMin": 10,
+          "ilvl": 1
+        }
+      ],
+      "Helmets": [
+        {
+          "tier": 1,
+          "name": "Mazarine",
+          "min": 125,
+          "max": 149,
+          "avgMin": 125,
+          "ilvl": 65
+        },
+        {
+          "tier": 2,
+          "name": "Chalybeous",
+          "min": 105,
+          "max": 124,
+          "avgMin": 105,
+          "ilvl": 60
+        },
+        {
+          "tier": 3,
+          "name": "Gentian",
+          "min": 90,
+          "max": 104,
+          "avgMin": 90,
+          "ilvl": 54
+        },
+        {
+          "tier": 4,
+          "name": "Opalescent",
+          "min": 80,
+          "max": 89,
+          "avgMin": 80,
+          "ilvl": 46
+        },
+        {
+          "tier": 5,
+          "name": "Aqua",
+          "min": 65,
+          "max": 79,
+          "avgMin": 65,
+          "ilvl": 38
+        },
+        {
+          "tier": 6,
+          "name": "Cerulean",
+          "min": 55,
+          "max": 64,
+          "avgMin": 55,
+          "ilvl": 33
+        },
+        {
+          "tier": 7,
+          "name": "Teal",
+          "min": 35,
+          "max": 54,
+          "avgMin": 35,
+          "ilvl": 25
+        },
+        {
+          "tier": 8,
+          "name": "Azure",
+          "min": 25,
+          "max": 34,
+          "avgMin": 25,
+          "ilvl": 16
+        },
+        {
+          "tier": 9,
+          "name": "Cobalt",
+          "min": 15,
+          "max": 24,
+          "avgMin": 15,
+          "ilvl": 6
+        },
+        {
+          "tier": 10,
+          "name": "Beryl",
+          "min": 10,
+          "max": 14,
+          "avgMin": 10,
+          "ilvl": 1
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "Zaffre",
+          "min": 165,
+          "max": 179,
+          "avgMin": 165,
+          "ilvl": 75
+        },
+        {
+          "tier": 2,
+          "name": "Blue",
+          "min": 150,
+          "max": 164,
+          "avgMin": 150,
+          "ilvl": 70
+        },
+        {
+          "tier": 3,
+          "name": "Mazarine",
+          "min": 125,
+          "max": 149,
+          "avgMin": 125,
+          "ilvl": 65
+        },
+        {
+          "tier": 4,
+          "name": "Chalybeous",
+          "min": 105,
+          "max": 124,
+          "avgMin": 105,
+          "ilvl": 60
+        },
+        {
+          "tier": 5,
+          "name": "Gentian",
+          "min": 90,
+          "max": 104,
+          "avgMin": 90,
+          "ilvl": 54
+        },
+        {
+          "tier": 6,
+          "name": "Opalescent",
+          "min": 80,
+          "max": 89,
+          "avgMin": 80,
+          "ilvl": 46
+        },
+        {
+          "tier": 7,
+          "name": "Aqua",
+          "min": 65,
+          "max": 79,
+          "avgMin": 65,
+          "ilvl": 38
+        },
+        {
+          "tier": 8,
+          "name": "Cerulean",
+          "min": 55,
+          "max": 64,
+          "avgMin": 55,
+          "ilvl": 33
+        },
+        {
+          "tier": 9,
+          "name": "Teal",
+          "min": 35,
+          "max": 54,
+          "avgMin": 35,
+          "ilvl": 25
+        },
+        {
+          "tier": 10,
+          "name": "Azure",
+          "min": 25,
+          "max": 34,
+          "avgMin": 25,
+          "ilvl": 16
+        },
+        {
+          "tier": 11,
+          "name": "Cobalt",
+          "min": 15,
+          "max": 24,
+          "avgMin": 15,
+          "ilvl": 6
+        },
+        {
+          "tier": 12,
+          "name": "Beryl",
+          "min": 10,
+          "max": 14,
+          "avgMin": 10,
+          "ilvl": 1
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "Ultramarine",
+          "min": 180,
+          "max": 189,
+          "avgMin": 180,
+          "ilvl": 82
+        },
+        {
+          "tier": 2,
+          "name": "Zaffre",
+          "min": 165,
+          "max": 179,
+          "avgMin": 165,
+          "ilvl": 75
+        },
+        {
+          "tier": 3,
+          "name": "Blue",
+          "min": 150,
+          "max": 164,
+          "avgMin": 150,
+          "ilvl": 70
+        },
+        {
+          "tier": 4,
+          "name": "Mazarine",
+          "min": 125,
+          "max": 149,
+          "avgMin": 125,
+          "ilvl": 65
+        },
+        {
+          "tier": 5,
+          "name": "Chalybeous",
+          "min": 105,
+          "max": 124,
+          "avgMin": 105,
+          "ilvl": 60
+        },
+        {
+          "tier": 6,
+          "name": "Gentian",
+          "min": 90,
+          "max": 104,
+          "avgMin": 90,
+          "ilvl": 54
+        },
+        {
+          "tier": 7,
+          "name": "Opalescent",
+          "min": 80,
+          "max": 89,
+          "avgMin": 80,
+          "ilvl": 46
+        },
+        {
+          "tier": 8,
+          "name": "Aqua",
+          "min": 65,
+          "max": 79,
+          "avgMin": 65,
+          "ilvl": 38
+        },
+        {
+          "tier": 9,
+          "name": "Cerulean",
+          "min": 55,
+          "max": 64,
+          "avgMin": 55,
+          "ilvl": 33
+        },
+        {
+          "tier": 10,
+          "name": "Teal",
+          "min": 35,
+          "max": 54,
+          "avgMin": 35,
+          "ilvl": 25
+        },
+        {
+          "tier": 11,
+          "name": "Azure",
+          "min": 25,
+          "max": 34,
+          "avgMin": 25,
+          "ilvl": 16
+        },
+        {
+          "tier": 12,
+          "name": "Cobalt",
+          "min": 15,
+          "max": 24,
+          "avgMin": 15,
+          "ilvl": 6
+        },
+        {
+          "tier": 13,
+          "name": "Beryl",
+          "min": 10,
+          "max": 14,
+          "avgMin": 10,
+          "ilvl": 1
+        }
+      ],
+      "Belts": [
+        {
+          "tier": 1,
+          "name": "Chalybeous",
+          "min": 105,
+          "max": 124,
+          "avgMin": 105,
+          "ilvl": 60
+        },
+        {
+          "tier": 2,
+          "name": "Gentian",
+          "min": 90,
+          "max": 104,
+          "avgMin": 90,
+          "ilvl": 54
+        },
+        {
+          "tier": 3,
+          "name": "Opalescent",
+          "min": 80,
+          "max": 89,
+          "avgMin": 80,
+          "ilvl": 46
+        },
+        {
+          "tier": 4,
+          "name": "Aqua",
+          "min": 65,
+          "max": 79,
+          "avgMin": 65,
+          "ilvl": 38
+        },
+        {
+          "tier": 5,
+          "name": "Cerulean",
+          "min": 55,
+          "max": 64,
+          "avgMin": 55,
+          "ilvl": 33
+        },
+        {
+          "tier": 6,
+          "name": "Teal",
+          "min": 35,
+          "max": 54,
+          "avgMin": 35,
+          "ilvl": 25
+        },
+        {
+          "tier": 7,
+          "name": "Azure",
+          "min": 25,
+          "max": 34,
+          "avgMin": 25,
+          "ilvl": 16
+        },
+        {
+          "tier": 8,
+          "name": "Cobalt",
+          "min": 15,
+          "max": 24,
+          "avgMin": 15,
+          "ilvl": 6
+        },
+        {
+          "tier": 9,
+          "name": "Beryl",
+          "min": 10,
+          "max": 14,
+          "avgMin": 10,
+          "ilvl": 1
+        }
+      ]
+    }
+  },
+  "explicit.stat_2748665614": {
+    "text": "Increased Maximum Mana",
+    "tiers": {
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "Mnemonic",
+          "min": 7,
+          "max": 8,
+          "avgMin": 7,
+          "ilvl": 75
+        },
+        {
+          "tier": 2,
+          "name": "Perceptive",
+          "min": 5,
+          "max": 6,
+          "avgMin": 5,
+          "ilvl": 60
+        },
+        {
+          "tier": 3,
+          "name": "Cognizant",
+          "min": 3,
+          "max": 4,
+          "avgMin": 3,
+          "ilvl": 33
+        }
+      ]
+    }
   }
 }

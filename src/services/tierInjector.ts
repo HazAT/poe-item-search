@@ -76,10 +76,15 @@ function getStatIdFromFilter(filterElement: HTMLElement): string | null {
  * Get the current item class from the Type Filters
  */
 function getCurrentItemClass(): string | null {
-  // Find the Type Filters group (first filter group)
-  const typeFilters = document.querySelector('.filter-group');
-  const categorySelect = typeFilters?.querySelector('.multiselect__single');
-  const text = categorySelect?.textContent?.trim();
+  // Find the category filter in the Type Filters group
+  const categoryFilter = document.querySelector('.filter-property[data-stat-id="category"]');
+  if (!categoryFilter) return null;
+
+  // The selected category is in the multiselect input's placeholder attribute
+  const categoryInput = categoryFilter.querySelector('.multiselect__input') as HTMLInputElement | null;
+  const text = categoryInput?.placeholder?.trim();
+
+  debug.log('[TierInjector] getCurrentItemClass: category text =', text);
 
   // Map common categories to our tier data item classes
   if (text?.includes('Gloves')) return 'Gloves';
