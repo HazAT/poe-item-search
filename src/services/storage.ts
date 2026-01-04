@@ -2,15 +2,7 @@
 // Based on better-trading's implementation
 
 import { extensionApi } from "@/utils/extensionApi";
-
-// Note: Cannot import debug utility here due to circular dependency
-// (debug -> settingsStore -> storage)
-const storageLog = (msg: string, ...args: unknown[]) => {
-  // Check localStorage flag directly to avoid circular dep
-  if (localStorage.getItem("poe-search-debug") === "true") {
-    console.log(`[PoE Search] [Storage] ${msg}`, ...args);
-  }
-};
+import { debug } from "@/utils/debug";
 
 // Keys that should be synced across devices when sync is enabled
 const SYNCABLE_KEY_PATTERNS = ["bookmark-folders", "bookmark-trades-", "trade-history"];
@@ -64,23 +56,23 @@ class StorageService {
   }
 
   async initialize(): Promise<void> {
-    storageLog("initialize() called");
+    debug.log("[Storage] initialize() called");
     if (this._initialized) {
-      storageLog("initialize() - already initialized");
+      debug.log("[Storage] initialize() - already initialized");
       return;
     }
 
     // Check if sync is enabled (stored in localStorage for quick access)
     const syncEnabledValue = localStorage.getItem(SYNC_ENABLED_KEY);
     this._syncEnabled = syncEnabledValue === "true";
-    storageLog(`initialize() - syncEnabled: ${this._syncEnabled}`);
+    debug.log(`[Storage] initialize() - syncEnabled: ${this._syncEnabled}`);
 
     if (this._syncEnabled) {
       await this.updateSyncQuotaInfo();
     }
 
     this._initialized = true;
-    storageLog("initialize() complete");
+    debug.log("[Storage] initialize() complete");
   }
 
   private getBackendForKey(key: string): StorageBackend {
@@ -101,7 +93,7 @@ class StorageService {
     const backend = this.getBackendForKey(key);
     const storageApi = this.getStorageApi(backend);
 
-    storageLog(`getValue(${key}) - backend: ${backend}`);
+    debug.log(`[Storage] getValue(${key}) - backend: ${backend}`);
 
     return new Promise((resolve) => {
       try {
@@ -109,27 +101,27 @@ class StorageService {
           try {
             const payload = result[formattedKey] as StoragePayload<T> | undefined;
             if (!payload) {
-              storageLog(`getValue(${key}) resolved: null (no payload)`);
+              debug.log(`[Storage] getValue(${key}) resolved: null (no payload)`);
               resolve(null);
               return;
             }
             if (payload.expiresAt) {
               const expired = new Date(payload.expiresAt).getTime() < Date.now();
               if (expired) {
-                storageLog(`getValue(${key}) resolved: null (expired)`);
+                debug.log(`[Storage] getValue(${key}) resolved: null (expired)`);
                 resolve(null);
                 return;
               }
             }
-            storageLog(`getValue(${key}) resolved: found`);
+            debug.log(`[Storage] getValue(${key}) resolved: found`);
             resolve(payload.value);
           } catch (e) {
-            console.error(`[PoE Search] [Storage] getValue(${key}) callback error:`, e);
+            debug.error(`[Storage] getValue(${key}) callback error:`, e);
             resolve(null);
           }
         });
       } catch (e) {
-        console.error(`[PoE Search] [Storage] getValue(${key}) error:`, e);
+        debug.error(`[Storage] getValue(${key}) error:`, e);
         resolve(null);
       }
     });
@@ -140,17 +132,17 @@ class StorageService {
     const backend = this.getBackendForKey(key);
     const storageApi = this.getStorageApi(backend);
 
-    storageLog(`setValue(${key}) - backend: ${backend}`);
+    debug.log(`[Storage] setValue(${key}) - backend: ${backend}`);
 
     return new Promise((resolve, reject) => {
       const payload: StoragePayload<T> = { value, expiresAt: null };
       storageApi.set({ [formattedKey]: payload }, () => {
         const lastError = extensionApi().runtime.lastError;
         if (lastError) {
-          storageLog(`setValue(${key}) error:`, lastError.message);
+          debug.log(`[Storage] setValue(${key}) error:`, lastError.message);
           reject(new Error(lastError.message));
         } else {
-          storageLog(`setValue(${key}) success`);
+          debug.log(`[Storage] setValue(${key}) success`);
           resolve();
         }
       });
