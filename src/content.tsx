@@ -8,6 +8,7 @@ import { initSentry, captureException } from "@/services/sentry";
 import { syncService } from "@/services/syncService";
 import { injectTierDropdowns, observeFilterChanges, injectStatIdExtractor } from "@/services/tierInjector";
 import { getExtensionUrl } from "@/utils/extensionApi";
+import { debug } from "@/utils/debug";
 import { App } from "./App";
 
 // Import CSS as string for Shadow DOM injection
@@ -15,7 +16,7 @@ import styles from "@/index.css?inline";
 
 // Log version
 const version = "1.3.0";
-console.log(`PoE Item Search v${version}`);
+debug.log(`[Init] PoE Item Search v${version}`);
 
 /**
  * Inject the interceptor script into the page's MAIN world.
@@ -30,18 +31,18 @@ function injectInterceptorScript(): void {
     : "interceptor.js";
   const scriptUrl = getExtensionUrl(interceptorPath);
   if (!scriptUrl) {
-    console.warn("[PoE Item Search] Cannot inject interceptor: not in extension context");
+    debug.warn("[Init] Cannot inject interceptor: not in extension context");
     return;
   }
 
   const script = document.createElement("script");
   script.src = scriptUrl;
   script.onload = () => {
-    console.log("[PoE Item Search] Interceptor script injected");
+    debug.log("[Init] Interceptor script injected");
     script.remove();
   };
   script.onerror = (e) => {
-    console.error("[PoE Item Search] Failed to inject interceptor script:", e);
+    debug.error("[Init] Failed to inject interceptor script:", e);
   };
   (document.head || document.documentElement).appendChild(script);
 }
@@ -112,7 +113,7 @@ async function initialize() {
 
     // Initialize cloud sync
     syncService.init().catch((e) => {
-      console.error("[PoE Item Search] Sync init failed:", e);
+      debug.error("[Sync] Init failed:", e);
       captureException(e, { context: "sync-init" });
     });
 
@@ -188,17 +189,17 @@ async function initialize() {
 
     // Initialize tier dropdowns for stat filters
     // Small delay to ensure Vue components are mounted
-    console.log('[PoE Item Search] Scheduling tier dropdown injection...');
+    debug.log("[Tiers] Scheduling tier dropdown injection...");
     setTimeout(() => {
-      console.log('[PoE Item Search] Running tier dropdown injection now');
+      debug.log("[Tiers] Running tier dropdown injection now");
       injectTierDropdowns();
       const observer = observeFilterChanges();
-      console.log('[PoE Item Search] Filter observer:', observer ? 'active' : 'failed');
+      debug.log("[Tiers] Filter observer:", observer ? "active" : "failed");
     }, 500);
 
-    console.log("PoE Item Search initialized successfully");
+    debug.log("[Init] PoE Item Search initialized successfully");
   } catch (error) {
-    console.error("PoE Item Search initialization failed:", error);
+    debug.error("[Init] PoE Item Search initialization failed:", error);
     captureException(error, { context: "initialization" });
   }
 }
