@@ -57,3 +57,24 @@ export function getItemClassesForStat(statId: string): string[] {
   if (!statTiers) return [];
   return Object.keys(statTiers.tiers);
 }
+
+/**
+ * Find which tier a value falls into for a given stat
+ * Uses range-based matching: value >= tierN.avgMin && value < tier(N-1).avgMin
+ * Returns tier number if found, null if value doesn't fall in any tier range
+ */
+export function findTierForValue(statId: string, value: number, itemClass?: string): number | null {
+  const tierList = getTiersForStat(statId, itemClass);
+  if (!tierList || tierList.length === 0) return null;
+
+  // Tiers are ordered T1 (highest avgMin) to Tn (lowest avgMin)
+  // Find the tier where value >= avgMin
+  for (const tier of tierList) {
+    if (value >= tier.avgMin) {
+      return tier.tier;
+    }
+  }
+
+  // Value is below all tier ranges
+  return null;
+}
