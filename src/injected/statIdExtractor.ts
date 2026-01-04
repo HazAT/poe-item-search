@@ -6,6 +6,12 @@
  * to access Vue's internal __vue__ property (which is isolated).
  */
 
+// Logger that forwards to content script via postMessage
+const injectedLogger = {
+  log: (message: string, data?: unknown) =>
+    window.postMessage({ type: "poe-search-debug-log", payload: { level: "log", message: `[StatIdExtractor] ${message}`, data } }, "*"),
+};
+
 function extractStatIds(): void {
   const filters = document.querySelectorAll('.filter.full-span');
   let extracted = 0;
@@ -20,7 +26,7 @@ function extractStatIds(): void {
     }
   });
   if (extracted > 0) {
-    console.log('[StatIdExtractor] Extracted', extracted, 'stat IDs');
+    injectedLogger.log('Extracted ' + extracted + ' stat IDs');
     // Dispatch event so content script knows stat IDs are ready
     document.dispatchEvent(new CustomEvent('poe-stat-ids-extracted', { detail: { count: extracted } }));
   }
@@ -37,7 +43,7 @@ function setupObserver(): void {
     // Only log occasionally to avoid spam
     const now = Date.now();
     if (!((window as any).__lastMutationLog) || now - (window as any).__lastMutationLog > 1000) {
-      console.log('[StatIdExtractor] Mutation detected, extracting...');
+      injectedLogger.log('Mutation detected, extracting...');
       (window as any).__lastMutationLog = now;
     }
 
@@ -47,7 +53,7 @@ function setupObserver(): void {
   });
 
   observer.observe(target, { childList: true, subtree: true, attributes: true });
-  console.log('[StatIdExtractor] Observing', target === document.body ? 'body' : '#trade');
+  injectedLogger.log('Observing ' + (target === document.body ? 'body' : '#trade'));
 }
 
 // Wait for #trade to exist, or fall back to body
@@ -80,4 +86,4 @@ setInterval(() => {
 // Expose for debugging
 (window as any).__extractStatIds = extractStatIds;
 
-console.log('[StatIdExtractor] Initialized');
+injectedLogger.log('Initialized');
