@@ -1,0 +1,24 @@
+Item Class: Helmets
+Rarity: Rare
+Blood Brow
+Masked Greathelm
+--------
+Quality: +29% (augmented)
+Armour: 1234 (augmented)
+--------
+Requires: Level 70, 99 Str
+--------
+Sockets: S 
+--------
+Item Level: 77
+--------
+18% increased Armour, Evasion and Energy Shield (rune)
+--------
++178 to Armour
+97% increased Armour
++171 to maximum Life
+28% increased Critical Hit Chance
++18 to Strength
+18.3 Life Regeneration per second
+--------
+Corrupted
