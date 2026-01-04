@@ -21,6 +21,12 @@ interface ItemCopiedPayload {
   itemId: string;
 }
 
+interface DebugLogPayload {
+  level: "log" | "info" | "warn" | "error";
+  message: string;
+  data?: unknown;
+}
+
 /**
  * Initialize the search interceptor listener.
  * Call this from the content script after injecting the interceptor script.
@@ -44,6 +50,11 @@ export function initSearchInterceptor() {
     // Handle item copied from results
     if (event.data?.type === "poe-search-item-copied" && event.data.payload) {
       handleItemCopied(event.data.payload as ItemCopiedPayload);
+    }
+
+    // Handle debug logs from injected scripts
+    if (event.data?.type === "poe-search-debug-log" && event.data.payload) {
+      handleDebugLog(event.data.payload as DebugLogPayload);
     }
   });
 
@@ -194,4 +205,17 @@ function handleItemCopied(payload: ItemCopiedPayload) {
     itemName,
     itemId,
   });
+}
+
+/**
+ * Handle debug logs forwarded from injected scripts.
+ * Routes them through the debug utility for Sentry + console handling.
+ */
+function handleDebugLog(payload: DebugLogPayload) {
+  const { level, message, data } = payload;
+  if (data !== undefined) {
+    debug[level](message, data);
+  } else {
+    debug[level](message);
+  }
 }
