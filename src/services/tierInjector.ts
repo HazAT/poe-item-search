@@ -4,6 +4,7 @@ import { createElement } from 'react';
 import { getTiersForStat, hasStatTiers } from './tierData';
 import { TierDropdown } from '@/components/tiers/TierDropdown';
 import { getExtensionUrl } from '@/utils/extensionApi';
+import { debug } from '@/utils/debug';
 
 // Track React roots for cleanup
 const tierDropdownRoots = new Map<HTMLElement, Root>();
@@ -13,22 +14,22 @@ const tierDropdownRoots = new Map<HTMLElement, Root>();
  * and store them as data attributes on filter elements
  */
 export function injectStatIdExtractor(): void {
-  console.log('[TierInjector] injectStatIdExtractor called');
+  debug.log('[TierInjector] injectStatIdExtractor called');
   const scriptUrl = getExtensionUrl('statIdExtractor.js');
-  console.log('[TierInjector] statIdExtractor URL:', scriptUrl);
+  debug.log('[TierInjector] statIdExtractor URL:', scriptUrl);
   if (!scriptUrl) {
-    console.warn('[TierInjector] Cannot inject stat ID extractor: not in extension context');
+    debug.warn('[TierInjector] Cannot inject stat ID extractor: not in extension context');
     return;
   }
 
   const script = document.createElement('script');
   script.src = scriptUrl;
   script.onload = () => {
-    console.log('[TierInjector] Stat ID extractor script injected');
+    debug.log('[TierInjector] Stat ID extractor script injected');
     script.remove();
   };
   script.onerror = (e) => {
-    console.error('[TierInjector] Failed to inject stat ID extractor. URL was:', scriptUrl, 'Error:', e);
+    debug.error('[TierInjector] Failed to inject stat ID extractor. URL was:', scriptUrl, 'Error:', e);
   };
   (document.head || document.documentElement).appendChild(script);
 }
@@ -53,13 +54,13 @@ function findStatFiltersGroup(): Element | null {
 function findStatFilters(): HTMLElement[] {
   const statFiltersGroup = findStatFiltersGroup();
   if (!statFiltersGroup) {
-    console.log('[TierInjector] findStatFilters: no group found');
+    debug.log('[TierInjector] findStatFilters: no group found');
     return [];
   }
 
   // Get all stat filter rows
   const filters = statFiltersGroup.querySelectorAll('.filter.full-span');
-  console.log('[TierInjector] findStatFilters: found', filters.length, 'in group');
+  debug.log('[TierInjector] findStatFilters: found', filters.length, 'in group');
   return Array.from(filters) as HTMLElement[];
 }
 
@@ -106,7 +107,7 @@ function updateMinInput(minInput: HTMLInputElement, value: number): void {
   // Also dispatch change event for good measure
   minInput.dispatchEvent(new Event('change', { bubbles: true }));
 
-  console.log('[TierInjector] Updated min input to', value);
+  debug.log('[TierInjector] Updated min input to', value);
 }
 
 /**
@@ -117,7 +118,7 @@ function hasStatIdsExtracted(): boolean {
   if (filters.length === 0) return false;
 
   const hasIds = filters.some(filter => !!filter.dataset.statId);
-  console.log('[TierInjector] hasStatIdsExtracted:', hasIds, 'of', filters.length, 'filters');
+  debug.log('[TierInjector] hasStatIdsExtracted:', hasIds, 'of', filters.length, 'filters');
   return hasIds;
 }
 
@@ -125,62 +126,62 @@ function hasStatIdsExtracted(): boolean {
  * Inject tier dropdowns into stat filters that we have tier data for
  */
 export function injectTierDropdowns(): void {
-  console.log('[TierInjector] injectTierDropdowns called');
+  debug.log('[TierInjector] injectTierDropdowns called');
 
   const statFiltersGroup = findStatFiltersGroup();
-  console.log('[TierInjector] Stat Filters group:', statFiltersGroup ? 'found' : 'NOT FOUND');
+  debug.log('[TierInjector] Stat Filters group:', statFiltersGroup ? 'found' : 'NOT FOUND');
 
   if (!statFiltersGroup) return;
 
   const filters = findStatFilters();
   if (filters.length === 0) {
-    console.log('[TierInjector] No stat filters found');
+    debug.log('[TierInjector] No stat filters found');
     return;
   }
 
   // Check if stat IDs have been extracted yet
   if (!hasStatIdsExtracted()) {
-    console.log('[TierInjector] Stat IDs not extracted yet, will retry via observer');
+    debug.log('[TierInjector] Stat IDs not extracted yet, will retry via observer');
     return;
   }
 
   const itemClass = getCurrentItemClass();
-  console.log('[TierInjector] Found', filters.length, 'stat filters, item class:', itemClass);
+  debug.log('[TierInjector] Found', filters.length, 'stat filters, item class:', itemClass);
 
   filters.forEach(filter => {
     // Skip if already has tier dropdown
     if (filter.querySelector('.tier-dropdown-injected')) {
-      console.log('[TierInjector] Skipping filter - already has dropdown');
+      debug.log('[TierInjector] Skipping filter - already has dropdown');
       return;
     }
 
     const statId = getStatIdFromFilter(filter);
-    console.log('[TierInjector] Processing filter, statId:', statId);
+    debug.log('[TierInjector] Processing filter, statId:', statId);
 
     if (!statId) {
-      console.log('[TierInjector] Skipping - no statId');
+      debug.log('[TierInjector] Skipping - no statId');
       return;
     }
 
     const hasTiers = hasStatTiers(statId);
-    console.log('[TierInjector] hasStatTiers:', hasTiers);
+    debug.log('[TierInjector] hasStatTiers:', hasTiers);
 
     if (!hasTiers) {
-      console.log('[TierInjector] Skipping - no tier data for', statId);
+      debug.log('[TierInjector] Skipping - no tier data for', statId);
       return;
     }
 
     const tiers = getTiersForStat(statId, itemClass || undefined);
-    console.log('[TierInjector] Tiers for', statId, ':', tiers?.length || 0, 'tiers');
+    debug.log('[TierInjector] Tiers for', statId, ':', tiers?.length || 0, 'tiers');
 
     if (!tiers || tiers.length === 0) {
-      console.log('[TierInjector] Skipping - no tiers available');
+      debug.log('[TierInjector] Skipping - no tiers available');
       return;
     }
 
     const minInput = filter.querySelector('input[placeholder="min"]') as HTMLInputElement | null;
     if (!minInput) {
-      console.log('[TierInjector] Skipping - no min input found');
+      debug.log('[TierInjector] Skipping - no min input found');
       return;
     }
 
@@ -218,7 +219,7 @@ export function injectTierDropdowns(): void {
     // Track root for cleanup
     tierDropdownRoots.set(container, root);
 
-    console.log('[TierInjector] Injected tier dropdown for', statId);
+    debug.log('[TierInjector] Injected tier dropdown for', statId);
   });
 }
 
@@ -230,7 +231,7 @@ export function observeFilterChanges(): MutationObserver | null {
   // Watch the #trade container which always exists
   const tradeContainer = document.querySelector('#trade');
   if (!tradeContainer) {
-    console.log('[TierInjector] #trade container not found');
+    debug.log('[TierInjector] #trade container not found');
     return null;
   }
 
@@ -246,11 +247,11 @@ export function observeFilterChanges(): MutationObserver | null {
         retries++;
         if (hasStatIdsExtracted()) {
           clearInterval(retryInterval);
-          console.log('[TierInjector] Stat IDs extracted after', retries * 100, 'ms retry');
+          debug.log('[TierInjector] Stat IDs extracted after', retries * 100, 'ms retry');
           injectTierDropdowns();
         } else if (retries >= 20) {
           clearInterval(retryInterval);
-          console.log('[TierInjector] Gave up waiting for stat IDs after 2s');
+          debug.log('[TierInjector] Gave up waiting for stat IDs after 2s');
         }
       }, 100);
     }
@@ -263,11 +264,11 @@ export function observeFilterChanges(): MutationObserver | null {
   });
 
   observer.observe(tradeContainer, { childList: true, subtree: true });
-  console.log('[TierInjector] Observing #trade for filter changes');
+  debug.log('[TierInjector] Observing #trade for filter changes');
 
   // Also listen for custom event from stat ID extractor
   document.addEventListener('poe-stat-ids-extracted', (e) => {
-    console.log('[TierInjector] Received stat-ids-extracted event:', (e as CustomEvent).detail);
+    debug.log('[TierInjector] Received stat-ids-extracted event:', (e as CustomEvent).detail);
     injectTierDropdowns();
   });
 
