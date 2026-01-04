@@ -13,6 +13,7 @@ interface TierDropdownProps {
   tiers: TierInfo[];
   onSelect: (avgMin: number) => void;
   containerElement?: HTMLElement | null;
+  currentTier?: number | null;
 }
 
 // Inline styles for rendering outside Shadow DOM (Tailwind won't work)
@@ -72,7 +73,7 @@ const styles = {
   },
 };
 
-export function TierDropdown({ tiers, onSelect, containerElement }: TierDropdownProps) {
+export function TierDropdown({ tiers, onSelect, containerElement, currentTier }: TierDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
   const [hoveredTier, setHoveredTier] = useState<number | null>(null);
@@ -108,7 +109,7 @@ export function TierDropdown({ tiers, onSelect, containerElement }: TierDropdown
         }}
         title="Select tier"
       >
-        T&#9662;
+        {currentTier ? `T${currentTier}` : 'T\u25BE'}
       </button>
 
       {isOpen && (
