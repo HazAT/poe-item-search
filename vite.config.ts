@@ -102,7 +102,6 @@ export default defineConfig({
         entryFileNames: "[name].js",
         assetFileNames: "[name].[ext]",
         format: "es",
-        inlineDynamicImports: false,
       },
     },
     cssCodeSplit: false,

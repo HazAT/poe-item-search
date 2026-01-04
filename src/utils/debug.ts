@@ -1,8 +1,7 @@
 // Debug logging utility
-// - Always sends to Sentry for production visibility
 // - Console output respects debugLogging setting (except errors)
+// Note: Sentry integration removed to avoid bundle chunking issues with Chrome content scripts
 
-import { logger as sentryLogger, isSentryInitialized } from "@/services/sentry";
 import { getDebugLogging } from "@/stores/settingsStore";
 
 type LogLevel = "log" | "info" | "warn" | "error";
@@ -27,13 +26,6 @@ function createLogger(level: LogLevel, alwaysConsole = false) {
     const timestamp = new Date().toISOString().split("T")[1].slice(0, 12);
     const formatted = `${PREFIX} [${timestamp}] ${message}`;
     const formattedArgs = formatArgs(args);
-
-    // Always send to Sentry (if initialized)
-    if (isSentryInitialized()) {
-      const sentryLevel = level === "log" ? "info" : level;
-      const attrs = args.length ? { args: formattedArgs } : undefined;
-      sentryLogger[sentryLevel](formatted, attrs);
-    }
 
     // Console: always for errors/critical, otherwise only when debug ON
     if (alwaysConsole || getDebugLogging()) {

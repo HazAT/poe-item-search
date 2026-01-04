@@ -1,9 +1,10 @@
 /**
  * Development-only background script for auto-reload.
  * Watches dist folder for changes and reloads extension + tabs.
+ *
+ * Note: Uses raw console.log instead of debug utility to avoid
+ * importing settingsStore/React which causes bundle chunking issues.
  */
-
-import { debug } from "@/utils/debug";
 
 // Simple string hash function
 function hashCode(str: string): number {
@@ -43,7 +44,7 @@ async function checkForChanges() {
     // Check against stored hash
     const stored = await chrome.storage.local.get("_devHash");
     if (stored._devHash && stored._devHash !== combinedHash) {
-      debug.log("[Reload] Change detected, reloading tabs and extension...");
+      console.log("[Extension Reload] Change detected, reloading tabs and extension...");
 
       // Store new hash FIRST to prevent reload loop
       await chrome.storage.local.set({ _devHash: combinedHash });
@@ -62,7 +63,7 @@ async function checkForChanges() {
     }
     await chrome.storage.local.set({ _devHash: combinedHash });
   } catch (e) {
-    debug.error("[Reload] Error checking:", e);
+    console.log("[Extension Reload] Error checking:", e);
   }
 }
 
@@ -72,7 +73,7 @@ setInterval(checkForChanges, 1000);
 // Initial check on startup
 checkForChanges();
 
-debug.log("[Reload] Watching for changes (every 1s)...");
+console.log("[Extension Reload] Watching for changes (every 1s)...");
 
 // Heartbeat listener for dev mode indicator in content script
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
