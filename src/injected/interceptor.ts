@@ -9,6 +9,16 @@
 import { formatItemText } from "@/utils/itemFormatter";
 import type { TradeItem, TradeFetchResponse } from "@/types/tradeItem";
 
+// Logger that forwards to content script via postMessage
+const injectedLogger = {
+  log: (message: string, data?: unknown) =>
+    window.postMessage({ type: "poe-search-debug-log", payload: { level: "log", message: `[Interceptor] ${message}`, data } }, "*"),
+  warn: (message: string, data?: unknown) =>
+    window.postMessage({ type: "poe-search-debug-log", payload: { level: "warn", message: `[Interceptor] ${message}`, data } }, "*"),
+  error: (message: string, data?: unknown) =>
+    window.postMessage({ type: "poe-search-debug-log", payload: { level: "error", message: `[Interceptor] ${message}`, data } }, "*"),
+};
+
 // Trade API URL patterns
 const TRADE_SEARCH_PATTERN = /\/api\/trade2?\/search\/.+/;
 const TRADE_FETCH_PATTERN = /\/api\/trade2?\/fetch\/.+/;
@@ -39,7 +49,7 @@ function triggerSortUISync() {
 
   try {
     const { field, direction } = JSON.parse(pendingSort);
-    console.log("[PoE Search Interceptor] Triggering sort UI sync:", { field, direction });
+    injectedLogger.log("Triggering sort UI sync", { field, direction });
 
     // Wait for results to render
     const attemptClick = (retries = 10) => {
@@ -48,7 +58,7 @@ function triggerSortUISync() {
         if (retries > 0) {
           setTimeout(() => attemptClick(retries - 1), 200);
         } else {
-          console.log("[PoE Search Interceptor] Sort element not found after retries:", field);
+          injectedLogger.log("Sort element not found after retries: " + field);
         }
         return;
       }
@@ -59,7 +69,7 @@ function triggerSortUISync() {
       const isAsc = classList.contains("sorted-asc");
       const isDesc = classList.contains("sorted-desc");
 
-      console.log("[PoE Search Interceptor] Sort element state:", { isSorted, isAsc, isDesc, wantDirection: direction });
+      injectedLogger.log("Sort element state", { isSorted, isAsc, isDesc, wantDirection: direction });
 
       // Click to toggle sort - first click sorts asc, second click sorts desc
       if (direction === "desc") {
@@ -86,13 +96,13 @@ function triggerSortUISync() {
 
       // Clear after processing
       localStorage.removeItem(PENDING_SORT_CLICK_KEY);
-      console.log("[PoE Search Interceptor] Sort UI sync complete");
+      injectedLogger.log("Sort UI sync complete");
     };
 
     // Start attempting after a delay for DOM to render
     setTimeout(() => attemptClick(), 500);
   } catch (e) {
-    console.error("[PoE Search Interceptor] Failed to trigger sort UI sync:", e);
+    injectedLogger.error("Failed to trigger sort UI sync", e);
     localStorage.removeItem(PENDING_SORT_CLICK_KEY);
   }
 }
@@ -118,10 +128,7 @@ function capturePreviewImage(slug: string) {
       },
       "*"
     );
-    console.log(
-      "[PoE Search Interceptor] Captured preview image:",
-      imageUrl.slice(0, 60) + "..."
-    );
+    injectedLogger.log("Captured preview image: " + imageUrl.slice(0, 60) + "...");
   };
 
   // Try immediately first (results might already be rendered)
@@ -139,7 +146,7 @@ function capturePreviewImage(slug: string) {
       sendPreviewImage(imageUrl);
     } else if (Date.now() - startTime > maxWaitTime) {
       obs.disconnect();
-      console.log("[PoE Search Interceptor] Preview image capture timed out");
+      injectedLogger.log("Preview image capture timed out");
     }
   });
 
@@ -195,7 +202,7 @@ const originalFetch = window.fetch;
 
     // Check for sort override from history/bookmark execution (using localStorage)
     const sortOverride = localStorage.getItem(SORT_OVERRIDE_KEY);
-    console.log("[PoE Search Interceptor] Checking sort override:", {
+    injectedLogger.log("Checking sort override", {
       hasOverride: !!sortOverride,
       override: sortOverride,
       currentSort: (requestBody as { sort?: unknown })?.sort
@@ -206,7 +213,7 @@ const originalFetch = window.fetch;
         (requestBody as Record<string, unknown>).sort = overrideData;
         // Update the init.body with modified payload
         init = { ...init, body: JSON.stringify(requestBody) };
-        console.log("[PoE Search Interceptor] Applied sort override:", overrideData);
+        injectedLogger.log("Applied sort override", overrideData);
 
         // Store pending sort click for UI sync after results load
         const sortKeys = Object.keys(overrideData);
@@ -214,13 +221,13 @@ const originalFetch = window.fetch;
           const field = sortKeys[0];
           const direction = overrideData[field];
           localStorage.setItem(PENDING_SORT_CLICK_KEY, JSON.stringify({ field, direction }));
-          console.log("[PoE Search Interceptor] Queued sort UI sync:", { field, direction });
+          injectedLogger.log("Queued sort UI sync", { field, direction });
         }
 
         // Clear after use (only apply once)
         localStorage.removeItem(SORT_OVERRIDE_KEY);
       } catch (e) {
-        console.error("[PoE Search Interceptor] Failed to apply sort override:", e);
+        injectedLogger.error("Failed to apply sort override", e);
       }
     }
 
@@ -248,7 +255,7 @@ const originalFetch = window.fetch;
         "*"
       );
 
-      console.log("[PoE Search Interceptor] Captured search:", {
+      injectedLogger.log("Captured search", {
         url,
         total: responseBody.total,
         id: responseBody.id,
@@ -260,7 +267,7 @@ const originalFetch = window.fetch;
       // Capture preview image from first result
       capturePreviewImage(responseBody.id);
     } catch (e) {
-      console.error("[PoE Search Interceptor] Failed to parse response:", e);
+      injectedLogger.error("Failed to parse response", e);
     }
 
     return response;
@@ -281,17 +288,13 @@ const originalFetch = window.fetch;
             itemCache.set(result.item.id, result.item);
           }
         }
-        console.log(
-          "[PoE Search Interceptor] Cached",
-          responseBody.result.length,
-          "items from fetch API"
-        );
+        injectedLogger.log("Cached " + responseBody.result.length + " items from fetch API");
 
         // Wire up copy buttons for newly loaded items
         wireCopyButtons();
       }
     } catch (e) {
-      console.error("[PoE Search Interceptor] Failed to parse fetch response:", e);
+      injectedLogger.error("Failed to parse fetch response", e);
     }
 
     return response;
@@ -347,17 +350,13 @@ XMLHttpRequest.prototype.send = function (
               itemCache.set(result.item.id, result.item);
             }
           }
-          console.log(
-            "[PoE Search Interceptor] Cached",
-            responseBody.result.length,
-            "items from XHR fetch API"
-          );
+          injectedLogger.log("[XHR] Cached " + responseBody.result.length + " items from fetch API");
 
           // Wire up copy buttons for newly loaded items
           wireCopyButtons();
         }
       } catch (e) {
-        console.error("[PoE Search Interceptor] Failed to parse XHR fetch response:", e);
+        injectedLogger.error("[XHR] Failed to parse fetch response", e);
       }
     });
   }
@@ -375,7 +374,7 @@ XMLHttpRequest.prototype.send = function (
 
         // Check for sort override from history/bookmark execution (using localStorage)
         const sortOverride = localStorage.getItem(SORT_OVERRIDE_KEY);
-        console.log("[PoE Search Interceptor XHR] Checking sort override:", {
+        injectedLogger.log("[XHR] Checking sort override", {
           hasOverride: !!sortOverride,
           override: sortOverride,
           currentSort: (requestBody as { sort?: unknown })?.sort
@@ -385,7 +384,7 @@ XMLHttpRequest.prototype.send = function (
             const overrideData = JSON.parse(sortOverride);
             (requestBody as Record<string, unknown>).sort = overrideData;
             body = JSON.stringify(requestBody);
-            console.log("[PoE Search Interceptor XHR] Applied sort override:", overrideData);
+            injectedLogger.log("[XHR] Applied sort override", overrideData);
 
             // Store pending sort click for UI sync after results load
             // Extract first sort key and direction (e.g., {"stat.implicit.stat_123": "desc"})
@@ -394,13 +393,13 @@ XMLHttpRequest.prototype.send = function (
               const field = sortKeys[0];
               const direction = overrideData[field];
               localStorage.setItem(PENDING_SORT_CLICK_KEY, JSON.stringify({ field, direction }));
-              console.log("[PoE Search Interceptor XHR] Queued sort UI sync:", { field, direction });
+              injectedLogger.log("[XHR] Queued sort UI sync", { field, direction });
             }
 
             // Clear after use (only apply once)
             localStorage.removeItem(SORT_OVERRIDE_KEY);
           } catch (e) {
-            console.error("[PoE Search Interceptor XHR] Failed to apply sort override:", e);
+            injectedLogger.error("[XHR] Failed to apply sort override", e);
           }
         }
       } catch {
@@ -426,7 +425,7 @@ XMLHttpRequest.prototype.send = function (
           "*"
         );
 
-        console.log("[PoE Search Interceptor] Captured XHR search:", {
+        injectedLogger.log("[XHR] Captured search", {
           url: xhr._poeUrl,
           total: responseBody.total,
           id: responseBody.id,
@@ -438,10 +437,7 @@ XMLHttpRequest.prototype.send = function (
         // Capture preview image from first result
         capturePreviewImage(responseBody.id);
       } catch (e) {
-        console.error(
-          "[PoE Search Interceptor] Failed to parse XHR response:",
-          e
-        );
+        injectedLogger.error("[XHR] Failed to parse response", e);
       }
     });
   }
@@ -454,7 +450,7 @@ window.addEventListener("message", (event) => {
   if (event.source !== window) return;
   if (event.data?.type === "poe-search-set-sort-override" && event.data.sort) {
     sessionStorage.setItem(SORT_OVERRIDE_KEY, JSON.stringify(event.data.sort));
-    console.log("[PoE Search Interceptor] Sort override set:", event.data.sort);
+    injectedLogger.log("Sort override set", event.data.sort);
   }
 });
 
@@ -462,7 +458,7 @@ window.addEventListener("message", (event) => {
  * Show a brief visual feedback tooltip near the button.
  */
 function showCopyFeedback(button: HTMLElement, message: string) {
-  console.log("[PoE Search Interceptor] showCopyFeedback called:", message);
+  injectedLogger.log("showCopyFeedback called: " + message);
 
   // Create tooltip element
   const tooltip = document.createElement("div");
@@ -488,7 +484,7 @@ function showCopyFeedback(button: HTMLElement, message: string) {
   tooltip.style.top = `${rect.top + window.scrollY - 30}px`;
 
   document.body.appendChild(tooltip);
-  console.log("[PoE Search Interceptor] Tooltip appended to body");
+  injectedLogger.log("Tooltip appended to body");
 
   // Fade out and remove
   setTimeout(() => {
@@ -529,7 +525,7 @@ function wireCopyButtons() {
 
       const item = itemCache.get(itemId);
       if (!item) {
-        console.warn("[PoE Search Interceptor] Item not in cache:", itemId);
+        injectedLogger.warn("Item not in cache: " + itemId);
         copyBtn.title = "Item not loaded - try refreshing";
         return;
       }
@@ -551,15 +547,15 @@ function wireCopyButtons() {
         // Visual feedback - show a temporary tooltip
         showCopyFeedback(copyBtn, "Copied!");
 
-        console.log("[PoE Search Interceptor] Copied item:", item.name || item.typeLine);
+        injectedLogger.log("Copied item: " + (item.name || item.typeLine));
       } catch (err) {
-        console.error("[PoE Search Interceptor] Failed to copy:", err);
+        injectedLogger.error("Failed to copy", err);
         showCopyFeedback(copyBtn, "Failed!");
       }
     });
   }
 
-  console.log("[PoE Search Interceptor] Wired copy buttons for", rows.length, "rows");
+  injectedLogger.log("Wired copy buttons for " + rows.length + " rows");
 }
 
 // Set up MutationObserver to wire copy buttons as new rows are added
@@ -592,7 +588,7 @@ function startResultsObserver() {
       childList: true,
       subtree: true,
     });
-    console.log("[PoE Search Interceptor] Results observer started");
+    injectedLogger.log("Results observer started");
     // Initial wire-up
     wireCopyButtons();
   } else {
@@ -608,4 +604,4 @@ if (document.readyState === "loading") {
   startResultsObserver();
 }
 
-console.log("[PoE Search Interceptor] Request interceptor installed");
+injectedLogger.log("Request interceptor installed");
