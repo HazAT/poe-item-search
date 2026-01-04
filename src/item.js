@@ -21,14 +21,14 @@ export function getSearchQuery(item, stats) {
 
   const matched = matchStatsOnItem(item, regexStats);
 
-  // Resistance stat IDs (explicit) and their pseudo equivalents
-  const resistanceMapping = {
-    "explicit.stat_3372524247": "pseudo.pseudo_total_fire_resistance",      // Fire
-    "explicit.stat_4220027924": "pseudo.pseudo_total_cold_resistance",      // Cold
-    "explicit.stat_1671376347": "pseudo.pseudo_total_lightning_resistance", // Lightning
-    "explicit.stat_2923486259": "pseudo.pseudo_total_chaos_resistance"      // Chaos
+  // Resistance stat IDs (explicit)
+  const resistanceIds = {
+    fire: "explicit.stat_3372524247",
+    cold: "explicit.stat_4220027924",
+    lightning: "explicit.stat_1671376347",
+    chaos: "explicit.stat_2923486259"
   };
-  const resistanceExplicitIds = Object.keys(resistanceMapping);
+  const resistanceExplicitIds = Object.values(resistanceIds);
 
   // Group resistance stats
   const resistanceStats = matched.filter(stat => resistanceExplicitIds.includes(stat.id));
@@ -63,16 +63,37 @@ export function getSearchQuery(item, stats) {
     });
   }
 
-  // Add resistance stats using pseudo stats with weighted filter
+  // Add resistance stats as a weighted filter if any exist
   if (resistanceStats.length > 0) {
-    const resistanceFilters = resistanceStats.map(stat => ({
-      id: resistanceMapping[stat.id],
-      value: { min: parseInt(stat.value.min) }
-    }));
+    const resistanceFilters = [];
+
+    // Add found resistances with their values
+    let totalWeight = 0;
+    resistanceStats.forEach(stat => {
+      const value = parseInt(stat.value.min);
+      totalWeight += value;
+      resistanceFilters.push({
+        id: stat.id,
+        value: { weight: 1, min: value },
+        disabled: false
+      });
+    });
+
+    // Add missing resistances as disabled
+    Object.values(resistanceIds).forEach(id => {
+      if (!resistanceStats.find(stat => stat.id === id)) {
+        resistanceFilters.push({
+          id,
+          value: { weight: 1 },
+          disabled: true
+        });
+      }
+    });
 
     statsArray.push({
       type: "weight",
       filters: resistanceFilters,
+      value: { min: totalWeight },
     });
   }
 

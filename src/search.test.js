@@ -15,14 +15,16 @@ describe("buildSearchQuery", () => {
     expect(query.stats.length).toBeGreaterThan(0);
   });
 
-  test("includes pseudo resistance stats", async () => {
+  test("includes explicit resistance stats in weighted filter", async () => {
     const query = await buildSearchQuery(gloves1, { stats });
 
-    // Should have resistance stats as pseudo
-    const hasResistances = query.stats.some(group =>
-      group.filters.some(f => f.id.startsWith("pseudo.pseudo_total_"))
+    // Should have resistance stats as explicit IDs in a weighted filter
+    const resistanceGroup = query.stats.find(group =>
+      group.type === "weight" &&
+      group.filters.some(f => f.id.startsWith("explicit.stat_") && f.value?.weight === 1)
     );
-    expect(hasResistances).toBe(true);
+    expect(resistanceGroup).toBeDefined();
+    expect(resistanceGroup.value).toHaveProperty("min"); // Should have group min
   });
 
   test("throws on invalid input", async () => {

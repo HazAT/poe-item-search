@@ -203,15 +203,30 @@ test("getSearchQueryWithResistances", () => {
     {
       type: "weight",
       filters: expect.arrayContaining([
-        {
-          id: "pseudo.pseudo_total_cold_resistance",
-          value: { min: 6 },
-        },
-        {
-          id: "pseudo.pseudo_total_lightning_resistance",
-          value: { min: 14 },
-        },
+        // Found resistances - enabled with weight and min
+        expect.objectContaining({
+          id: "explicit.stat_4220027924", // Cold Resistance
+          value: { weight: 1, min: 6 },
+          disabled: false,
+        }),
+        expect.objectContaining({
+          id: "explicit.stat_1671376347", // Lightning Resistance
+          value: { weight: 1, min: 14 },
+          disabled: false,
+        }),
+        // Missing resistances - disabled with weight only
+        expect.objectContaining({
+          id: "explicit.stat_3372524247", // Fire Resistance
+          value: { weight: 1 },
+          disabled: true,
+        }),
+        expect.objectContaining({
+          id: "explicit.stat_2923486259", // Chaos Resistance
+          value: { weight: 1 },
+          disabled: true,
+        }),
       ]),
+      value: { min: 20 }, // 6 + 14 = 20
     },
   ]);
 });
@@ -291,18 +306,26 @@ test("gloves2 - melee gloves with phys/fire/cold damage", () => {
     ])
   );
 
-  // Check cold resistance uses pseudo stat (fire won't be since it has desecrated suffix)
+  // Check cold resistance uses explicit stat in weighted filter (fire won't be since it has desecrated suffix)
   const query = getSearchQuery(gloves2, stats);
   expect(query.stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         type: "weight",
         filters: expect.arrayContaining([
-          {
-            id: "pseudo.pseudo_total_cold_resistance",
-            value: { min: 39 },
-          },
+          // Cold resistance found - enabled
+          expect.objectContaining({
+            id: "explicit.stat_4220027924", // Cold Resistance
+            value: { weight: 1, min: 39 },
+            disabled: false,
+          }),
+          // Other resistances disabled
+          expect.objectContaining({
+            id: "explicit.stat_3372524247", // Fire Resistance
+            disabled: true,
+          }),
         ]),
+        value: { min: 39 }, // Only cold resistance contributes
       }),
     ])
   );
