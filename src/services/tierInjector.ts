@@ -1,7 +1,7 @@
 // src/services/tierInjector.ts
 import { createRoot, Root } from 'react-dom/client';
 import { createElement } from 'react';
-import { getTiersForStat, hasStatTiers } from './tierData';
+import { getTiersForStat, hasStatTiers, findTierForValue } from './tierData';
 import { TierDropdown } from '@/components/tiers/TierDropdown';
 import { getExtensionUrl } from '@/utils/extensionApi';
 import { debug } from '@/utils/debug';
@@ -204,20 +204,38 @@ export function injectTierDropdowns(): void {
 
     wrapper.appendChild(container);
 
-    // Render TierDropdown React component
-    const root = createRoot(container);
-    root.render(
-      createElement(TierDropdown, {
-        tiers,
-        onSelect: (avgMin: number) => {
-          updateMinInput(minInput, avgMin);
-        },
-        containerElement: container,
-      })
-    );
+    // Function to render/re-render the dropdown with current value
+    const renderDropdown = () => {
+      const value = minInput.value ? parseFloat(minInput.value) : undefined;
+      const currentTier = value !== undefined && !isNaN(value)
+        ? findTierForValue(statId, value, itemClass || undefined)
+        : null;
 
-    // Track root for cleanup
-    tierDropdownRoots.set(container, root);
+      const root = tierDropdownRoots.get(container) || createRoot(container);
+      if (!tierDropdownRoots.has(container)) {
+        tierDropdownRoots.set(container, root);
+      }
+
+      root.render(
+        createElement(TierDropdown, {
+          tiers,
+          onSelect: (avgMin: number) => {
+            updateMinInput(minInput, avgMin);
+            // Re-render to update tier display after selection
+            setTimeout(renderDropdown, 0);
+          },
+          containerElement: container,
+          currentTier,
+        })
+      );
+    };
+
+    // Initial render
+    renderDropdown();
+
+    // Listen for input changes to update tier display
+    minInput.addEventListener('input', renderDropdown);
+    minInput.addEventListener('change', renderDropdown);
 
     debug.log('[TierInjector] Injected tier dropdown for', statId);
   });
