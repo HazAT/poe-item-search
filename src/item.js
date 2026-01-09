@@ -138,40 +138,46 @@ export function getSearchQuery(item, stats) {
 
   // IDs de elemental/chaos damage to Attacks (sem físico)
   const elementalAttackDamageIds = {
-    fire:      "explicit.stat_1573130764", // Adds # to # Fire Damage to Attacks
-    cold:      "explicit.stat_4067062424", // Adds # to # Cold Damage to Attacks
-    lightning: "explicit.stat_1754445556", // Adds # to # Lightning Damage to Attacks
-    chaos:     "explicit.stat_1334060246", // Adds # to # Chaos Damage to Attacks
+    fire:      "explicit.stat_1573130764",
+    cold:      "explicit.stat_4067062424",
+    lightning: "explicit.stat_1754445556",
+    chaos:     "explicit.stat_1334060246",
   };
+  const elementalAttackDamageAllIds = Object.values(elementalAttackDamageIds);
 
   // Stats de elemental/chaos damage encontrados no item
-  const elementalAttackDamageStats = matched.filter((stat) =>
-    Object.values(elementalAttackDamageIds).includes(stat.id)
-  );
+  const elementalAttackDamageStats = matched
+    .map((stat) => {
+      const resolvedId = resolveAttackDamageIdFromText(stat);
+      if (!resolvedId) return null;
+      return { ...stat, resolvedId };
+    })
+    .filter(
+      (s) =>
+        s &&
+        elementalAttackDamageAllIds.includes(s.resolvedId)
+    );
 
-  if (elementalAttackDamageStats.length > 0) {
+    // Bloco Weighted Sum para elemental/chaos damage to Attacks
+    if (elementalAttackDamageStats.length > 0) {
     const elementalAttackDamageFilters = [];
-    const allElemIds = Object.values(elementalAttackDamageIds);
 
-    let totalWeight = 0;
     elementalAttackDamageStats.forEach((stat) => {
-      const value = parseInt(stat.value.min);
-      totalWeight += value;
+      const value = Math.floor(Number(stat.value?.min ?? 0));
 
       elementalAttackDamageFilters.push({
-        id: normalizeStatIdToExplicit(stat.id),
+        id: stat.resolvedId,
         value: { weight: 1, min: value },
-        disabled: false,
+        disabled: true,  // vem desmarcado
       });
     });
 
-    // Mods que não existem no item → habilitados, sem min
-    allElemIds.forEach((id) => {
-      if (!elementalAttackDamageStats.find((s) => s.id === id)) {
+    elementalAttackDamageAllIds.forEach((id) => {
+      if (!elementalAttackDamageStats.find((s) => s.resolvedId === id)) {
         elementalAttackDamageFilters.push({
-          id: normalizeStatIdToExplicit(id),
+          id,
           value: { weight: 1 },
-          disabled: false,
+          disabled: true, // também desmarcados
         });
       }
     });
@@ -179,11 +185,14 @@ export function getSearchQuery(item, stats) {
     statsArray.push({
       type: "weight",
       filters: elementalAttackDamageFilters,
-      value: { min: totalWeight },
+      // NÃO coloque "value" aqui
+      // value: {}  também é ok, se quiser explicitar
     });
   }
-
+  
   query.stats = statsArray;
+  console.log("[PoE Search] query.stats =", JSON.stringify(statsArray, null, 2));
+  console.log("[PoE Search] query =", JSON.stringify(query, null, 2));
   return query;
 }
 
@@ -210,6 +219,27 @@ function normalizeStatIdToExplicit(id) {
     return id.replace("desecrated.", "explicit.");
   }
   return id;
+}
+
+function resolveAttackDamageIdFromText(stat) {
+  const text = stat.text.toLowerCase();
+
+  if (text.includes("damage to attacks")) {
+    if (text.includes("fire damage")) {
+      return "explicit.stat_1573130764";
+    }
+    if (text.includes("cold damage")) {
+      return "explicit.stat_4067062424";
+    }
+    if (text.includes("lightning damage")) {
+      return "explicit.stat_1754445556";
+    }
+    if (text.includes("chaos damage")) {
+      return "explicit.stat_1334060246";
+    }
+  }
+
+  return null;
 }
 
 export function matchStatsOnItem(item, stats) {
