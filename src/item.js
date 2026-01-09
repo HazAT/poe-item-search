@@ -88,7 +88,13 @@ export function getSearchQuery(item, stats) {
     if (resistanceStats.length > 0 && elementalAttackDamageStats.length > 0) {
       let totalResistance = 0;
       resistanceStats.forEach(stat => {
-        totalResistance += parseInt(stat.value.min);
+        const value = parseInt(stat.value.min);
+        
+        // Se é "to all Elemental Resistances", multiplicar por 3
+        const multiplier = stat.text.includes("to all Elemental Resistances") ? 3 : 1;
+        const adjustedValue = value * multiplier;
+        
+        totalResistance += adjustedValue;
       });
 
       nonResistanceFilters.push({
@@ -121,10 +127,16 @@ export function getSearchQuery(item, stats) {
   if (resistanceStats.length > 0) {
     const resistanceFilters = [];
 
+    // Add found resistances with their values
     let totalWeight = 0;
     resistanceStats.forEach(stat => {
       const value = parseInt(stat.value.min);
-      totalWeight += value;
+      
+      // Se é "to all Elemental Resistances", multiplicar por 3
+      const multiplier = stat.text.includes("to all Elemental Resistances") ? 3 : 1;
+      const adjustedValue = value * multiplier;
+      
+      totalWeight += adjustedValue;
       resistanceFilters.push({
         id: stat.id,
         value: { weight: 1, min: 1 },
@@ -148,6 +160,7 @@ export function getSearchQuery(item, stats) {
       value: { min: totalWeight },
     });
   }
+
 
   // Add attribute stats as a weighted filter if any exist
   if (attributeStats.length > 0) {
