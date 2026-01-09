@@ -362,7 +362,7 @@ function resolvePhysicalAttackDamageId(stat) {
 
   if (text.includes("physical damage to attacks")) {
     if (stat.type === "implicit") {
-      return "implicit.stat_1940865751";
+      return "implicit.stat_3032590688";
     }
     return "explicit.stat_3032590688";
   }
@@ -399,7 +399,7 @@ export function matchStatsOnItem(item, stats) {
         if (capturedValues.length === 2) {
           minValue = (capturedValues[0] + capturedValues[1]) / 2;
         } else {
-          minValue = m[1];
+          minValue = capturedValues[0]; // já é parseFloat, sempre número
         }
 
         const cleanText = stripTag(entry.text, entry.type);
