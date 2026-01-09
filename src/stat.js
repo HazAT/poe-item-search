@@ -1,5 +1,6 @@
 export function addRegexToStat(stat) {
   if (!stat) return null;
+
   let regexPattern = stat.text
     .replaceAll("+", "\\+")
     .replaceAll("#", "(?:\\+|-)?(\\d+(?:.\\d+)?)?")
@@ -8,36 +9,43 @@ export function addRegexToStat(stat) {
       return `(?:${options.join("|")})`;
     });
 
-  // Check if the stat text contains '(implicit)' and set type accordingly
   let isImplicit = false;
+  let isFractured = false;
+  let isDesecrated = false;
+
   if (stat.text.includes("(implicit)")) {
     stat.type = "implicit";
     isImplicit = true;
+  } else if (stat.text.includes("(fractured)")) {
+    stat.type = "fractured";
+    isFractured = true;
+  } else if (stat.text.includes("(desecrated)")) {
+    stat.type = "desecrated";
+    isDesecrated = true;
   }
 
-  // If the stat is implicit, require ' (implicit)' at the end; if explicit, forbid it
   if (stat.type === "implicit" || isImplicit) {
     regexPattern += " \\(implicit\\)";
+  } else if (stat.type === "fractured" || isFractured) {
+    regexPattern += " \\(fractured\\)";
+  } else if (stat.type === "desecrated" || isDesecrated) {
+    regexPattern += " \\(desecrated\\)";
   } else {
-    regexPattern += "(?! \\(implicit\\))";
+    regexPattern += "(?! \\(implicit\\))(?! \\(fractured\\))(?! \\(desecrated\\))";
   }
 
-  // Create the final regex with start/end anchors
   return {
     ...stat,
-    regex: new RegExp(`^${regexPattern}$`, 'gm'),
+    regex: new RegExp(`^${regexPattern}$`, "gm"),
   };
 }
 
 export function addRegexToStats(stats) {
-  // add regex to all entries and return new stats
   const newEntries = [];
   stats.result.map((category) => {
     newEntries.push({
       ...category,
-      entries: category.entries.map((entry) => {
-        return addRegexToStat(entry);
-      }),
+      entries: category.entries.map((entry) => addRegexToStat(entry)),
     });
   });
   return { result: newEntries };

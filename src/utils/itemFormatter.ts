@@ -3,7 +3,11 @@
  * This format matches what you get when copying an item in-game (Ctrl+C).
  */
 
-import type { TradeItem, TradeItemProperty, TradeItemRequirement } from "@/types/tradeItem";
+import type {
+  TradeItem,
+  TradeItemProperty,
+  TradeItemRequirement,
+} from "@/types/tradeItem";
 
 const SEPARATOR = "--------";
 
@@ -14,7 +18,9 @@ const SEPARATOR = "--------";
  * Pattern: [Key|Display] → Display
  */
 function stripBracketNotation(text: string): string {
-  return text.replace(/\[([^\]|]+)\|([^\]]+)\]/g, "$2").replace(/\[([^\]]+)\]/g, "$1");
+  return text
+    .replace(/\[([^\]|]+)\|([^\]]+)\]/g, "$2")
+    .replace(/\[([^\]]+)\]/g, "$1");
 }
 
 /**
@@ -77,12 +83,9 @@ function formatRequirements(requirements: TradeItemRequirement[]): string[] {
     parts.push(`${name}: ${value}`);
   }
 
-  // Use single-line format: "Requires: Level 65, 54 Str, 54 Dex"
-  // or multi-line if complex
+  // Single-line format for common case
   if (parts.length <= 4) {
-    // Format as single line for common case
     const formatted = parts.map((p) => {
-      // "Level: 65" → "Level 65", "Str: 54" → "54 Str"
       const [name, val] = p.split(": ");
       if (name === "Level") {
         return `Level ${val}`;
@@ -106,7 +109,6 @@ function formatSockets(sockets: TradeItem["sockets"]): string | null {
     return null;
   }
 
-  // Each socket is represented as "S"
   const socketStr = sockets.map(() => "S").join(" ");
   return `Sockets: ${socketStr}`;
 }
@@ -115,13 +117,17 @@ function formatSockets(sockets: TradeItem["sockets"]): string | null {
  * Get the item class from the first property (which is typically the category).
  * e.g., "Body Armour", "Wands", "Rings"
  */
-function getItemClass(properties: TradeItemProperty[] | undefined): string | null {
+function getItemClass(
+  properties: TradeItemProperty[] | undefined
+): string | null {
   if (!properties || properties.length === 0) {
     return null;
   }
 
   // First property with empty values is usually the item class
-  const classProperty = properties.find((p) => !p.values || p.values.length === 0);
+  const classProperty = properties.find(
+    (p) => !p.values || p.values.length === 0
+  );
   if (classProperty) {
     return stripBracketNotation(classProperty.name);
   }
@@ -146,7 +152,8 @@ export function formatItemText(item: TradeItem): string {
   // Item Class
   const itemClass = getItemClass(item.properties);
   if (itemClass) {
-    lines.push(`Item Class: ${itemClass}s`); // Add 's' for plural (Body Armour → Body Armours)
+    // Add 's' for plural (Body Armour → Body Armours, Ring → Rings)
+    lines.push(`Item Class: ${itemClass}s`);
   }
 
   // Rarity
@@ -210,22 +217,44 @@ export function formatItemText(item: TradeItem): string {
     }
   }
 
-  // Explicit mods
-  if (item.explicitMods && item.explicitMods.length > 0) {
-    lines.push(SEPARATOR);
-    for (const mod of item.explicitMods) {
-      // Check if mod is desecrated based on extended data
-      // For now, output without suffix - can refine later
-      lines.push(formatMod(mod));
+  // Explicit + fractured + desecrated mods juntos (como no jogo)
+  const explicitBlock: string[] = [];
+
+  if (item.fracturedMods && item.fracturedMods.length > 0) {
+    for (const mod of item.fracturedMods) {
+      explicitBlock.push(formatMod(mod, "fractured"));
     }
   }
 
-  // Crafted mods
+  if (item.explicitMods && item.explicitMods.length > 0) {
+    for (const mod of item.explicitMods) {
+      explicitBlock.push(formatMod(mod));
+    }
+  }
+
+  if (item.desecratedMods && item.desecratedMods.length > 0) {
+    for (const mod of item.desecratedMods) {
+      explicitBlock.push(formatMod(mod, "desecrated"));
+    }
+  }
+
+  if (explicitBlock.length > 0) {
+    lines.push(SEPARATOR);
+    lines.push(...explicitBlock);
+  }
+
+  // Crafted mods (ficam em bloco separado, se existirem)
   if (item.craftedMods && item.craftedMods.length > 0) {
     lines.push(SEPARATOR);
     for (const mod of item.craftedMods) {
       lines.push(formatMod(mod, "crafted"));
     }
+  }
+
+  // Fractured Item flag (linha extra, como no jogo)
+  if (item.fractured) {
+    lines.push(SEPARATOR);
+    lines.push("Fractured Item");
   }
 
   // Corrupted

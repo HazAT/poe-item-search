@@ -65,6 +65,7 @@ export interface TradeItem {
   ilvl: number;
   identified: boolean;
   corrupted?: boolean;
+  fractured?: boolean;
   note?: string; // Price note (e.g., "~b/o 1 exalted")
   properties?: TradeItemProperty[];
   requirements?: TradeItemRequirement[];
@@ -75,6 +76,8 @@ export interface TradeItem {
   runeMods?: string[];
   enchantMods?: string[];
   craftedMods?: string[];
+  fracturedMods?: string[];
+  desecratedMods?: string[];
   flavourText?: string[];
   extended?: TradeItemExtended;
 }
