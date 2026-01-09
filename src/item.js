@@ -136,6 +136,53 @@ export function getSearchQuery(item, stats) {
     });
   }
 
+  // IDs de elemental/chaos damage to Attacks (sem físico)
+  const elementalAttackDamageIds = {
+    fire:      "explicit.stat_1573130764", // Adds # to # Fire Damage to Attacks
+    cold:      "explicit.stat_4067062424", // Adds # to # Cold Damage to Attacks
+    lightning: "explicit.stat_1754445556", // Adds # to # Lightning Damage to Attacks
+    chaos:     "explicit.stat_1334060246", // Adds # to # Chaos Damage to Attacks
+  };
+
+  // Stats de elemental/chaos damage encontrados no item
+  const elementalAttackDamageStats = matched.filter((stat) =>
+    Object.values(elementalAttackDamageIds).includes(stat.id)
+  );
+
+  if (elementalAttackDamageStats.length > 0) {
+    const elementalAttackDamageFilters = [];
+    const allElemIds = Object.values(elementalAttackDamageIds);
+
+    let totalWeight = 0;
+    elementalAttackDamageStats.forEach((stat) => {
+      const value = parseInt(stat.value.min);
+      totalWeight += value;
+
+      elementalAttackDamageFilters.push({
+        id: normalizeStatIdToExplicit(stat.id),
+        value: { weight: 1, min: value },
+        disabled: false,
+      });
+    });
+
+    // Mods que não existem no item → habilitados, sem min
+    allElemIds.forEach((id) => {
+      if (!elementalAttackDamageStats.find((s) => s.id === id)) {
+        elementalAttackDamageFilters.push({
+          id: normalizeStatIdToExplicit(id),
+          value: { weight: 1 },
+          disabled: false,
+        });
+      }
+    });
+
+    statsArray.push({
+      type: "weight",
+      filters: elementalAttackDamageFilters,
+      value: { min: totalWeight },
+    });
+  }
+
   query.stats = statsArray;
   return query;
 }
