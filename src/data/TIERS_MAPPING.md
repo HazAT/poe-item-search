@@ -44,8 +44,10 @@
 |---------|------|
 | `explicit.stat_1050105434` | Maximum Mana |
 | `explicit.stat_2748665614` | Increased Maximum Mana |
+| `explicit.stat_2891184298` | Increased Cast Speed |
 | `explicit.stat_3261801346` | Dexterity |
 | `explicit.stat_328541901` | Intelligence |
 | `explicit.stat_3917489142` | Increased Rarity of Items found |
 | `explicit.stat_4080418644` | Strength |
 | `explicit.stat_44972811` | Increased Life Regeneration Rate |
+| `explicit.stat_681332047` | Increased Attack Speed |

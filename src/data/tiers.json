@@ -2384,6 +2384,76 @@
       ]
     }
   },
+  "explicit.stat_2891184298": {
+  "text": "Increased Cast Speed",
+  "tiers": {
+    "Rings": [
+      { "tier": 1, "name": "of Celerity",     "min": 21, "max": 24, "avgMin": 21, "ilvl": 82 },
+      { "tier": 2, "name": "of Swiftness",    "min": 18, "max": 20, "avgMin": 18, "ilvl": 75 },
+      { "tier": 3, "name": "of Alacrity",     "min": 15, "max": 17, "avgMin": 15, "ilvl": 68 },
+      { "tier": 4, "name": "of Quickness",    "min": 12, "max": 14, "avgMin": 12, "ilvl": 60 },
+      { "tier": 5, "name": "of Dispatch",     "min": 9,  "max": 11, "avgMin": 9,  "ilvl": 50 },
+      { "tier": 6, "name": "of Haste",        "min": 6,  "max": 8,  "avgMin": 6,  "ilvl": 38 },
+      { "tier": 7, "name": "of Readiness",    "min": 3,  "max": 5,  "avgMin": 3,  "ilvl": 26 },
+      { "tier": 8, "name": "of Preparation",  "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ],
+    "Amulets": [
+      { "tier": 1, "name": "of Celerity",     "min": 21, "max": 24, "avgMin": 21, "ilvl": 82 },
+      { "tier": 2, "name": "of Swiftness",    "min": 18, "max": 20, "avgMin": 18, "ilvl": 75 },
+      { "tier": 3, "name": "of Alacrity",     "min": 15, "max": 17, "avgMin": 15, "ilvl": 68 },
+      { "tier": 4, "name": "of Quickness",    "min": 12, "max": 14, "avgMin": 12, "ilvl": 60 },
+      { "tier": 5, "name": "of Dispatch",     "min": 9,  "max": 11, "avgMin": 9,  "ilvl": 50 },
+      { "tier": 6, "name": "of Haste",        "min": 6,  "max": 8,  "avgMin": 6,  "ilvl": 38 },
+      { "tier": 7, "name": "of Readiness",    "min": 3,  "max": 5,  "avgMin": 3,  "ilvl": 26 },
+      { "tier": 8, "name": "of Preparation",  "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ],
+    "Belts": [
+      { "tier": 1, "name": "of Celerity",     "min": 21, "max": 24, "avgMin": 21, "ilvl": 82 },
+      { "tier": 2, "name": "of Swiftness",    "min": 18, "max": 20, "avgMin": 18, "ilvl": 75 },
+      { "tier": 3, "name": "of Alacrity",     "min": 15, "max": 17, "avgMin": 15, "ilvl": 68 },
+      { "tier": 4, "name": "of Quickness",    "min": 12, "max": 14, "avgMin": 12, "ilvl": 60 },
+      { "tier": 5, "name": "of Dispatch",     "min": 9,  "max": 11, "avgMin": 9,  "ilvl": 50 },
+      { "tier": 6, "name": "of Haste",        "min": 6,  "max": 8,  "avgMin": 6,  "ilvl": 38 },
+      { "tier": 7, "name": "of Readiness",    "min": 3,  "max": 5,  "avgMin": 3,  "ilvl": 26 },
+      { "tier": 8, "name": "of Preparation",  "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ]
+  }
+},
+"explicit.stat_681332047": {
+  "text": "Increased Attack Speed",
+  "tiers": {
+    "Rings": [
+      { "tier": 1, "name": "of Fury",      "min": 18, "max": 20, "avgMin": 18, "ilvl": 82 },
+      { "tier": 2, "name": "of Acceleration", "min": 15, "max": 17, "avgMin": 15, "ilvl": 75 },
+      { "tier": 3, "name": "of Haste",     "min": 12, "max": 14, "avgMin": 12, "ilvl": 68 },
+      { "tier": 4, "name": "of Prowess",   "min": 9,  "max": 11, "avgMin": 9,  "ilvl": 60 },
+      { "tier": 5, "name": "of Readiness", "min": 7,  "max": 8,  "avgMin": 7,  "ilvl": 50 },
+      { "tier": 6, "name": "of Quickness", "min": 5,  "max": 6,  "avgMin": 5,  "ilvl": 38 },
+      { "tier": 7, "name": "of Practice",  "min": 3,  "max": 4,  "avgMin": 3,  "ilvl": 26 },
+      { "tier": 8, "name": "of Training",  "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ],
+    "Amulets": [
+      { "tier": 1, "name": "of Fury",      "min": 18, "max": 20, "avgMin": 18, "ilvl": 82 },
+      { "tier": 2, "name": "of Acceleration", "min": 15, "max": 17, "avgMin": 15, "ilvl": 75 },
+      { "tier": 3, "name": "of Haste",     "min": 12, "max": 14, "avgMin": 12, "ilvl": 68 },
+      { "tier": 4, "name": "of Prowess",   "min": 9,  "max": 11, "avgMin": 9,  "ilvl": 60 },
+      { "tier": 5, "name": "of Readiness", "min": 7,  "max": 8,  "avgMin": 7,  "ilvl": 50 },
+      { "tier": 6, "name": "of Quickness", "min": 5,  "max": 6,  "avgMin": 5,  "ilvl": 38 },
+      { "tier": 7, "name": "of Practice",  "min": 3,  "max": 4,  "avgMin": 3,  "ilvl": 26 },
+      { "tier": 8, "name": "of Training",  "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ],
+    "Belts": [
+      { "tier": 1, "name": "of Fury",      "min": 18, "max": 20, "avgMin": 18, "ilvl": 82 },
+      { "tier": 2, "name": "of Acceleration", "min": 15, "max": 17, "avgMin": 15, "ilvl": 75 },
+      { "tier": 3, "name": "of Haste",     "min": 12, "max": 14, "avgMin": 12, "ilvl": 68 },
+      { "tier": 4, "name": "of Prowess",   "min": 9,  "max": 11, "avgMin": 9,  "ilvl": 60 },
+      { "tier": 5, "name": "of Readiness", "min": 7,  "max": 8,  "avgMin": 7,  "ilvl": 50 },
+      { "tier": 6, "name": "of Quickness", "min": 5,  "max": 6,  "avgMin": 5,  "ilvl": 38 },
+      { "tier": 7, "name": "of Practice",  "min": 3,  "max": 4,  "avgMin": 3,  "ilvl": 26 },
+      { "tier": 8, "name": "of Training",  "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ]
+  }
+},
 "explicit.stat_3917489142": {
   "text": "Increased Rarity of Items found",
   "tiers": {
