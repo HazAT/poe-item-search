@@ -141,7 +141,7 @@ export function getSearchQuery(item, stats) {
     fire:      "explicit.stat_1573130764",
     cold:      "explicit.stat_4067062424",
     lightning: "explicit.stat_1754445556",
-    chaos:     "explicit.stat_1334060246",
+    chaos:     "explicit.stat_674553446",
   };
   const elementalAttackDamageAllIds = Object.values(elementalAttackDamageIds);
 
@@ -189,7 +189,7 @@ export function getSearchQuery(item, stats) {
       // value: {}  também é ok, se quiser explicitar
     });
   }
-  
+
   query.stats = statsArray;
   console.log("[PoE Search] query.stats =", JSON.stringify(statsArray, null, 2));
   console.log("[PoE Search] query =", JSON.stringify(query, null, 2));
@@ -235,7 +235,7 @@ function resolveAttackDamageIdFromText(stat) {
       return "explicit.stat_1754445556";
     }
     if (text.includes("chaos damage")) {
-      return "explicit.stat_1334060246";
+      return "explicit.stat_674553446";
     }
   }
 
