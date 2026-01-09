@@ -78,6 +78,10 @@ export function getSearchQuery(item, stats) {
     const nonResistanceFilters = nonResistanceStats.map((stat) => ({
       id: normalizeStatIdToExplicit(stat.id),
       ...(stat.value && { value: stat.value }),
+      // Desmarcar se o stat está em elementalAttackDamageStats
+      disabled: elementalAttackDamageStats.some(
+        (s) => normalizeStatIdToExplicit(s.id) === normalizeStatIdToExplicit(stat.id)
+      ),
     }));
 
     statsArray.push({
