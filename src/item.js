@@ -31,7 +31,10 @@ export function getSearchQuery(item, stats) {
   const resistanceExplicitIds = Object.values(resistanceIds);
 
   // Group resistance stats
-  const resistanceStats = matched.filter(stat => resistanceExplicitIds.includes(stat.id));
+const resistanceStats = matched.filter(stat => 
+  resistanceExplicitIds.includes(stat.id) ||
+  normalizeStatIdToExplicit(stat.id) === "explicit.stat_2901986750"
+);
 
   // Group attribute stats
   const attributeStats = matched.filter(stat =>
@@ -63,6 +66,26 @@ export function getSearchQuery(item, stats) {
         elementalAttackDamageAllIds.includes(s.resolvedId)
     );
 
+    // IDs de physical damage to Attacks
+    const physicalAttackDamageIds = {
+      explicit: "explicit.stat_3032590688",
+      implicit: "implicit.stat_1940865751",
+    };
+    const physicalAttackDamageAllIds = Object.values(physicalAttackDamageIds);
+
+    // Stats de physical damage encontrados no item
+    const physicalAttackDamageStats = matched
+      .map((stat) => {
+        const resolvedId = resolvePhysicalAttackDamageId(stat);
+        if (!resolvedId) return null;
+        return { ...stat, resolvedId };
+      })
+      .filter(
+        (s) =>
+          s &&
+          physicalAttackDamageAllIds.includes(s.resolvedId)
+      );
+
   // Get non-resistance and non-attribute stats
   const nonResistanceStats = matched.filter(stat =>
     !resistanceExplicitIds.includes(stat.id) &&
@@ -81,17 +104,19 @@ export function getSearchQuery(item, stats) {
       // Desmarcar se o stat está em elementalAttackDamageStats
       disabled: elementalAttackDamageStats.some(
         (s) => normalizeStatIdToExplicit(s.id) === normalizeStatIdToExplicit(stat.id)
+      ) || physicalAttackDamageStats.some(
+        (s) => normalizeStatIdToExplicit(s.id) === normalizeStatIdToExplicit(stat.id)
       ),
     }));
 
-    // Se resistances estão disabled, adicionar o pseudo-stat de total resistance ao bloco AND
+   // Se resistances estão disabled, adicionar o pseudo-stat de total resistance ao bloco AND
     if (resistanceStats.length > 0 && elementalAttackDamageStats.length > 0) {
       let totalResistance = 0;
       resistanceStats.forEach(stat => {
         const value = parseInt(stat.value.min);
         
-        // Se é "to all Elemental Resistances", multiplicar por 3
-        const multiplier = stat.text.includes("to all Elemental Resistances") ? 3 : 1;
+        // Se é "to all Elemental Resistances" (ID: explicit.stat_2901986750), multiplicar por 3
+        const multiplier = normalizeStatIdToExplicit(stat.id) === "explicit.stat_2901986750" ? 3 : 1;
         const adjustedValue = value * multiplier;
         
         totalResistance += adjustedValue;
@@ -132,15 +157,15 @@ export function getSearchQuery(item, stats) {
     resistanceStats.forEach(stat => {
       const value = parseInt(stat.value.min);
       
-      // Se é "to all Elemental Resistances", multiplicar por 3
-      const multiplier = stat.text.includes("to all Elemental Resistances") ? 3 : 1;
+      // Se é "to all Elemental Resistances" (ID: explicit.stat_2901986750), multiplicar por 3
+      const multiplier = normalizeStatIdToExplicit(stat.id) === "explicit.stat_2901986750" ? 3 : 1;
       const adjustedValue = value * multiplier;
       
       totalWeight += adjustedValue;
       resistanceFilters.push({
         id: stat.id,
         value: { weight: 1, min: 1 },
-        disabled: elementalAttackDamageStats.length > 0 ? true : false,
+        disabled: (elementalAttackDamageStats.length > 0 || physicalAttackDamageStats.length > 0) ? true : false,
       });
     });
 
@@ -149,7 +174,7 @@ export function getSearchQuery(item, stats) {
         resistanceFilters.push({
           id,
           value: { weight: 1 },
-          disabled: elementalAttackDamageStats.length > 0 ? true : false,
+          disabled: (elementalAttackDamageStats.length > 0 || physicalAttackDamageStats.length > 0) ? true : false,
         });
       }
     });
@@ -160,7 +185,6 @@ export function getSearchQuery(item, stats) {
       value: { min: totalWeight },
     });
   }
-
 
   // Add attribute stats as a weighted filter if any exist
   if (attributeStats.length > 0) {
@@ -178,7 +202,7 @@ export function getSearchQuery(item, stats) {
       attributeFilters.push({
         id: stat.id,
         value: { weight: 1, min: 1 },
-        disabled: elementalAttackDamageStats.length > 0 ? true : false,
+        disabled: (elementalAttackDamageStats.length > 0 || physicalAttackDamageStats.length > 0) ? true : false,
       });
     });
 
@@ -187,7 +211,7 @@ export function getSearchQuery(item, stats) {
         attributeFilters.push({
           id,
           value: { weight: 1 },
-          disabled: elementalAttackDamageStats.length > 0 ? true : false,
+          disabled: (elementalAttackDamageStats.length > 0 || physicalAttackDamageStats.length > 0) ? true : false,
         });
       }
     });
@@ -229,6 +253,39 @@ export function getSearchQuery(item, stats) {
       type: "weight",
       filters: elementalAttackDamageFilters,
       value: { min: totalAttackDamageWeight },
+    });
+  }
+
+  // Bloco Weighted Sum para physical damage to Attacks
+  if (physicalAttackDamageStats.length > 0) {
+    const physicalAttackDamageFilters = [];
+    let totalPhysicalAttackDamageWeight = 0;
+
+    physicalAttackDamageStats.forEach((stat) => {
+      const value = Math.floor(Number(stat.value?.min ?? 0));
+      totalPhysicalAttackDamageWeight += value;
+
+      physicalAttackDamageFilters.push({
+        id: normalizeStatIdToExplicit(stat.id),
+        value: { weight: 1 },
+        disabled: false,
+      });
+    });
+
+    physicalAttackDamageAllIds.forEach((id) => {
+      if (!physicalAttackDamageStats.find((s) => normalizeStatIdToExplicit(s.id) === id)) {
+        physicalAttackDamageFilters.push({
+          id: normalizeStatIdToExplicit(id),
+          value: { weight: 1 },
+          disabled: false,
+        });
+      }
+    });
+
+    statsArray.push({
+      type: "weight",
+      filters: physicalAttackDamageFilters,
+      value: { min: totalPhysicalAttackDamageWeight },
     });
   }
 
@@ -279,6 +336,19 @@ function resolveAttackDamageIdFromText(stat) {
     if (text.includes("chaos damage")) {
       return "explicit.stat_674553446";
     }
+  }
+
+  return null;
+}
+
+function resolvePhysicalAttackDamageId(stat) {
+  const text = stat.text.toLowerCase();
+
+  if (text.includes("physical damage to attacks")) {
+    if (stat.type === "implicit") {
+      return "implicit.stat_1940865751";
+    }
+    return "explicit.stat_3032590688";
   }
 
   return null;
