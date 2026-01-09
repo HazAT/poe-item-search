@@ -2384,6 +2384,44 @@
       ]
     }
   },
+"explicit.stat_3917489142": {
+  "text": "Increased Rarity of Items found",
+  "tiers": {
+    "Rings": [
+      { "tier": 1, "name": "of Bounty",      "min": 36, "max": 40, "avgMin": 36, "ilvl": 82 },
+      { "tier": 2, "name": "of Treasure",    "min": 31, "max": 35, "avgMin": 31, "ilvl": 75 },
+      { "tier": 3, "name": "of Wealth",      "min": 26, "max": 30, "avgMin": 26, "ilvl": 68 },
+      { "tier": 4, "name": "of Fortune",     "min": 21, "max": 25, "avgMin": 21, "ilvl": 60 },
+      { "tier": 5, "name": "of Luck",        "min": 16, "max": 20, "avgMin": 16, "ilvl": 50 },
+      { "tier": 6, "name": "of Chance",      "min": 11, "max": 15, "avgMin": 11, "ilvl": 38 },
+      { "tier": 7, "name": "of Prospecting", "min": 6,  "max": 10, "avgMin": 6,  "ilvl": 26 },
+      { "tier": 8, "name": "of Searching",   "min": 3,  "max": 5,  "avgMin": 3,  "ilvl": 14 },
+      { "tier": 9, "name": "of Curiosity",   "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ],
+    "Amulets": [
+      { "tier": 1, "name": "of Bounty",      "min": 36, "max": 40, "avgMin": 36, "ilvl": 82 },
+      { "tier": 2, "name": "of Treasure",    "min": 31, "max": 35, "avgMin": 31, "ilvl": 75 },
+      { "tier": 3, "name": "of Wealth",      "min": 26, "max": 30, "avgMin": 26, "ilvl": 68 },
+      { "tier": 4, "name": "of Fortune",     "min": 21, "max": 25, "avgMin": 21, "ilvl": 60 },
+      { "tier": 5, "name": "of Luck",        "min": 16, "max": 20, "avgMin": 16, "ilvl": 50 },
+      { "tier": 6, "name": "of Chance",      "min": 11, "max": 15, "avgMin": 11, "ilvl": 38 },
+      { "tier": 7, "name": "of Prospecting", "min": 6,  "max": 10, "avgMin": 6,  "ilvl": 26 },
+      { "tier": 8, "name": "of Searching",   "min": 3,  "max": 5,  "avgMin": 3,  "ilvl": 14 },
+      { "tier": 9, "name": "of Curiosity",   "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ],
+    "Belts": [
+      { "tier": 1, "name": "of Bounty",      "min": 36, "max": 40, "avgMin": 36, "ilvl": 82 },
+      { "tier": 2, "name": "of Treasure",    "min": 31, "max": 35, "avgMin": 31, "ilvl": 75 },
+      { "tier": 3, "name": "of Wealth",      "min": 26, "max": 30, "avgMin": 26, "ilvl": 68 },
+      { "tier": 4, "name": "of Fortune",     "min": 21, "max": 25, "avgMin": 21, "ilvl": 60 },
+      { "tier": 5, "name": "of Luck",        "min": 16, "max": 20, "avgMin": 16, "ilvl": 50 },
+      { "tier": 6, "name": "of Chance",      "min": 11, "max": 15, "avgMin": 11, "ilvl": 38 },
+      { "tier": 7, "name": "of Prospecting", "min": 6,  "max": 10, "avgMin": 6,  "ilvl": 26 },
+      { "tier": 8, "name": "of Searching",   "min": 3,  "max": 5,  "avgMin": 3,  "ilvl": 14 },
+      { "tier": 9, "name": "of Curiosity",   "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ]
+  }
+},
   "explicit.stat_4080418644": {
     "text": "Strength",
     "tiers": {
