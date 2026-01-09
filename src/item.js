@@ -52,10 +52,10 @@ export function getSearchQuery(item, stats) {
 
   // Add non-resistance stats as an "and" filter
   if (nonResistanceStats.length > 0) {
-    const nonResistanceFilters = nonResistanceStats.map((stat) => ({
-      id: stat.id,
-      ...(stat.value && { value: stat.value }),
-    }));
+  const nonResistanceFilters = nonResistanceStats.map((stat) => ({
+    id: normalizeStatIdToExplicit(stat.id),
+    ...(stat.value && { value: stat.value }),
+  }));
 
     statsArray.push({
       type: "and",
@@ -63,7 +63,7 @@ export function getSearchQuery(item, stats) {
     });
   }
 
-  // Add resistance stats as a weighted filter if any exist
+ // Add resistance stats as a weighted filter if any exist
   if (resistanceStats.length > 0) {
     const resistanceFilters = [];
 
@@ -74,7 +74,7 @@ export function getSearchQuery(item, stats) {
       totalWeight += value;
       resistanceFilters.push({
         id: stat.id,
-        value: { weight: 1, min: value },
+        value: { weight: 1, min: 1 },
         disabled: false
       });
     });
@@ -85,7 +85,7 @@ export function getSearchQuery(item, stats) {
         resistanceFilters.push({
           id,
           value: { weight: 1 },
-          disabled: true
+          disabled: false
         });
       }
     });
@@ -113,7 +113,7 @@ export function getSearchQuery(item, stats) {
       totalWeight += value;
       attributeFilters.push({
         id: stat.id,
-        value: { weight: 1, min: value },
+        value: { weight: 1, min: 1 },
         disabled: false
       });
     });
@@ -124,7 +124,7 @@ export function getSearchQuery(item, stats) {
         attributeFilters.push({
           id,
           value: { weight: 1 },
-          disabled: true
+          disabled: false
         });
       }
     });
@@ -147,57 +147,73 @@ export function matchUniqueItem(item) {
   return match ? match[1] : undefined;
 }
 
+function stripTag(text, type) {
+  if (type === "implicit") return text; // mantém implicit
+
+  return text
+    .replace(" (fractured)", "")
+    .replace(" (desecrated)", "");
+}
+
+function normalizeStatIdToExplicit(id) {
+  if (id.startsWith("fractured.")) {
+    return id.replace("fractured.", "explicit.");
+  }
+  if (id.startsWith("desecrated.")) {
+    return id.replace("desecrated.", "explicit.");
+  }
+  return id;
+}
+
 export function matchStatsOnItem(item, stats) {
   const matched = [];
   for (const category of stats.result) {
     for (const entry of category.entries) {
-      if (!entry || (entry.type !== "explicit" && entry.type !== "implicit")) {
+      if (
+        !entry ||
+        !["explicit", "implicit", "fractured", "desecrated"].includes(entry.type)
+      ) {
         continue;
       }
+
       let m;
       while ((m = entry.regex.exec(item)) !== null) {
-        // This is necessary to avoid infinite loops with zero-width matches
         if (m.index === entry.regex.lastIndex) {
           entry.regex.lastIndex++;
         }
-        // Collect all captured numeric values (groups 1, 2, etc.)
+
         const capturedValues = [];
         for (let i = 1; i < m.length; i++) {
           if (m[i] !== undefined) {
             capturedValues.push(parseFloat(m[i]));
           }
         }
+        if (capturedValues.length === 0) continue;
 
-        if (capturedValues.length === 0) {
-          continue;
-        }
-
-        // Calculate the value to use:
-        // - For range stats (2 values like "Adds X to Y damage"), use the average
-        // - For single value stats, use that value
         let minValue;
         if (capturedValues.length === 2) {
-          // Average the two values for damage range stats
           minValue = (capturedValues[0] + capturedValues[1]) / 2;
         } else {
-          // Single value - keep as string for backwards compatibility with existing tests
           minValue = m[1];
         }
 
-        // Create a shallow copy of entry for the match
-        const matchedEntry = { ...entry, value: { min: minValue } };
-        // Check if the stat text contains '(implicit)' and set type accordingly
-        if (entry.text.includes("(implicit)")) {
-          matchedEntry.type = "implicit";
-        }
+        const cleanText = stripTag(entry.text, entry.type);
+
+        const matchedEntry = {
+          ...entry,
+          text: cleanText,
+          value: { min: minValue },
+        };
+
         matched.push(matchedEntry);
       }
     }
   }
-  // Deduplicate entries based on text and type attribute
+
   const uniqueMatched = matched.filter(
     (entry, index, self) =>
-      index === self.findIndex((e) => e.text === entry.text && e.type === entry.type)
+      index ===
+      self.findIndex((e) => e.text === entry.text && e.type === entry.type)
   );
   return uniqueMatched;
 }
