@@ -38,6 +38,22 @@
 |---------|------|
 | `explicit.stat_3325883026` | Life Regeneration per Second |
 
+## Critical Strike
+
+| Stat ID | Text |
+|---------|------|
+| `explicit.stat_1199429645` | #% increased Melee Critical Strike Chance |
+| `explicit.stat_1712221299` | +#% to Critical Strike Multiplier with Bows |
+| `explicit.stat_1854213750` | Minions have +#% to Critical Strike Multiplier |
+| `explicit.stat_2375316951` | #% increased Critical Strike Chance |
+| `explicit.stat_252507949` | +#% to Critical Strike Multiplier with Two Handed Melee Weapons |
+| `explicit.stat_274716455` | +#% to Critical Strike Multiplier for Spell Damage |
+| `explicit.stat_4237442815` | +#% to Melee Critical Strike Multiplier |
+| `explicit.stat_605218169` | +#% to Melee Weapon Critical Strike Multiplier |
+| `explicit.stat_737908626` | #% increased Spell Critical Strike Chance |
+| `explicit.stat_764295120` | #% increased Critical Strike Chance with Two Handed Melee Weapons |
+| `explicit.stat_791835907` | +#% to Spell Critical Strike Chance |
+
 ## Other
 
 | Stat ID | Text |

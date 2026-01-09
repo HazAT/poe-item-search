@@ -56,6 +56,10 @@ addSection('Life Regeneration', (_id, text) =>
   /regeneration per second|regenerate/i.test(text)
 );
 
+addSection('Critical Strike', (_id, text) =>
+  /critical strike/i.test(text)
+);
+
 // Other = qualquer stat que ainda não foi usado em nenhuma seção
 addSection('Other', (id, _text) =>
   !usedIds.has(id)
@@ -63,4 +67,6 @@ addSection('Other', (id, _text) =>
 
 const outPath = path.join(__dirname, 'TIERS_MAPPING.md');
 fs.writeFileSync(outPath, lines.join('\n'), 'utf8');
-console.log('TIERS_MAPPING.md gerado em', outPath);
+console.log('✅ TIERS_MAPPING.md gerado em', outPath);
+console.log(`📊 Total de stats processados: ${Object.keys(data).length}`);
+console.log(`📁 Grupos criados: ${lines.filter(l => l.startsWith('## ')).length}`);
