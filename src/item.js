@@ -40,103 +40,8 @@ export function getSearchQuery(item, stats) {
     stat.id === "explicit.stat_328541901"     // Intelligence
   );
 
-  // Get non-resistance and non-attribute stats
-  const nonResistanceStats = matched.filter(stat =>
-    !resistanceExplicitIds.includes(stat.id) &&
-    stat.id !== "explicit.stat_4080418644" && // Strength
-    stat.id !== "explicit.stat_3261801346" && // Dexterity
-    stat.id !== "explicit.stat_328541901"     // Intelligence
-  );
-
-  const statsArray = [];
-
-  // Add non-resistance stats as an "and" filter
-  if (nonResistanceStats.length > 0) {
-  const nonResistanceFilters = nonResistanceStats.map((stat) => ({
-    id: normalizeStatIdToExplicit(stat.id),
-    ...(stat.value && { value: stat.value }),
-  }));
-
-    statsArray.push({
-      type: "and",
-      filters: nonResistanceFilters,
-    });
-  }
-
- // Add resistance stats as a weighted filter if any exist
-  if (resistanceStats.length > 0) {
-    const resistanceFilters = [];
-
-    // Add found resistances with their values
-    let totalWeight = 0;
-    resistanceStats.forEach(stat => {
-      const value = parseInt(stat.value.min);
-      totalWeight += value;
-      resistanceFilters.push({
-        id: stat.id,
-        value: { weight: 1, min: 1 },
-        disabled: false
-      });
-    });
-
-    // Add missing resistances as disabled
-    Object.values(resistanceIds).forEach(id => {
-      if (!resistanceStats.find(stat => stat.id === id)) {
-        resistanceFilters.push({
-          id,
-          value: { weight: 1 },
-          disabled: false
-        });
-      }
-    });
-
-    statsArray.push({
-      type: "weight",
-      filters: resistanceFilters,
-      value: { min: totalWeight },
-    });
-  }
-
-  // Add attribute stats as a weighted filter if any exist
-  if (attributeStats.length > 0) {
-    const attributeFilters = [];
-    const attributeIds = {
-      strength: "explicit.stat_4080418644",
-      dexterity: "explicit.stat_3261801346",
-      intelligence: "explicit.stat_328541901"
-    };
-
-    // Add found attributes with their values
-    let totalWeight = 0;
-    attributeStats.forEach(stat => {
-      const value = parseInt(stat.value.min);
-      totalWeight += value;
-      attributeFilters.push({
-        id: stat.id,
-        value: { weight: 1, min: 1 },
-        disabled: false
-      });
-    });
-
-    // Add missing attributes as disabled
-    Object.entries(attributeIds).forEach(([type, id]) => {
-      if (!attributeStats.find(stat => stat.id === id)) {
-        attributeFilters.push({
-          id,
-          value: { weight: 1 },
-          disabled: false
-        });
-      }
-    });
-
-    statsArray.push({
-      type: "weight",
-      filters: attributeFilters,
-      value: { min: totalWeight },
-    });
-  }
-
-  // IDs de elemental/chaos damage to Attacks (sem físico)
+  // ⭐ MOVER PARA AQUI - ANTES de usar nos blocos de resistance/attribute
+  // IDs de elemental/chaos damage to Attacks
   const elementalAttackDamageIds = {
     fire:      "explicit.stat_1573130764",
     cold:      "explicit.stat_4067062424",
@@ -158,26 +63,121 @@ export function getSearchQuery(item, stats) {
         elementalAttackDamageAllIds.includes(s.resolvedId)
     );
 
-    // Bloco Weighted Sum para elemental/chaos damage to Attacks
-    if (elementalAttackDamageStats.length > 0) {
+  // Get non-resistance and non-attribute stats
+  const nonResistanceStats = matched.filter(stat =>
+    !resistanceExplicitIds.includes(stat.id) &&
+    stat.id !== "explicit.stat_4080418644" && // Strength
+    stat.id !== "explicit.stat_3261801346" && // Dexterity
+    stat.id !== "explicit.stat_328541901"     // Intelligence
+  );
+
+  const statsArray = [];
+
+  // Add non-resistance stats as an "and" filter
+  if (nonResistanceStats.length > 0) {
+    const nonResistanceFilters = nonResistanceStats.map((stat) => ({
+      id: normalizeStatIdToExplicit(stat.id),
+      ...(stat.value && { value: stat.value }),
+    }));
+
+    statsArray.push({
+      type: "and",
+      filters: nonResistanceFilters,
+    });
+  }
+
+  // ⭐ AGORA PODE USAR elementalAttackDamageStats aqui
+  // Add resistance stats as a weighted filter if any exist
+  if (resistanceStats.length > 0) {
+    const resistanceFilters = [];
+
+    let totalWeight = 0;
+    resistanceStats.forEach(stat => {
+      const value = parseInt(stat.value.min);
+      totalWeight += value;
+      resistanceFilters.push({
+        id: stat.id,
+        value: { weight: 1, min: 1 },
+        disabled: elementalAttackDamageStats.length > 0 ? true : false,
+      });
+    });
+
+    Object.values(resistanceIds).forEach(id => {
+      if (!resistanceStats.find(stat => stat.id === id)) {
+        resistanceFilters.push({
+          id,
+          value: { weight: 1 },
+          disabled: elementalAttackDamageStats.length > 0 ? true : false,
+        });
+      }
+    });
+
+    statsArray.push({
+      type: "weight",
+      filters: resistanceFilters,
+      value: { min: totalWeight },
+    });
+  }
+
+  // Add attribute stats as a weighted filter if any exist
+  if (attributeStats.length > 0) {
+    const attributeFilters = [];
+    const attributeIds = {
+      strength: "explicit.stat_4080418644",
+      dexterity: "explicit.stat_3261801346",
+      intelligence: "explicit.stat_328541901"
+    };
+
+    let totalWeight = 0;
+    attributeStats.forEach(stat => {
+      const value = parseInt(stat.value.min);
+      totalWeight += value;
+      attributeFilters.push({
+        id: stat.id,
+        value: { weight: 1, min: 1 },
+        disabled: elementalAttackDamageStats.length > 0 ? true : false,
+      });
+    });
+
+    Object.entries(attributeIds).forEach(([type, id]) => {
+      if (!attributeStats.find(stat => stat.id === id)) {
+        attributeFilters.push({
+          id,
+          value: { weight: 1 },
+          disabled: elementalAttackDamageStats.length > 0 ? true : false,
+        });
+      }
+    });
+
+    statsArray.push({
+      type: "weight",
+      filters: attributeFilters,
+      value: { min: totalWeight },
+    });
+  }
+
+  // Bloco Weighted Sum para elemental/chaos damage to Attacks
+  if (elementalAttackDamageStats.length > 0) {
     const elementalAttackDamageFilters = [];
+    let totalAttackDamageWeight = 0;
 
     elementalAttackDamageStats.forEach((stat) => {
       const value = Math.floor(Number(stat.value?.min ?? 0));
+      totalAttackDamageWeight += value;
 
       elementalAttackDamageFilters.push({
-        id: stat.resolvedId,
-        value: { weight: 1, min: value },
-        disabled: true,  // vem desmarcado
+        id: normalizeStatIdToExplicit(stat.id),
+        value: { weight: 1 },
+        disabled: false,
       });
     });
 
     elementalAttackDamageAllIds.forEach((id) => {
-      if (!elementalAttackDamageStats.find((s) => s.resolvedId === id)) {
+      if (!elementalAttackDamageStats.find((s) => normalizeStatIdToExplicit(s.id) === id)) {
         elementalAttackDamageFilters.push({
-          id,
+          id: normalizeStatIdToExplicit(id),
           value: { weight: 1 },
-          disabled: true, // também desmarcados
+          disabled: false,
         });
       }
     });
@@ -185,8 +185,7 @@ export function getSearchQuery(item, stats) {
     statsArray.push({
       type: "weight",
       filters: elementalAttackDamageFilters,
-      // NÃO coloque "value" aqui
-      // value: {}  também é ok, se quiser explicitar
+      value: { min: totalAttackDamageWeight },
     });
   }
 
