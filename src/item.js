@@ -84,6 +84,32 @@ export function getSearchQuery(item, stats) {
       ),
     }));
 
+    // Se resistances estão disabled, adicionar o pseudo-stat de total resistance ao bloco AND
+    if (resistanceStats.length > 0 && elementalAttackDamageStats.length > 0) {
+      let totalResistance = 0;
+      resistanceStats.forEach(stat => {
+        totalResistance += parseInt(stat.value.min);
+      });
+
+      nonResistanceFilters.push({
+        id: "pseudo.pseudo_total_resistance",
+        value: { min: totalResistance },
+      });
+    }
+
+    // Se attributes estão disabled, adicionar o pseudo-stat de total attributes ao bloco AND
+    if (attributeStats.length > 0 && elementalAttackDamageStats.length > 0) {
+      let totalAttributes = 0;
+      attributeStats.forEach(stat => {
+        totalAttributes += parseInt(stat.value.min);
+      });
+
+      nonResistanceFilters.push({
+        id: "pseudo.pseudo_total_attributes",
+        value: { min: totalAttributes },
+      });
+    }
+
     statsArray.push({
       type: "and",
       filters: nonResistanceFilters,
