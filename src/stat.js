@@ -12,6 +12,8 @@ export function addRegexToStat(stat) {
   let isImplicit = false;
   let isFractured = false;
   let isDesecrated = false;
+  let isRune = false;
+  let isAugment = false;
 
   if (stat.text.includes("(implicit)")) {
     stat.type = "implicit";
@@ -22,6 +24,9 @@ export function addRegexToStat(stat) {
   } else if (stat.text.includes("(desecrated)")) {
     stat.type = "desecrated";
     isDesecrated = true;
+  } else if (stat.text.includes("(rune)") || stat.text.includes("(augment)")) { 
+    stat.type = "augment"; 
+    isAugment = true;
   }
 
   if (stat.type === "implicit" || isImplicit) {
@@ -30,15 +35,18 @@ export function addRegexToStat(stat) {
     regexPattern += " \\(fractured\\)";
   } else if (stat.type === "desecrated" || isDesecrated) {
     regexPattern += " \\(desecrated\\)";
+  } else if (stat.type === "augment" || isAugment) {
+    regexPattern += " \\((?:rune|augment)\\)"; 
   } else {
-    regexPattern += "(?! \\(implicit\\))(?! \\(fractured\\))(?! \\(desecrated\\))";
+    regexPattern += "(?! \\(implicit\\))(?! \\(fractured\\))(?! \\(desecrated\\))(?! \\(augment\\))(?! \\(rune\\))";
   }
+
 
   return {
     ...stat,
     regex: new RegExp(`^${regexPattern}$`, "gm"),
   };
-}
+}0
 
 export function addRegexToStats(stats) {
   const newEntries = [];

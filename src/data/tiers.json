@@ -3265,6 +3265,285 @@
       ]
     }
   },
+  "explicit.stat_2144192055": {
+    "text": "# to Evasion Rating",
+    "tiers": {
+    "gloves": [
+        {
+          "tier": 1,
+          "name": "Vaporous",
+          "min": [108, 142],
+          "max": [108, 142],
+          "avgMin": 108,
+          "ilvl": 54
+        },
+        {
+          "tier": 2,
+          "name": "Phased",
+          "min": [89, 107],
+          "max": [89, 107],
+          "avgMin": 89,
+          "ilvl": 46
+        },
+        {
+          "tier": 3,
+          "name": "Blurred",
+          "min": [71, 88],
+          "max": [71, 88],
+          "avgMin": 71,
+          "ilvl": 33
+        },
+        {
+          "tier": 4,
+          "name": "Fleet",
+          "min": [57, 70],
+          "max": [57, 70],
+          "avgMin": 57,
+          "ilvl": 25
+        },
+        {
+          "tier": 5,
+          "name": "Acrobat's",
+          "min": [40, 56],
+          "max": [40, 56],
+          "avgMin": 40,
+          "ilvl": 16
+        },
+        {
+          "tier": 6,
+          "name": "Dancer's",
+          "min": [19, 39],
+          "max": [19, 39],
+          "avgMin": 19,
+          "ilvl": 8
+        },
+        {
+          "tier": 7,
+          "name": "Agile",
+          "min": [11, 18],
+          "max": [11, 18],
+          "avgMin": 11,
+          "ilvl": 1
+        }
+      ],
+      "boots": [
+        {
+          "tier": 1,
+          "name": "Vaporous",
+          "min": [108, 142],
+          "max": [108, 142],
+          "avgMin": 108,
+          "ilvl": 54
+        },
+        {
+          "tier": 2,
+          "name": "Phased",
+          "min": [89, 107],
+          "max": [89, 107],
+          "avgMin": 89,
+          "ilvl": 46
+        },
+        {
+          "tier": 3,
+          "name": "Blurred",
+          "min": [71, 88],
+          "max": [71, 88],
+          "avgMin": 71,
+          "ilvl": 33
+        },
+        {
+          "tier": 4,
+          "name": "Fleet",
+          "min": [57, 70],
+          "max": [57, 70],
+          "avgMin": 57,
+          "ilvl": 25
+        },
+        {
+          "tier": 5,
+          "name": "Acrobat's",
+          "min": [40, 56],
+          "max": [40, 56],
+          "avgMin": 40,
+          "ilvl": 16
+        },
+        {
+          "tier": 6,
+          "name": "Dancer's",
+          "min": [19, 39],
+          "max": [19, 39],
+          "avgMin": 19,
+          "ilvl": 8
+        },
+        {
+          "tier": 7,
+          "name": "Agile",
+          "min": [11, 18],
+          "max": [11, 18],
+          "avgMin": 11,
+          "ilvl": 1
+        }
+      ],
+      "helmets": [
+        {
+          "tier": 1,
+          "name": "Elusory",
+          "min": [143, 181],
+          "max": [143, 181],
+          "avgMin": 143,
+          "ilvl": 60
+        },
+        {
+          "tier": 2,
+          "name": "Vaporous",
+          "min": [108, 142],
+          "max": [108, 142],
+          "avgMin": 108,
+          "ilvl": 54
+        },
+        {
+          "tier": 3,
+          "name": "Phased",
+          "min": [89, 107],
+          "max": [89, 107],
+          "avgMin": 89,
+          "ilvl": 46
+        },
+        {
+          "tier": 4,
+          "name": "Blurred",
+          "min": [71, 88],
+          "max": [71, 88],
+          "avgMin": 71,
+          "ilvl": 33
+        },
+        {
+          "tier": 5,
+          "name": "Fleet",
+          "min": [57, 70],
+          "max": [57, 70],
+          "avgMin": 57,
+          "ilvl": 25
+        },
+        {
+          "tier": 6,
+          "name": "Acrobat's",
+          "min": [40, 56],
+          "max": [40, 56],
+          "avgMin": 40,
+          "ilvl": 16
+        },
+        {
+          "tier": 7,
+          "name": "Dancer's",
+          "min": [19, 39],
+          "max": [19, 39],
+          "avgMin": 19,
+          "ilvl": 8
+        },
+        {
+          "tier": 8,
+          "name": "Agile",
+          "min": [11, 18],
+          "max": [11, 18],
+          "avgMin": 11,
+          "ilvl": 1
+        }
+      ],
+      "body_armours": [
+        {
+          "tier": 1,
+          "name": "Fugitive",
+          "min": [233, 251],
+          "max": [233, 251],
+          "avgMin": 233,
+          "ilvl": 79
+        },
+        {
+          "tier": 2,
+          "name": "Lissome",
+          "min": [205, 232],
+          "max": [205, 232],
+          "avgMin": 205,
+          "ilvl": 75
+        },
+        {
+          "tier": 3,
+          "name": "Adroit",
+          "min": [182, 204],
+          "max": [182, 204],
+          "avgMin": 182,
+          "ilvl": 65
+        },
+        {
+          "tier": 4,
+          "name": "Elusory",
+          "min": [143, 181],
+          "max": [143, 181],
+          "avgMin": 143,
+          "ilvl": 60
+        },
+        {
+          "tier": 5,
+          "name": "Vaporous",
+          "min": [108, 142],
+          "max": [108, 142],
+          "avgMin": 108,
+          "ilvl": 54
+        },
+        {
+          "tier": 6,
+          "name": "Phased",
+          "min": [89, 107],
+          "max": [89, 107],
+          "avgMin": 89,
+          "ilvl": 46
+        },
+        {
+          "tier": 7,
+          "name": "Blurred",
+          "min": [71, 88],
+          "max": [71, 88],
+          "avgMin": 71,
+          "ilvl": 33
+        },
+        {
+          "tier": 8,
+          "name": "Fleet",
+          "min": [57, 70],
+          "max": [57, 70],
+          "avgMin": 57,
+          "ilvl": 25
+        },
+        {
+          "tier": 9,
+          "name": "Acrobat's",
+          "min": [40, 56],
+          "max": [40, 56],
+          "avgMin": 40,
+          "ilvl": 16
+        },
+        {
+          "tier": 10,
+          "name": "Dancer's",
+          "min": [19, 39],
+          "max": [19, 39],
+          "avgMin": 19,
+          "ilvl": 8
+        },
+        {
+          "tier": 11,
+          "name": "Agile",
+          "min": [11, 18],
+          "max": [11, 18],
+          "avgMin": 11,
+          "ilvl": 1
+        }
+      ]
+    }
+  },
+        
+
   "explicit.stat_3299347043": {
     "text": "Maximum Life",
     "tiers": {

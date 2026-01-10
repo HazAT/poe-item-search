@@ -11,7 +11,6 @@ export function getSearchQuery(item, stats) {
     query.term = unique;
   }
 
-  // Add type filters for non-unique items
   if (!unique) {
     const typeFilters = buildTypeFilters(item);
     if (typeFilters) {
@@ -21,86 +20,104 @@ export function getSearchQuery(item, stats) {
 
   const matched = matchStatsOnItem(item, regexStats);
 
-  // Resistance stat IDs (explicit)
+  // ✨ NOVO: Detectar runas
+  const runeStats = matched.filter(stat =>
+    stat.text.includes("(rune)")
+  );
+
+  console.log("[PoE Search] runeStats =", runeStats);
+
+  const nonRuneStats = matched.filter(stat =>
+    !stat.text.includes("(rune)")
+  );
+
+  console.log("[PoE Search] nonRuneStats.length =", nonRuneStats.length); 
+  console.log("[PoE Search] matched.length =", matched.length);
+
+  // Resistance stat IDs (explicit) - ✅ DEFINIR PRIMEIRO
   const resistanceIds = {
     fire: "explicit.stat_3372524247",
     cold: "explicit.stat_4220027924",
     lightning: "explicit.stat_1671376347",
-    chaos: "explicit.stat_2923486259"
+    chaos: "explicit.stat_2923486259",
+    fireChaos: "explicit.stat_378817135",      // Fire and Chaos
+    lightningChaos: "explicit.stat_3465022881", // Lightning and Chaos
+    coldChaos: "explicit.stat_3393628375"       // Cold and Chaos
   };
   const resistanceExplicitIds = Object.values(resistanceIds);
 
-  // Group resistance stats
-const resistanceStats = matched.filter(stat => 
-  resistanceExplicitIds.includes(stat.id) ||
-  normalizeStatIdToExplicit(stat.id) === "explicit.stat_2901986750"
-);
-
-  // Group attribute stats
-  const attributeStats = matched.filter(stat =>
-    stat.id === "explicit.stat_4080418644" || // Strength
-    stat.id === "explicit.stat_3261801346" || // Dexterity
-    stat.id === "explicit.stat_328541901"     // Intelligence
-  );
-
   // IDs de elemental/chaos damage to Attacks
   const elementalAttackDamageIds = {
-    fire:      "explicit.stat_1573130764",
-    cold:      "explicit.stat_4067062424",
+    fire: "explicit.stat_1573130764",
+    cold: "explicit.stat_4067062424",
     lightning: "explicit.stat_1754445556",
-    chaos:     "explicit.stat_674553446",
+    chaos: "explicit.stat_674553446",
   };
   const elementalAttackDamageAllIds = Object.values(elementalAttackDamageIds);
 
-  // Stats de elemental/chaos damage encontrados no item
-  const elementalAttackDamageStats = matched
+  // IDs de physical damage to Attacks
+  const physicalAttackDamageIds = {
+    explicit: "explicit.stat_3032590688",
+    implicit: "implicit.stat_3032590688",
+  };
+  const physicalAttackDamageAllIds = Object.values(physicalAttackDamageIds);
+
+  // Agora sim, usar nonRuneStats
+  const resistanceStats = nonRuneStats.filter(stat =>
+    resistanceExplicitIds.includes(normalizeStatIdToExplicit(stat.id)) ||
+    normalizeStatIdToExplicit(stat.id) === "explicit.stat_2901986750" // to all Elemental Resistances
+  );
+
+  const attributeStats = nonRuneStats.filter(stat => {
+    const normalizedId = normalizeStatIdToExplicit(stat.id);
+    return normalizedId === "explicit.stat_4080418644" || // Strength
+      normalizedId === "explicit.stat_3261801346" || // Dexterity
+      normalizedId === "explicit.stat_328541901" || // Intelligence
+      normalizedId === "explicit.stat_1535626285" || // Strength and Intelligence
+      normalizedId === "explicit.stat_538848803" || // Strength and Dexterity
+      normalizedId === "explicit.stat_2300185227"; // Dexterity and Intelligence
+  });
+
+  const elementalAttackDamageStats = nonRuneStats
     .map((stat) => {
       const resolvedId = resolveAttackDamageIdFromText(stat);
       if (!resolvedId) return null;
       return { ...stat, resolvedId };
     })
-    .filter(
-      (s) =>
-        s &&
-        elementalAttackDamageAllIds.includes(s.resolvedId)
-    );
+    .filter((s) => s && elementalAttackDamageAllIds.includes(s.resolvedId));
 
-    // IDs de physical damage to Attacks
-    const physicalAttackDamageIds = {
-      explicit: "explicit.stat_3032590688",
-      implicit: "implicit.stat_3032590688",
-    };
-    const physicalAttackDamageAllIds = Object.values(physicalAttackDamageIds);
+  const physicalAttackDamageStats = nonRuneStats
+    .map((stat) => {
+      const resolvedId = resolvePhysicalAttackDamageId(stat);
+      if (!resolvedId) return null;
+      return { ...stat, resolvedId };
+    })
+    .filter((s) => s && physicalAttackDamageAllIds.includes(s.resolvedId));
 
-    // Stats de physical damage encontrados no item
-    const physicalAttackDamageStats = matched
-      .map((stat) => {
-        const resolvedId = resolvePhysicalAttackDamageId(stat);
-        if (!resolvedId) return null;
-        return { ...stat, resolvedId };
-      })
-      .filter(
-        (s) =>
-          s &&
-          physicalAttackDamageAllIds.includes(s.resolvedId)
-      );
+  const nonResistanceStats = nonRuneStats.filter(stat =>
+    !resistanceExplicitIds.includes(normalizeStatIdToExplicit(stat.id)) &&
+    normalizeStatIdToExplicit(stat.id) !== "explicit.stat_4080418644" &&
+    normalizeStatIdToExplicit(stat.id) !== "explicit.stat_3261801346" &&
+    normalizeStatIdToExplicit(stat.id) !== "explicit.stat_328541901"
+  );
 
-  // Get non-resistance and non-attribute stats
-  const nonResistanceStats = matched.filter(stat =>
-    !resistanceExplicitIds.includes(stat.id) &&
-    stat.id !== "explicit.stat_4080418644" && // Strength
-    stat.id !== "explicit.stat_3261801346" && // Dexterity
-    stat.id !== "explicit.stat_328541901"     // Intelligence
+  // ✨ NOVO: Detectar Life stats
+  const lifeStats = nonRuneStats.filter(stat =>
+    normalizeStatIdToExplicit(stat.id) === "explicit.stat_3299347043" // # to maximum Life
+  );
+
+  // Remover Life stats de nonResistanceStats para não duplicar
+  const nonResistanceStatsWithoutLife = nonResistanceStats.filter(stat =>
+    normalizeStatIdToExplicit(stat.id) !== "explicit.stat_3299347043"
   );
 
   const statsArray = [];
 
   // Add non-resistance stats as an "and" filter
-  if (nonResistanceStats.length > 0) {
-    const nonResistanceFilters = nonResistanceStats.map((stat) => ({
+  if (nonResistanceStatsWithoutLife.length > 0 || runeStats.length > 0 || lifeStats.length > 0) {
+    const nonResistanceFilters = nonResistanceStatsWithoutLife.map((stat) => ({
       id: normalizeStatIdToExplicit(stat.id),
       ...(stat.value && { value: stat.value }),
-      // Desmarcar se o stat está em elementalAttackDamageStats
       disabled: elementalAttackDamageStats.some(
         (s) => normalizeStatIdToExplicit(s.id) === normalizeStatIdToExplicit(stat.id)
       ) || physicalAttackDamageStats.some(
@@ -108,16 +125,35 @@ const resistanceStats = matched.filter(stat =>
       ),
     }));
 
-   // Se resistances estão disabled, adicionar o pseudo-stat de total resistance ao bloco AND
+    // ✨ NOVO: Adicionar pseudo Life ao invés dos stats individuais
+    if (lifeStats.length > 0) {
+      let totalLife = 0;
+      lifeStats.forEach(stat => {
+        totalLife += parseInt(stat.value.min);
+      });
+
+      nonResistanceFilters.push({
+        id: "pseudo.pseudo_total_life",
+        value: { min: totalLife },
+      });
+    }
+
+    // ✨ NOVO: Adicionar runas ao bloco AND
+    runeStats.forEach((stat) => {
+      nonResistanceFilters.push({
+        id: normalizeStatIdToRune(stat.id),
+        ...(stat.value && { value: stat.value }),
+        disabled: false,
+      });
+    });
+
+    // Se resistances estão disabled, adicionar pseudo-stat
     if (resistanceStats.length > 0 && elementalAttackDamageStats.length > 0) {
       let totalResistance = 0;
       resistanceStats.forEach(stat => {
         const value = parseInt(stat.value.min);
-        
-        // Se é "to all Elemental Resistances" (ID: explicit.stat_2901986750), multiplicar por 3
         const multiplier = normalizeStatIdToExplicit(stat.id) === "explicit.stat_2901986750" ? 3 : 1;
         const adjustedValue = value * multiplier;
-        
         totalResistance += adjustedValue;
       });
 
@@ -127,7 +163,7 @@ const resistanceStats = matched.filter(stat =>
       });
     }
 
-    // Se attributes estão disabled, adicionar o pseudo-stat de total attributes ao bloco AND
+    // Se attributes estão disabled, adicionar pseudo-stat
     if (attributeStats.length > 0 && elementalAttackDamageStats.length > 0) {
       let totalAttributes = 0;
       attributeStats.forEach(stat => {
@@ -146,7 +182,7 @@ const resistanceStats = matched.filter(stat =>
     });
   }
 
-    // Bloco Weighted Sum para elemental/chaos damage to Attacks
+  // Bloco Weighted Sum para elemental/chaos damage to Attacks
   if (elementalAttackDamageStats.length > 0) {
     const elementalAttackDamageFilters = [];
     let totalAttackDamageWeight = 0;
@@ -220,21 +256,25 @@ const resistanceStats = matched.filter(stat =>
     let totalWeight = 0;
     resistanceStats.forEach(stat => {
       const value = parseInt(stat.value.min);
-      
-      // Se é "to all Elemental Resistances" (ID: explicit.stat_2901986750), multiplicar por 3
-      const multiplier = normalizeStatIdToExplicit(stat.id) === "explicit.stat_2901986750" ? 3 : 1;
+
+      // ✨ NOVO: Detectar múltiplas resistências no mesmo mod
+      const resistancesInText = getResistancesFromText(stat.text);
+      const resistanceCount = resistancesInText.length > 0 ? resistancesInText.length : 1;
+
+      // Se é "to all Elemental Resistances", multiplicar por 3
+      const multiplier = normalizeStatIdToExplicit(stat.id) === "explicit.stat_2901986750" ? 3 : resistanceCount;
       const adjustedValue = value * multiplier;
-      
+
       totalWeight += adjustedValue;
       resistanceFilters.push({
-        id: stat.id,
+        id: normalizeStatIdToExplicit(stat.id),
         value: { weight: 1, min: 1 },
         disabled: (elementalAttackDamageStats.length > 0 || physicalAttackDamageStats.length > 0) ? true : false,
       });
     });
 
-    Object.values(resistanceIds).forEach(id => {
-      if (!resistanceStats.find(stat => stat.id === id)) {
+  Object.values(resistanceIds).forEach(id => {
+    if (!resistanceStats.find(stat => normalizeStatIdToExplicit(stat.id) === id)) {
         resistanceFilters.push({
           id,
           value: { weight: 1 },
@@ -262,14 +302,20 @@ const resistanceStats = matched.filter(stat =>
     let totalWeight = 0;
     attributeStats.forEach((stat) => {
       const value = parseInt(stat.value.min);
-      totalWeight += value;
+
+      // ✅ NOVO: Detectar múltiplos atributos no mesmo mod
+      const attributesInText = getAttributesFromText(stat.text);
+      const attributeCount = attributesInText.length > 0 ? attributesInText.length : 1;
+
+      const adjustedValue = value * attributeCount;
+      totalWeight += adjustedValue;
+
       attributeFilters.push({
-        id: stat.id,
+        id: normalizeStatIdToExplicit(stat.id),
         value: { weight: 1, min: 1 },
-        // continua desabilitando quando tiver QUALQUER ataque
         disabled:
           elementalAttackDamageStats.length > 0 ||
-          physicalAttackDamageStats.length > 0
+            physicalAttackDamageStats.length > 0
             ? true
             : false,
       });
@@ -323,7 +369,8 @@ function stripTag(text, type) {
 
   return text
     .replace(" (fractured)", "")
-    .replace(" (desecrated)", "");
+    .replace(" (desecrated)", "")
+    .replace(" (rune)", "");
 }
 
 function normalizeStatIdToExplicit(id) {
@@ -334,6 +381,11 @@ function normalizeStatIdToExplicit(id) {
     return id.replace("desecrated.", "explicit.");
   }
   return id;
+}
+
+function normalizeStatIdToRune(id) {
+  const baseId = id.split(".").pop();
+  return `rune.${baseId}`;
 }
 
 function resolveAttackDamageIdFromText(stat) {
@@ -370,13 +422,36 @@ function resolvePhysicalAttackDamageId(stat) {
   return null;
 }
 
+function getResistancesFromText(text) {
+  const resistances = [];
+  const lowerText = text.toLowerCase();
+
+  if (lowerText.includes("fire")) resistances.push("fire");
+  if (lowerText.includes("cold")) resistances.push("cold");
+  if (lowerText.includes("lightning")) resistances.push("lightning");
+  if (lowerText.includes("chaos")) resistances.push("chaos");
+
+  return resistances;
+}
+
+function getAttributesFromText(text) {
+  const attributes = [];
+  const lowerText = text.toLowerCase();
+
+  if (lowerText.includes("strength")) attributes.push("strength");
+  if (lowerText.includes("dexterity")) attributes.push("dexterity");
+  if (lowerText.includes("intelligence")) attributes.push("intelligence");
+
+  return attributes;
+}
+
 export function matchStatsOnItem(item, stats) {
   const matched = [];
   for (const category of stats.result) {
     for (const entry of category.entries) {
       if (
         !entry ||
-        !["explicit", "implicit", "fractured", "desecrated"].includes(entry.type)
+        !["explicit", "implicit", "fractured", "desecrated", "rune", "augment"].includes(entry.type)
       ) {
         continue;
       }
@@ -415,10 +490,25 @@ export function matchStatsOnItem(item, stats) {
     }
   }
 
+  console.log("[PoE Search] All matched stats (before dedup):", matched.map(s => ({
+    text: s.text,
+    type: s.type,
+    id: s.id,
+    hasRune: s.text.includes("(rune)")
+  })));
+
   const uniqueMatched = matched.filter(
     (entry, index, self) =>
       index ===
       self.findIndex((e) => e.text === entry.text && e.type === entry.type)
   );
+
+  console.log("[PoE Search] After dedup:", uniqueMatched.map(s => ({
+    text: s.text,
+    type: s.type,
+    id: s.id,
+    hasRune: s.text.includes("(rune)")
+  })));
+
   return uniqueMatched;
 }
