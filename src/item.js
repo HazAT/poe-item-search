@@ -13,9 +13,20 @@ export function getSearchQuery(item, stats) {
 
   if (!unique) {
     const typeFilters = buildTypeFilters(item);
+    console.log("[PoE Search] typeFilters =", typeFilters);
     if (typeFilters) {
       query.filters = typeFilters;
     }
+  }
+
+  // ✅ NOVO: Adicionar equipment filters
+  const equipmentStats = extractEquipmentStats(item);
+  if (equipmentStats) {
+    if (!query.filters) query.filters = {};
+    query.filters.equipment_filters = {
+      filters: equipmentStats,
+      disabled: false
+    };
   }
 
   const matched = matchStatsOnItem(item, regexStats);
@@ -432,6 +443,30 @@ function getResistancesFromText(text) {
   if (lowerText.includes("chaos")) resistances.push("chaos");
 
   return resistances;
+}
+
+function extractEquipmentStats(item) {
+  const equipment = {};
+
+  // Regex para capturar Armour
+  const armourMatch = item.match(/^Armour: (\d+)/m);
+  if (armourMatch) {
+    equipment.ar = { min: parseInt(armourMatch[1]) };
+  }
+
+  // Regex para capturar Evasion Rating
+  const evasionMatch = item.match(/^Evasion Rating: (\d+)/m);
+  if (evasionMatch) {
+    equipment.ev = { min: parseInt(evasionMatch[1]) };
+  }
+
+  // Regex para capturar Energy Shield
+  const energyShieldMatch = item.match(/^Energy Shield: (\d+)/m);
+  if (energyShieldMatch) {
+    equipment.es = { min: parseInt(energyShieldMatch[1]) };
+  }
+
+  return Object.keys(equipment).length > 0 ? equipment : null;
 }
 
 function getAttributesFromText(text) {
