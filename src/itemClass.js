@@ -31,7 +31,6 @@ export const ITEM_CLASS_TO_CATEGORY = {
   "Two Hand Axes": "weapon.twoaxe",
   "Two Hand Maces": "weapon.twomace",
   "Quarterstaves": "weapon.warstaff",  // ✅ Do jogo (plural com "ves")
-  "Quarterstaff": "weapon.warstaff",   // ✅ Da API (singular)
 
   // Weapons - Ranged
   "Bows": "weapon.bow",

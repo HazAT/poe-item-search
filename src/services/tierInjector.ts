@@ -95,7 +95,7 @@ function getCurrentItemClass(): string | null {
   if (text?.includes('Amulet')) return 'Amulets';
   if (text?.includes('Belt')) return 'Belts';
   if (text?.includes('Quiver')) return 'Quivers';
-  if (text?.includes('Quarterstaffs')) return 'Quarterstaves';
+  if (text?.includes('Quarterstaff')) return 'Quarterstaves';
 
   return null;
 }

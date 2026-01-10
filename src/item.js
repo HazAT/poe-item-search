@@ -13,7 +13,6 @@ export function getSearchQuery(item, stats) {
 
   if (!unique) {
     const typeFilters = buildTypeFilters(item);
-    console.log("[PoE Search] typeFilters =", typeFilters);
     if (typeFilters) {
       query.filters = typeFilters;
     }
@@ -36,14 +35,9 @@ export function getSearchQuery(item, stats) {
     stat.text.includes("(rune)")
   );
 
-  console.log("[PoE Search] runeStats =", runeStats);
-
   const nonRuneStats = matched.filter(stat =>
     !stat.text.includes("(rune)")
   );
-
-  console.log("[PoE Search] nonRuneStats.length =", nonRuneStats.length); 
-  console.log("[PoE Search] matched.length =", matched.length);
 
   // Resistance stat IDs (explicit) - ✅ DEFINIR PRIMEIRO
   const resistanceIds = {
@@ -525,25 +519,11 @@ export function matchStatsOnItem(item, stats) {
     }
   }
 
-  console.log("[PoE Search] All matched stats (before dedup):", matched.map(s => ({
-    text: s.text,
-    type: s.type,
-    id: s.id,
-    hasRune: s.text.includes("(rune)")
-  })));
-
   const uniqueMatched = matched.filter(
     (entry, index, self) =>
       index ===
       self.findIndex((e) => e.text === entry.text && e.type === entry.type)
   );
-
-  console.log("[PoE Search] After dedup:", uniqueMatched.map(s => ({
-    text: s.text,
-    type: s.type,
-    id: s.id,
-    hasRune: s.text.includes("(rune)")
-  })));
 
   return uniqueMatched;
 }

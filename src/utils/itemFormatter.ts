@@ -9,6 +9,10 @@ import type {
   TradeItemRequirement,
 } from "@/types/tradeItem";
 
+const CLASS_NORMALYZER: Record<string, string> = {
+  "Quarterstaff": "Quarterstaves",
+};
+
 const SEPARATOR = "--------";
 
 /**
@@ -135,6 +139,21 @@ function getItemClass(
   return null;
 }
 
+function pluralizeItemClass(itemClass: string): string {
+  // Se já está mapeado, usar o mapeamento
+  if (CLASS_NORMALYZER[itemClass]) {
+    return CLASS_NORMALYZER[itemClass];
+  }
+
+  // Se já termina com 's', provavelmente já é plural
+  if (itemClass.endsWith('s')) {
+    return itemClass;
+  }
+
+  // Fallback: adicionar 's'
+  return `${itemClass}s`;
+}
+
 /**
  * Format mods with their suffix type.
  */
@@ -152,8 +171,8 @@ export function formatItemText(item: TradeItem): string {
   // Item Class
   const itemClass = getItemClass(item.properties);
   if (itemClass) {
-    // Add 's' for plural (Body Armour → Body Armours, Ring → Rings)
-    lines.push(`Item Class: ${itemClass}s`);
+    const pluralClass = pluralizeItemClass(itemClass);
+    lines.push(`Item Class: ${pluralClass}`);
   }
 
   // Rarity

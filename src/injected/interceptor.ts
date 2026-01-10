@@ -547,7 +547,7 @@ function wireCopyButtons() {
         // Visual feedback - show a temporary tooltip
         showCopyFeedback(copyBtn, "Copied!");
 
-        injectedLogger.log("Copied item: " + (item.name || item.typeLine));
+        injectedLogger.log("Copied item: " + (item.name || item.typeLine), item);
       } catch (err) {
         injectedLogger.error("Failed to copy", err);
         showCopyFeedback(copyBtn, "Failed!");
