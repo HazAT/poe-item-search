@@ -1,4 +1,5 @@
 // scripts/generate-tier-data.js
+// Mod data sourced from RePoE: https://repoe-fork.github.io/poe2/
 import fs from 'fs';
 import path from 'path';
 
@@ -207,7 +208,7 @@ async function main() {
   // Check if source files exist
   if (!fs.existsSync(MODS_PATH)) {
     console.error(`Error: ${MODS_PATH} not found`);
-    console.error('Download mods.json from poe-mods data source');
+    console.error('Download mods.json from https://repoe-fork.github.io/poe2/');
     process.exit(1);
   }
 
