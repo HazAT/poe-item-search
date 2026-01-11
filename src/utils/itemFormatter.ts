@@ -210,13 +210,27 @@ export function formatItemText(item: TradeItem): string {
     }
   }
 
+  // Fractured mods (before explicit - they're special locked mods)
+  if (item.fracturedMods && item.fracturedMods.length > 0) {
+    lines.push(SEPARATOR);
+    for (const mod of item.fracturedMods) {
+      lines.push(formatMod(mod, "fractured"));
+    }
+  }
+
   // Explicit mods
   if (item.explicitMods && item.explicitMods.length > 0) {
     lines.push(SEPARATOR);
     for (const mod of item.explicitMods) {
-      // Check if mod is desecrated based on extended data
-      // For now, output without suffix - can refine later
       lines.push(formatMod(mod));
+    }
+  }
+
+  // Desecrated mods (mods from desecrated items - special modifier type)
+  if (item.desecratedMods && item.desecratedMods.length > 0) {
+    lines.push(SEPARATOR);
+    for (const mod of item.desecratedMods) {
+      lines.push(formatMod(mod, "desecrated"));
     }
   }
 
