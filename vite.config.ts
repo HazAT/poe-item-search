@@ -25,9 +25,9 @@ function extensionAssetsPlugin(): Plugin {
       const isDev = process.env.BUILD_MODE === "dev";
       const manifest: Record<string, unknown> = {
         manifest_version: 3,
-        name: "PoE Item Search",
+        name: "Path of Exile 2 - Trading Buddy",
         version: APP_VERSION,
-        description: "Paste item text from Path of Exile to instantly search the trade site. Includes search history, bookmarks, and sort order.",
+        description: "Paste item text from PathOfExile2 to instantly search the trade site. Includes search history, bookmarks, and sort order.",
         icons: {
           "128": "assets/logo128.png",
         },

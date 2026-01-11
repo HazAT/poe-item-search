@@ -34,9 +34,17 @@ export function BookmarksTab() {
     createFolder,
     updateFolder,
     importFolder,
+    forceRefetch,
   } = useBookmarksStore();
 
-  const { clearNewDataIndicator } = useSyncStore();
+  const { hasNewData, clearNewDataIndicator } = useSyncStore();
+
+  // Refetch bookmarks when cloud sync detects new data
+  useEffect(() => {
+    if (hasNewData) {
+      forceRefetch();
+    }
+  }, [hasNewData, forceRefetch]);
 
   // Clear sync indicator when user views bookmarks tab
   useEffect(() => {
