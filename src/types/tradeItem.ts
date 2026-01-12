@@ -75,8 +75,6 @@ export interface TradeItem {
   socketedItems?: unknown[];
   implicitMods?: string[];
   explicitMods?: string[];
-  fracturedMods?: string[];
-  desecratedMods?: string[];
   runeMods?: string[];
   enchantMods?: string[];
   craftedMods?: string[];
