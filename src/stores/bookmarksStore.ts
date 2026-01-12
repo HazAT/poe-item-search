@@ -54,6 +54,9 @@ interface BookmarksState {
 
   // UI state
   toggleShowArchived: () => void;
+
+  // Sync support
+  forceRefetch: () => Promise<void>;
 }
 
 export const useBookmarksStore = create<BookmarksState>((set, get) => ({
@@ -347,5 +350,11 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => ({
 
   toggleShowArchived: () => {
     set((state) => ({ showArchived: !state.showArchived }));
+  },
+
+  forceRefetch: async () => {
+    debug.log("[Bookmarks] forceRefetch() called - resetting hasFetched");
+    set({ hasFetched: false });
+    await get().fetchFolders();
   },
 }));

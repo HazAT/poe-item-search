@@ -40,6 +40,8 @@ export interface TradeItemExtended {
   mods?: {
     explicit?: TradeItemExtendedMod[];
     implicit?: TradeItemExtendedMod[];
+    fractured?: TradeItemExtendedMod[];
+    desecrated?: TradeItemExtendedMod[];
     rune?: TradeItemExtendedMod[];
     enchant?: TradeItemExtendedMod[];
   };
@@ -73,6 +75,8 @@ export interface TradeItem {
   socketedItems?: unknown[];
   implicitMods?: string[];
   explicitMods?: string[];
+  fracturedMods?: string[];
+  desecratedMods?: string[];
   runeMods?: string[];
   enchantMods?: string[];
   craftedMods?: string[];

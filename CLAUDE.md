@@ -47,7 +47,7 @@ bun run generate-tiers  # Regenerate tier data from mods.json
 
 **When to update:**
 - After major PoE patches that change mod tiers
-- Requires `tests/fixtures/mods.json` (download from poe-mods data source)
+- Requires `tests/fixtures/mods.json` (download from [RePoE](https://repoe-fork.github.io/poe2/))
 - Output: `src/data/tiers.json` with tier mappings for whitelisted stats
 
 ## Project Structure
