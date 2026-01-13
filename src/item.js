@@ -442,22 +442,56 @@ function getResistancesFromText(text) {
 function extractEquipmentStats(item) {
   const equipment = {};
 
-  // Regex para capturar Armour
+  // Armour
   const armourMatch = item.match(/^Armour: (\d+)/m);
   if (armourMatch) {
-    equipment.ar = { min: parseInt(armourMatch[1]) };
+    equipment.ar = { min: parseInt(armourMatch[1], 10) };
   }
 
-  // Regex para capturar Evasion Rating
+  // Evasion
   const evasionMatch = item.match(/^Evasion Rating: (\d+)/m);
   if (evasionMatch) {
-    equipment.ev = { min: parseInt(evasionMatch[1]) };
+    equipment.ev = { min: parseInt(evasionMatch[1], 10) };
   }
 
-  // Regex para capturar Energy Shield
+  // Energy Shield
   const energyShieldMatch = item.match(/^Energy Shield: (\d+)/m);
   if (energyShieldMatch) {
-    equipment.es = { min: parseInt(energyShieldMatch[1]) };
+    equipment.es = { min: parseInt(energyShieldMatch[1], 10) };
+  }
+
+  // Elemental Damage (para EDPS)
+  const elementalLineMatch = item.match(/^Elemental Damage: (.+)$/m);
+  const apsMatch = item.match(/^Attacks per Second: ([0-9]+(?:\.[0-9]+)?)/m);
+  if (elementalLineMatch) {
+    const elementalLine = elementalLineMatch[1];
+
+    // quebra em grupos "87-141" / "9-376"
+    const parts = elementalLine.split(",").map(p => p.trim());
+
+    const nums = [];
+    for (const p of parts) {
+      const rangeMatch = p.match(/(\d+)\s*-\s*(\d+)/);
+      if (!rangeMatch) continue;
+      const min = parseInt(rangeMatch[1], 10);
+      const max = parseInt(rangeMatch[2], 10);
+      nums.push(min, max);
+    }
+
+    if (nums.length > 0) {
+      const sumEPS = nums.reduce((acc, v) => acc + v, 0) / 2;
+
+      // Se tem APS, aplica a fórmula completa; senão, usa só somaEPS
+      let calcEDPS;
+      if (apsMatch) {
+        const aps = parseFloat(apsMatch[1]);
+        calcEDPS = sumEPS + (sumEPS * (aps - 1));
+      } else {
+        calcEDPS = sumEPS; 
+      }
+
+      equipment.edps = { min: Math.floor(calcEDPS) };
+    }
   }
 
   return Object.keys(equipment).length > 0 ? equipment : null;
