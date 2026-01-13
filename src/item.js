@@ -460,13 +460,27 @@ function extractEquipmentStats(item) {
     equipment.es = { min: parseInt(energyShieldMatch[1], 10) };
   }
 
-  // Elemental Damage (para EDPS)
-  const elementalLineMatch = item.match(/^Elemental Damage: (.+)$/m);
+  // Attacks per Second (para cálculos)
   const apsMatch = item.match(/^Attacks per Second: ([0-9]+(?:\.[0-9]+)?)/m);
+  let aps = 0;
+  if (apsMatch) {
+    aps = parseFloat(apsMatch[1]);
+    equipment.aps = { min: aps };
+  }
+
+  // Critical Hit Chance
+  const critMatch = item.match(/^Critical Hit Chance: ([0-9.]+)%/m);
+  if (critMatch) {
+    const crit = parseFloat(critMatch[1]);
+    equipment.crit = { min: crit };
+  }
+
+  // ============================================
+  // Elemental Damage (para EDPS)
+  // ============================================
+  const elementalLineMatch = item.match(/^Elemental Damage: (.+)$/m);
   if (elementalLineMatch) {
     const elementalLine = elementalLineMatch[1];
-
-    // quebra em grupos "87-141" / "9-376"
     const parts = elementalLine.split(",").map(p => p.trim());
 
     const nums = [];
@@ -480,17 +494,39 @@ function extractEquipmentStats(item) {
 
     if (nums.length > 0) {
       const sumEPS = nums.reduce((acc, v) => acc + v, 0) / 2;
-
-      // Se tem APS, aplica a fórmula completa; senão, usa só somaEPS
       let calcEDPS;
-      if (apsMatch) {
-        const aps = parseFloat(apsMatch[1]);
+      if (aps > 0) {
         calcEDPS = sumEPS + (sumEPS * (aps - 1));
       } else {
-        calcEDPS = sumEPS; 
+        calcEDPS = sumEPS;
       }
-
       equipment.edps = { min: Math.floor(calcEDPS) };
+    }
+  }
+
+  // ============================================
+  // Physical Damage (para PDPS)
+  // ============================================
+  const physicalLineMatch = item.match(/^Physical Damage: (.+)$/m);
+  if (physicalLineMatch) {
+    const physicalLine = physicalLineMatch[1]; // "104-171 (augmented)" ou "104-171"
+
+    // Remove tags como "(augmented)"
+    const cleanPhysicalLine = physicalLine.replace(/ \(.+\)$/, "").trim();
+
+    const rangeMatch = cleanPhysicalLine.match(/(\d+)\s*-\s*(\d+)/);
+    if (rangeMatch) {
+      const min = parseInt(rangeMatch[1], 10);
+      const max = parseInt(rangeMatch[2], 10);
+
+      const sumPPS = (min + max) / 2;
+      let calcPDPS;
+      if (aps > 0) {
+        calcPDPS = sumPPS + (sumPPS * (aps - 1));
+      } else {
+        calcPDPS = sumPPS;
+      }
+      equipment.pdps = { min: Math.floor(calcPDPS) };
     }
   }
 
