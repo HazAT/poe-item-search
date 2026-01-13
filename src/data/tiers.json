@@ -388,6 +388,460 @@
       ]
     }
   },
+"explicit.stat_674553446": {
+  "text": "Chaos Damage to Attacks",
+  "tiers": {
+    "Gloves": [
+      {
+        "tier": 1,
+        "name": "Malicious",
+        "min": [25, 37],
+        "max": [29, 45],
+        "avgMin": 31,
+        "ilvl": 75
+      },
+      {
+        "tier": 2,
+        "name": "Venomous",
+        "min": [20, 33],
+        "max": [24, 36],
+        "avgMin": 26.5,
+        "ilvl": 65
+      },
+      {
+        "tier": 3,
+        "name": "Virulent",
+        "min": [13, 27],
+        "max": [19, 32],
+        "avgMin": 20,
+        "ilvl": 60
+      },
+      {
+        "tier": 4,
+        "name": "Toxic",
+        "min": [11, 21],
+        "max": [16, 26],
+        "avgMin": 16,
+        "ilvl": 54
+      },
+      {
+        "tier": 5,
+        "name": "Contaminated",
+        "min": [12, 18],
+        "max": [13, 20],
+        "avgMin": 15,
+        "ilvl": 46
+      },
+      {
+        "tier": 6,
+        "name": "Infected",
+        "min": [9, 14],
+        "max": [11, 17],
+        "avgMin": 11.5,
+        "ilvl": 33
+      },
+      {
+        "tier": 7,
+        "name": "Septic",
+        "min": [6, 10],
+        "max": [8, 13],
+        "avgMin": 8,
+        "ilvl": 16
+      },
+      {
+        "tier": 8,
+        "name": "Festering",
+        "min": [3, 6],
+        "max": [5, 9],
+        "avgMin": 4.5,
+        "ilvl": 8
+      },
+      {
+        "tier": 9,
+        "name": "Foul",
+        "min": [1, 3],
+        "max": [2, 3],
+        "avgMin": 2,
+        "ilvl": 1
+      }
+    ],
+    "Rings": [
+      {
+        "tier": 1,
+        "name": "Malicious",
+        "min": [25, 37],
+        "max": [29, 45],
+        "avgMin": 31,
+        "ilvl": 75
+      },
+      {
+        "tier": 2,
+        "name": "Venomous",
+        "min": [20, 33],
+        "max": [24, 36],
+        "avgMin": 26.5,
+        "ilvl": 65
+      },
+      {
+        "tier": 3,
+        "name": "Virulent",
+        "min": [13, 27],
+        "max": [19, 32],
+        "avgMin": 20,
+        "ilvl": 60
+      },
+      {
+        "tier": 4,
+        "name": "Toxic",
+        "min": [11, 21],
+        "max": [16, 26],
+        "avgMin": 16,
+        "ilvl": 54
+      },
+      {
+        "tier": 5,
+        "name": "Contaminated",
+        "min": [12, 18],
+        "max": [13, 20],
+        "avgMin": 15,
+        "ilvl": 46
+      },
+      {
+        "tier": 6,
+        "name": "Infected",
+        "min": [9, 14],
+        "max": [11, 17],
+        "avgMin": 11.5,
+        "ilvl": 33
+      },
+      {
+        "tier": 7,
+        "name": "Septic",
+        "min": [6, 10],
+        "max": [8, 13],
+        "avgMin": 8,
+        "ilvl": 16
+      },
+      {
+        "tier": 8,
+        "name": "Festering",
+        "min": [3, 6],
+        "max": [5, 9],
+        "avgMin": 4.5,
+        "ilvl": 8
+      },
+      {
+        "tier": 9,
+        "name": "Foul",
+        "min": [1, 3],
+        "max": [2, 3],
+        "avgMin": 2,
+        "ilvl": 1
+      }
+    ],
+    "Quivers": [
+      {
+        "tier": 1,
+        "name": "Malicious",
+        "min": [25, 37],
+        "max": [29, 45],
+        "avgMin": 31,
+        "ilvl": 75
+      },
+      {
+        "tier": 2,
+        "name": "Venomous",
+        "min": [20, 33],
+        "max": [24, 36],
+        "avgMin": 26.5,
+        "ilvl": 65
+      },
+      {
+        "tier": 3,
+        "name": "Virulent",
+        "min": [13, 27],
+        "max": [19, 32],
+        "avgMin": 20,
+        "ilvl": 60
+      },
+      {
+        "tier": 4,
+        "name": "Toxic",
+        "min": [11, 21],
+        "max": [16, 26],
+        "avgMin": 16,
+        "ilvl": 54
+      },
+      {
+        "tier": 5,
+        "name": "Contaminated",
+        "min": [12, 18],
+        "max": [13, 20],
+        "avgMin": 15,
+        "ilvl": 46
+      },
+      {
+        "tier": 6,
+        "name": "Infected",
+        "min": [9, 14],
+        "max": [11, 17],
+        "avgMin": 11.5,
+        "ilvl": 33
+      },
+      {
+        "tier": 7,
+        "name": "Septic",
+        "min": [6, 10],
+        "max": [8, 13],
+        "avgMin": 8,
+        "ilvl": 16
+      },
+      {
+        "tier": 8,
+        "name": "Festering",
+        "min": [3, 6],
+        "max": [5, 9],
+        "avgMin": 4.5,
+        "ilvl": 8
+      },
+      {
+        "tier": 9,
+        "name": "Foul",
+        "min": [1, 3],
+        "max": [2, 3],
+        "avgMin": 2,
+        "ilvl": 1
+      }
+    ]
+  }
+},
+"explicit.stat_1754445556": {
+  "text": "Lightning Damage to Attacks",
+  "tiers": {
+    "Gloves": [
+      {
+        "tier": 1,
+        "name": "Thunderous",
+        "min": [25, 37],
+        "max": [29, 45],
+        "avgMin": 31,
+        "ilvl": 75
+      },
+      {
+        "tier": 2,
+        "name": "Storming",
+        "min": [20, 33],
+        "max": [24, 36],
+        "avgMin": 26.5,
+        "ilvl": 65
+      },
+      {
+        "tier": 3,
+        "name": "Electrocuting",
+        "min": [13, 27],
+        "max": [19, 32],
+        "avgMin": 20,
+        "ilvl": 60
+      },
+      {
+        "tier": 4,
+        "name": "Crackling",
+        "min": [11, 21],
+        "max": [16, 26],
+        "avgMin": 16,
+        "ilvl": 54
+      },
+      {
+        "tier": 5,
+        "name": "Shocking",
+        "min": [12, 18],
+        "max": [13, 20],
+        "avgMin": 15,
+        "ilvl": 46
+      },
+      {
+        "tier": 6,
+        "name": "Arcing",
+        "min": [9, 14],
+        "max": [11, 17],
+        "avgMin": 11.5,
+        "ilvl": 33
+      },
+      {
+        "tier": 7,
+        "name": "Buzzing",
+        "min": [6, 10],
+        "max": [8, 13],
+        "avgMin": 8,
+        "ilvl": 16
+      },
+      {
+        "tier": 8,
+        "name": "Tingling",
+        "min": [3, 6],
+        "max": [5, 9],
+        "avgMin": 4.5,
+        "ilvl": 8
+      },
+      {
+        "tier": 9,
+        "name": "Humming",
+        "min": [1, 3],
+        "max": [2, 3],
+        "avgMin": 2,
+        "ilvl": 1
+      }
+    ],
+    "Rings": [
+      {
+        "tier": 1,
+        "name": "Thunderous",
+        "min": [25, 37],
+        "max": [29, 45],
+        "avgMin": 31,
+        "ilvl": 75
+      },
+      {
+        "tier": 2,
+        "name": "Storming",
+        "min": [20, 33],
+        "max": [24, 36],
+        "avgMin": 26.5,
+        "ilvl": 65
+      },
+      {
+        "tier": 3,
+        "name": "Electrocuting",
+        "min": [13, 27],
+        "max": [19, 32],
+        "avgMin": 20,
+        "ilvl": 60
+      },
+      {
+        "tier": 4,
+        "name": "Crackling",
+        "min": [11, 21],
+        "max": [16, 26],
+        "avgMin": 16,
+        "ilvl": 54
+      },
+      {
+        "tier": 5,
+        "name": "Shocking",
+        "min": [12, 18],
+        "max": [13, 20],
+        "avgMin": 15,
+        "ilvl": 46
+      },
+      {
+        "tier": 6,
+        "name": "Arcing",
+        "min": [9, 14],
+        "max": [11, 17],
+        "avgMin": 11.5,
+        "ilvl": 33
+      },
+      {
+        "tier": 7,
+        "name": "Buzzing",
+        "min": [6, 10],
+        "max": [8, 13],
+        "avgMin": 8,
+        "ilvl": 16
+      },
+      {
+        "tier": 8,
+        "name": "Tingling",
+        "min": [3, 6],
+        "max": [5, 9],
+        "avgMin": 4.5,
+        "ilvl": 8
+      },
+      {
+        "tier": 9,
+        "name": "Humming",
+        "min": [1, 3],
+        "max": [2, 3],
+        "avgMin": 2,
+        "ilvl": 1
+      }
+    ],
+    "Quivers": [
+      {
+        "tier": 1,
+        "name": "Thunderous",
+        "min": [25, 37],
+        "max": [29, 45],
+        "avgMin": 31,
+        "ilvl": 75
+      },
+      {
+        "tier": 2,
+        "name": "Storming",
+        "min": [20, 33],
+        "max": [24, 36],
+        "avgMin": 26.5,
+        "ilvl": 65
+      },
+      {
+        "tier": 3,
+        "name": "Electrocuting",
+        "min": [13, 27],
+        "max": [19, 32],
+        "avgMin": 20,
+        "ilvl": 60
+      },
+      {
+        "tier": 4,
+        "name": "Crackling",
+        "min": [11, 21],
+        "max": [16, 26],
+        "avgMin": 16,
+        "ilvl": 54
+      },
+      {
+        "tier": 5,
+        "name": "Shocking",
+        "min": [12, 18],
+        "max": [13, 20],
+        "avgMin": 15,
+        "ilvl": 46
+      },
+      {
+        "tier": 6,
+        "name": "Arcing",
+        "min": [9, 14],
+        "max": [11, 17],
+        "avgMin": 11.5,
+        "ilvl": 33
+      },
+      {
+        "tier": 7,
+        "name": "Buzzing",
+        "min": [6, 10],
+        "max": [8, 13],
+        "avgMin": 8,
+        "ilvl": 16
+      },
+      {
+        "tier": 8,
+        "name": "Tingling",
+        "min": [3, 6],
+        "max": [5, 9],
+        "avgMin": 4.5,
+        "ilvl": 8
+      },
+      {
+        "tier": 9,
+        "name": "Humming",
+        "min": [1, 3],
+        "max": [2, 3],
+        "avgMin": 2,
+        "ilvl": 1
+      }
+    ]
+  }
+},
   "explicit.stat_1573130764": {
     "text": "Fire Damage to Attacks",
     "tiers": {
@@ -1930,6 +2384,114 @@
       ]
     }
   },
+  "explicit.stat_2891184298": {
+  "text": "Increased Cast Speed",
+  "tiers": {
+    "Rings": [
+      { "tier": 1, "name": "of Celerity",     "min": 21, "max": 24, "avgMin": 21, "ilvl": 82 },
+      { "tier": 2, "name": "of Swiftness",    "min": 18, "max": 20, "avgMin": 18, "ilvl": 75 },
+      { "tier": 3, "name": "of Alacrity",     "min": 15, "max": 17, "avgMin": 15, "ilvl": 68 },
+      { "tier": 4, "name": "of Quickness",    "min": 12, "max": 14, "avgMin": 12, "ilvl": 60 },
+      { "tier": 5, "name": "of Dispatch",     "min": 9,  "max": 11, "avgMin": 9,  "ilvl": 50 },
+      { "tier": 6, "name": "of Haste",        "min": 6,  "max": 8,  "avgMin": 6,  "ilvl": 38 },
+      { "tier": 7, "name": "of Readiness",    "min": 3,  "max": 5,  "avgMin": 3,  "ilvl": 26 },
+      { "tier": 8, "name": "of Preparation",  "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ],
+    "Amulets": [
+      { "tier": 1, "name": "of Celerity",     "min": 21, "max": 24, "avgMin": 21, "ilvl": 82 },
+      { "tier": 2, "name": "of Swiftness",    "min": 18, "max": 20, "avgMin": 18, "ilvl": 75 },
+      { "tier": 3, "name": "of Alacrity",     "min": 15, "max": 17, "avgMin": 15, "ilvl": 68 },
+      { "tier": 4, "name": "of Quickness",    "min": 12, "max": 14, "avgMin": 12, "ilvl": 60 },
+      { "tier": 5, "name": "of Dispatch",     "min": 9,  "max": 11, "avgMin": 9,  "ilvl": 50 },
+      { "tier": 6, "name": "of Haste",        "min": 6,  "max": 8,  "avgMin": 6,  "ilvl": 38 },
+      { "tier": 7, "name": "of Readiness",    "min": 3,  "max": 5,  "avgMin": 3,  "ilvl": 26 },
+      { "tier": 8, "name": "of Preparation",  "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ],
+    "Belts": [
+      { "tier": 1, "name": "of Celerity",     "min": 21, "max": 24, "avgMin": 21, "ilvl": 82 },
+      { "tier": 2, "name": "of Swiftness",    "min": 18, "max": 20, "avgMin": 18, "ilvl": 75 },
+      { "tier": 3, "name": "of Alacrity",     "min": 15, "max": 17, "avgMin": 15, "ilvl": 68 },
+      { "tier": 4, "name": "of Quickness",    "min": 12, "max": 14, "avgMin": 12, "ilvl": 60 },
+      { "tier": 5, "name": "of Dispatch",     "min": 9,  "max": 11, "avgMin": 9,  "ilvl": 50 },
+      { "tier": 6, "name": "of Haste",        "min": 6,  "max": 8,  "avgMin": 6,  "ilvl": 38 },
+      { "tier": 7, "name": "of Readiness",    "min": 3,  "max": 5,  "avgMin": 3,  "ilvl": 26 },
+      { "tier": 8, "name": "of Preparation",  "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ]
+  }
+},
+"explicit.stat_681332047": {
+  "text": "Increased Attack Speed",
+  "tiers": {
+    "Rings": [
+      { "tier": 1, "name": "of Fury",      "min": 18, "max": 20, "avgMin": 18, "ilvl": 82 },
+      { "tier": 2, "name": "of Acceleration", "min": 15, "max": 17, "avgMin": 15, "ilvl": 75 },
+      { "tier": 3, "name": "of Haste",     "min": 12, "max": 14, "avgMin": 12, "ilvl": 68 },
+      { "tier": 4, "name": "of Prowess",   "min": 9,  "max": 11, "avgMin": 9,  "ilvl": 60 },
+      { "tier": 5, "name": "of Readiness", "min": 7,  "max": 8,  "avgMin": 7,  "ilvl": 50 },
+      { "tier": 6, "name": "of Quickness", "min": 5,  "max": 6,  "avgMin": 5,  "ilvl": 38 },
+      { "tier": 7, "name": "of Practice",  "min": 3,  "max": 4,  "avgMin": 3,  "ilvl": 26 },
+      { "tier": 8, "name": "of Training",  "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ],
+    "Amulets": [
+      { "tier": 1, "name": "of Fury",      "min": 18, "max": 20, "avgMin": 18, "ilvl": 82 },
+      { "tier": 2, "name": "of Acceleration", "min": 15, "max": 17, "avgMin": 15, "ilvl": 75 },
+      { "tier": 3, "name": "of Haste",     "min": 12, "max": 14, "avgMin": 12, "ilvl": 68 },
+      { "tier": 4, "name": "of Prowess",   "min": 9,  "max": 11, "avgMin": 9,  "ilvl": 60 },
+      { "tier": 5, "name": "of Readiness", "min": 7,  "max": 8,  "avgMin": 7,  "ilvl": 50 },
+      { "tier": 6, "name": "of Quickness", "min": 5,  "max": 6,  "avgMin": 5,  "ilvl": 38 },
+      { "tier": 7, "name": "of Practice",  "min": 3,  "max": 4,  "avgMin": 3,  "ilvl": 26 },
+      { "tier": 8, "name": "of Training",  "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ],
+    "Belts": [
+      { "tier": 1, "name": "of Fury",      "min": 18, "max": 20, "avgMin": 18, "ilvl": 82 },
+      { "tier": 2, "name": "of Acceleration", "min": 15, "max": 17, "avgMin": 15, "ilvl": 75 },
+      { "tier": 3, "name": "of Haste",     "min": 12, "max": 14, "avgMin": 12, "ilvl": 68 },
+      { "tier": 4, "name": "of Prowess",   "min": 9,  "max": 11, "avgMin": 9,  "ilvl": 60 },
+      { "tier": 5, "name": "of Readiness", "min": 7,  "max": 8,  "avgMin": 7,  "ilvl": 50 },
+      { "tier": 6, "name": "of Quickness", "min": 5,  "max": 6,  "avgMin": 5,  "ilvl": 38 },
+      { "tier": 7, "name": "of Practice",  "min": 3,  "max": 4,  "avgMin": 3,  "ilvl": 26 },
+      { "tier": 8, "name": "of Training",  "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ]
+  }
+},
+"explicit.stat_3917489142": {
+  "text": "Increased Rarity of Items found",
+  "tiers": {
+    "Rings": [
+      { "tier": 1, "name": "of Bounty",      "min": 36, "max": 40, "avgMin": 36, "ilvl": 82 },
+      { "tier": 2, "name": "of Treasure",    "min": 31, "max": 35, "avgMin": 31, "ilvl": 75 },
+      { "tier": 3, "name": "of Wealth",      "min": 26, "max": 30, "avgMin": 26, "ilvl": 68 },
+      { "tier": 4, "name": "of Fortune",     "min": 21, "max": 25, "avgMin": 21, "ilvl": 60 },
+      { "tier": 5, "name": "of Luck",        "min": 16, "max": 20, "avgMin": 16, "ilvl": 50 },
+      { "tier": 6, "name": "of Chance",      "min": 11, "max": 15, "avgMin": 11, "ilvl": 38 },
+      { "tier": 7, "name": "of Prospecting", "min": 6,  "max": 10, "avgMin": 6,  "ilvl": 26 },
+      { "tier": 8, "name": "of Searching",   "min": 3,  "max": 5,  "avgMin": 3,  "ilvl": 14 },
+      { "tier": 9, "name": "of Curiosity",   "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ],
+    "Amulets": [
+      { "tier": 1, "name": "of Bounty",      "min": 36, "max": 40, "avgMin": 36, "ilvl": 82 },
+      { "tier": 2, "name": "of Treasure",    "min": 31, "max": 35, "avgMin": 31, "ilvl": 75 },
+      { "tier": 3, "name": "of Wealth",      "min": 26, "max": 30, "avgMin": 26, "ilvl": 68 },
+      { "tier": 4, "name": "of Fortune",     "min": 21, "max": 25, "avgMin": 21, "ilvl": 60 },
+      { "tier": 5, "name": "of Luck",        "min": 16, "max": 20, "avgMin": 16, "ilvl": 50 },
+      { "tier": 6, "name": "of Chance",      "min": 11, "max": 15, "avgMin": 11, "ilvl": 38 },
+      { "tier": 7, "name": "of Prospecting", "min": 6,  "max": 10, "avgMin": 6,  "ilvl": 26 },
+      { "tier": 8, "name": "of Searching",   "min": 3,  "max": 5,  "avgMin": 3,  "ilvl": 14 },
+      { "tier": 9, "name": "of Curiosity",   "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ],
+    "Belts": [
+      { "tier": 1, "name": "of Bounty",      "min": 36, "max": 40, "avgMin": 36, "ilvl": 82 },
+      { "tier": 2, "name": "of Treasure",    "min": 31, "max": 35, "avgMin": 31, "ilvl": 75 },
+      { "tier": 3, "name": "of Wealth",      "min": 26, "max": 30, "avgMin": 26, "ilvl": 68 },
+      { "tier": 4, "name": "of Fortune",     "min": 21, "max": 25, "avgMin": 21, "ilvl": 60 },
+      { "tier": 5, "name": "of Luck",        "min": 16, "max": 20, "avgMin": 16, "ilvl": 50 },
+      { "tier": 6, "name": "of Chance",      "min": 11, "max": 15, "avgMin": 11, "ilvl": 38 },
+      { "tier": 7, "name": "of Prospecting", "min": 6,  "max": 10, "avgMin": 6,  "ilvl": 26 },
+      { "tier": 8, "name": "of Searching",   "min": 3,  "max": 5,  "avgMin": 3,  "ilvl": 14 },
+      { "tier": 9, "name": "of Curiosity",   "min": 1,  "max": 2,  "avgMin": 1,  "ilvl": 1  }
+    ]
+  }
+},
   "explicit.stat_4080418644": {
     "text": "Strength",
     "tiers": {
@@ -2703,6 +3265,285 @@
       ]
     }
   },
+  "explicit.stat_2144192055": {
+    "text": "# to Evasion Rating",
+    "tiers": {
+    "gloves": [
+        {
+          "tier": 1,
+          "name": "Vaporous",
+          "min": [108, 142],
+          "max": [108, 142],
+          "avgMin": 108,
+          "ilvl": 54
+        },
+        {
+          "tier": 2,
+          "name": "Phased",
+          "min": [89, 107],
+          "max": [89, 107],
+          "avgMin": 89,
+          "ilvl": 46
+        },
+        {
+          "tier": 3,
+          "name": "Blurred",
+          "min": [71, 88],
+          "max": [71, 88],
+          "avgMin": 71,
+          "ilvl": 33
+        },
+        {
+          "tier": 4,
+          "name": "Fleet",
+          "min": [57, 70],
+          "max": [57, 70],
+          "avgMin": 57,
+          "ilvl": 25
+        },
+        {
+          "tier": 5,
+          "name": "Acrobat's",
+          "min": [40, 56],
+          "max": [40, 56],
+          "avgMin": 40,
+          "ilvl": 16
+        },
+        {
+          "tier": 6,
+          "name": "Dancer's",
+          "min": [19, 39],
+          "max": [19, 39],
+          "avgMin": 19,
+          "ilvl": 8
+        },
+        {
+          "tier": 7,
+          "name": "Agile",
+          "min": [11, 18],
+          "max": [11, 18],
+          "avgMin": 11,
+          "ilvl": 1
+        }
+      ],
+      "boots": [
+        {
+          "tier": 1,
+          "name": "Vaporous",
+          "min": [108, 142],
+          "max": [108, 142],
+          "avgMin": 108,
+          "ilvl": 54
+        },
+        {
+          "tier": 2,
+          "name": "Phased",
+          "min": [89, 107],
+          "max": [89, 107],
+          "avgMin": 89,
+          "ilvl": 46
+        },
+        {
+          "tier": 3,
+          "name": "Blurred",
+          "min": [71, 88],
+          "max": [71, 88],
+          "avgMin": 71,
+          "ilvl": 33
+        },
+        {
+          "tier": 4,
+          "name": "Fleet",
+          "min": [57, 70],
+          "max": [57, 70],
+          "avgMin": 57,
+          "ilvl": 25
+        },
+        {
+          "tier": 5,
+          "name": "Acrobat's",
+          "min": [40, 56],
+          "max": [40, 56],
+          "avgMin": 40,
+          "ilvl": 16
+        },
+        {
+          "tier": 6,
+          "name": "Dancer's",
+          "min": [19, 39],
+          "max": [19, 39],
+          "avgMin": 19,
+          "ilvl": 8
+        },
+        {
+          "tier": 7,
+          "name": "Agile",
+          "min": [11, 18],
+          "max": [11, 18],
+          "avgMin": 11,
+          "ilvl": 1
+        }
+      ],
+      "helmets": [
+        {
+          "tier": 1,
+          "name": "Elusory",
+          "min": [143, 181],
+          "max": [143, 181],
+          "avgMin": 143,
+          "ilvl": 60
+        },
+        {
+          "tier": 2,
+          "name": "Vaporous",
+          "min": [108, 142],
+          "max": [108, 142],
+          "avgMin": 108,
+          "ilvl": 54
+        },
+        {
+          "tier": 3,
+          "name": "Phased",
+          "min": [89, 107],
+          "max": [89, 107],
+          "avgMin": 89,
+          "ilvl": 46
+        },
+        {
+          "tier": 4,
+          "name": "Blurred",
+          "min": [71, 88],
+          "max": [71, 88],
+          "avgMin": 71,
+          "ilvl": 33
+        },
+        {
+          "tier": 5,
+          "name": "Fleet",
+          "min": [57, 70],
+          "max": [57, 70],
+          "avgMin": 57,
+          "ilvl": 25
+        },
+        {
+          "tier": 6,
+          "name": "Acrobat's",
+          "min": [40, 56],
+          "max": [40, 56],
+          "avgMin": 40,
+          "ilvl": 16
+        },
+        {
+          "tier": 7,
+          "name": "Dancer's",
+          "min": [19, 39],
+          "max": [19, 39],
+          "avgMin": 19,
+          "ilvl": 8
+        },
+        {
+          "tier": 8,
+          "name": "Agile",
+          "min": [11, 18],
+          "max": [11, 18],
+          "avgMin": 11,
+          "ilvl": 1
+        }
+      ],
+      "body_armours": [
+        {
+          "tier": 1,
+          "name": "Fugitive",
+          "min": [233, 251],
+          "max": [233, 251],
+          "avgMin": 233,
+          "ilvl": 79
+        },
+        {
+          "tier": 2,
+          "name": "Lissome",
+          "min": [205, 232],
+          "max": [205, 232],
+          "avgMin": 205,
+          "ilvl": 75
+        },
+        {
+          "tier": 3,
+          "name": "Adroit",
+          "min": [182, 204],
+          "max": [182, 204],
+          "avgMin": 182,
+          "ilvl": 65
+        },
+        {
+          "tier": 4,
+          "name": "Elusory",
+          "min": [143, 181],
+          "max": [143, 181],
+          "avgMin": 143,
+          "ilvl": 60
+        },
+        {
+          "tier": 5,
+          "name": "Vaporous",
+          "min": [108, 142],
+          "max": [108, 142],
+          "avgMin": 108,
+          "ilvl": 54
+        },
+        {
+          "tier": 6,
+          "name": "Phased",
+          "min": [89, 107],
+          "max": [89, 107],
+          "avgMin": 89,
+          "ilvl": 46
+        },
+        {
+          "tier": 7,
+          "name": "Blurred",
+          "min": [71, 88],
+          "max": [71, 88],
+          "avgMin": 71,
+          "ilvl": 33
+        },
+        {
+          "tier": 8,
+          "name": "Fleet",
+          "min": [57, 70],
+          "max": [57, 70],
+          "avgMin": 57,
+          "ilvl": 25
+        },
+        {
+          "tier": 9,
+          "name": "Acrobat's",
+          "min": [40, 56],
+          "max": [40, 56],
+          "avgMin": 40,
+          "ilvl": 16
+        },
+        {
+          "tier": 10,
+          "name": "Dancer's",
+          "min": [19, 39],
+          "max": [19, 39],
+          "avgMin": 19,
+          "ilvl": 8
+        },
+        {
+          "tier": 11,
+          "name": "Agile",
+          "min": [11, 18],
+          "max": [11, 18],
+          "avgMin": 11,
+          "ilvl": 1
+        }
+      ]
+    }
+  },
+        
+
   "explicit.stat_3299347043": {
     "text": "Maximum Life",
     "tiers": {
@@ -3759,6 +4600,1337 @@
           "max": 30,
           "avgMin": 20,
           "ilvl": 65
+        }
+      ]
+    }
+  },
+  "explicit.stat_4237442815": {
+    "text": "+#% to Melee Critical Strike Multiplier",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "of Devastation",
+          "min": [28],
+          "max": [32],
+          "avgMin": 28,
+          "ilvl": 72
+        },
+        {
+          "tier": 2,
+          "name": "of Ruin",
+          "min": [24],
+          "max": [27],
+          "avgMin": 24,
+          "ilvl": 64
+        },
+        {
+          "tier": 3,
+          "name": "of Destruction",
+          "min": [20],
+          "max": [23],
+          "avgMin": 20,
+          "ilvl": 56
+        },
+        {
+          "tier": 4,
+          "name": "of Calamity",
+          "min": [16],
+          "max": [19],
+          "avgMin": 16,
+          "ilvl": 46
+        },
+        {
+          "tier": 5,
+          "name": "of Havoc",
+          "min": [12],
+          "max": [15],
+          "avgMin": 12,
+          "ilvl": 36
+        },
+        {
+          "tier": 6,
+          "name": "of Cataclysm",
+          "min": [8],
+          "max": [11],
+          "avgMin": 8,
+          "ilvl": 24
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "of Devastation",
+          "min": [28],
+          "max": [32],
+          "avgMin": 28,
+          "ilvl": 72
+        },
+        {
+          "tier": 2,
+          "name": "of Ruin",
+          "min": [24],
+          "max": [27],
+          "avgMin": 24,
+          "ilvl": 64
+        },
+        {
+          "tier": 3,
+          "name": "of Destruction",
+          "min": [20],
+          "max": [23],
+          "avgMin": 20,
+          "ilvl": 56
+        },
+        {
+          "tier": 4,
+          "name": "of Calamity",
+          "min": [16],
+          "max": [19],
+          "avgMin": 16,
+          "ilvl": 46
+        },
+        {
+          "tier": 5,
+          "name": "of Havoc",
+          "min": [12],
+          "max": [15],
+          "avgMin": 12,
+          "ilvl": 36
+        },
+        {
+          "tier": 6,
+          "name": "of Cataclysm",
+          "min": [8],
+          "max": [11],
+          "avgMin": 8,
+          "ilvl": 24
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "of Devastation",
+          "min": [28],
+          "max": [32],
+          "avgMin": 28,
+          "ilvl": 72
+        },
+        {
+          "tier": 2,
+          "name": "of Ruin",
+          "min": [24],
+          "max": [27],
+          "avgMin": 24,
+          "ilvl": 64
+        },
+        {
+          "tier": 3,
+          "name": "of Destruction",
+          "min": [20],
+          "max": [23],
+          "avgMin": 20,
+          "ilvl": 56
+        },
+        {
+          "tier": 4,
+          "name": "of Calamity",
+          "min": [16],
+          "max": [19],
+          "avgMin": 16,
+          "ilvl": 46
+        },
+        {
+          "tier": 5,
+          "name": "of Havoc",
+          "min": [12],
+          "max": [15],
+          "avgMin": 12,
+          "ilvl": 36
+        },
+        {
+          "tier": 6,
+          "name": "of Cataclysm",
+          "min": [8],
+          "max": [11],
+          "avgMin": 8,
+          "ilvl": 24
+        }
+      ]
+    }
+  },
+  "explicit.stat_252507949": {
+    "text": "+#% to Critical Strike Multiplier with Two Handed Melee Weapons",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "of the Colossus",
+          "min": [24],
+          "max": [28],
+          "avgMin": 24,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "of the Giant",
+          "min": [20],
+          "max": [23],
+          "avgMin": 20,
+          "ilvl": 58
+        },
+        {
+          "tier": 3,
+          "name": "of the Titan",
+          "min": [16],
+          "max": [19],
+          "avgMin": 16,
+          "ilvl": 48
+        },
+        {
+          "tier": 4,
+          "name": "of the Brute",
+          "min": [12],
+          "max": [15],
+          "avgMin": 12,
+          "ilvl": 36
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "of the Colossus",
+          "min": [24],
+          "max": [28],
+          "avgMin": 24,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "of the Giant",
+          "min": [20],
+          "max": [23],
+          "avgMin": 20,
+          "ilvl": 58
+        },
+        {
+          "tier": 3,
+          "name": "of the Titan",
+          "min": [16],
+          "max": [19],
+          "avgMin": 16,
+          "ilvl": 48
+        },
+        {
+          "tier": 4,
+          "name": "of the Brute",
+          "min": [12],
+          "max": [15],
+          "avgMin": 12,
+          "ilvl": 36
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "of the Colossus",
+          "min": [24],
+          "max": [28],
+          "avgMin": 24,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "of the Giant",
+          "min": [20],
+          "max": [23],
+          "avgMin": 20,
+          "ilvl": 58
+        },
+        {
+          "tier": 3,
+          "name": "of the Titan",
+          "min": [16],
+          "max": [19],
+          "avgMin": 16,
+          "ilvl": 48
+        },
+        {
+          "tier": 4,
+          "name": "of the Brute",
+          "min": [12],
+          "max": [15],
+          "avgMin": 12,
+          "ilvl": 36
+        }
+      ]
+    }
+  },
+  "explicit.stat_1712221299": {
+    "text": "+#% to Critical Strike Multiplier with Bows",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "of the Marksman",
+          "min": [24],
+          "max": [28],
+          "avgMin": 24,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "of the Sniper",
+          "min": [20],
+          "max": [23],
+          "avgMin": 20,
+          "ilvl": 58
+        },
+        {
+          "tier": 3,
+          "name": "of the Archer",
+          "min": [16],
+          "max": [19],
+          "avgMin": 16,
+          "ilvl": 48
+        },
+        {
+          "tier": 4,
+          "name": "of the Ranger",
+          "min": [12],
+          "max": [15],
+          "avgMin": 12,
+          "ilvl": 36
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "of the Marksman",
+          "min": [24],
+          "max": [28],
+          "avgMin": 24,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "of the Sniper",
+          "min": [20],
+          "max": [23],
+          "avgMin": 20,
+          "ilvl": 58
+        },
+        {
+          "tier": 3,
+          "name": "of the Archer",
+          "min": [16],
+          "max": [19],
+          "avgMin": 16,
+          "ilvl": 48
+        },
+        {
+          "tier": 4,
+          "name": "of the Ranger",
+          "min": [12],
+          "max": [15],
+          "avgMin": 12,
+          "ilvl": 36
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "of the Marksman",
+          "min": [24],
+          "max": [28],
+          "avgMin": 24,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "of the Sniper",
+          "min": [20],
+          "max": [23],
+          "avgMin": 20,
+          "ilvl": 58
+        },
+        {
+          "tier": 3,
+          "name": "of the Archer",
+          "min": [16],
+          "max": [19],
+          "avgMin": 16,
+          "ilvl": 48
+        },
+        {
+          "tier": 4,
+          "name": "of the Ranger",
+          "min": [12],
+          "max": [15],
+          "avgMin": 12,
+          "ilvl": 36
+        }
+      ],
+      "Quivers": [
+        {
+          "tier": 1,
+          "name": "of the Marksman",
+          "min": [24],
+          "max": [28],
+          "avgMin": 24,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "of the Sniper",
+          "min": [20],
+          "max": [23],
+          "avgMin": 20,
+          "ilvl": 58
+        },
+        {
+          "tier": 3,
+          "name": "of the Archer",
+          "min": [16],
+          "max": [19],
+          "avgMin": 16,
+          "ilvl": 48
+        },
+        {
+          "tier": 4,
+          "name": "of the Ranger",
+          "min": [12],
+          "max": [15],
+          "avgMin": 12,
+          "ilvl": 36
+        }
+      ]
+    }
+  },
+  "explicit.stat_274716455": {
+    "text": "+#% to Critical Strike Multiplier for Spell Damage",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "of Incantation",
+          "min": [28],
+          "max": [32],
+          "avgMin": 28,
+          "ilvl": 72
+        },
+        {
+          "tier": 2,
+          "name": "of Sorcery",
+          "min": [24],
+          "max": [27],
+          "avgMin": 24,
+          "ilvl": 64
+        },
+        {
+          "tier": 3,
+          "name": "of Wizardry",
+          "min": [20],
+          "max": [23],
+          "avgMin": 20,
+          "ilvl": 56
+        },
+        {
+          "tier": 4,
+          "name": "of Magic",
+          "min": [16],
+          "max": [19],
+          "avgMin": 16,
+          "ilvl": 46
+        },
+        {
+          "tier": 5,
+          "name": "of Spellcraft",
+          "min": [12],
+          "max": [15],
+          "avgMin": 12,
+          "ilvl": 36
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "of Incantation",
+          "min": [28],
+          "max": [32],
+          "avgMin": 28,
+          "ilvl": 72
+        },
+        {
+          "tier": 2,
+          "name": "of Sorcery",
+          "min": [24],
+          "max": [27],
+          "avgMin": 24,
+          "ilvl": 64
+        },
+        {
+          "tier": 3,
+          "name": "of Wizardry",
+          "min": [20],
+          "max": [23],
+          "avgMin": 20,
+          "ilvl": 56
+        },
+        {
+          "tier": 4,
+          "name": "of Magic",
+          "min": [16],
+          "max": [19],
+          "avgMin": 16,
+          "ilvl": 46
+        },
+        {
+          "tier": 5,
+          "name": "of Spellcraft",
+          "min": [12],
+          "max": [15],
+          "avgMin": 12,
+          "ilvl": 36
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "of Incantation",
+          "min": [28],
+          "max": [32],
+          "avgMin": 28,
+          "ilvl": 72
+        },
+        {
+          "tier": 2,
+          "name": "of Sorcery",
+          "min": [24],
+          "max": [27],
+          "avgMin": 24,
+          "ilvl": 64
+        },
+        {
+          "tier": 3,
+          "name": "of Wizardry",
+          "min": [20],
+          "max": [23],
+          "avgMin": 20,
+          "ilvl": 56
+        },
+        {
+          "tier": 4,
+          "name": "of Magic",
+          "min": [16],
+          "max": [19],
+          "avgMin": 16,
+          "ilvl": 46
+        },
+        {
+          "tier": 5,
+          "name": "of Spellcraft",
+          "min": [12],
+          "max":           [15],
+          "avgMin": 12,
+          "ilvl": 36
+        }
+      ]
+    }
+  },
+  "explicit.stat_1854213750": {
+    "text": "Minions have +#% to Critical Strike Multiplier",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "Dominator's",
+          "min": [20],
+          "max": [25],
+          "avgMin": 20,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "Commander's",
+          "min": [15],
+          "max": [19],
+          "avgMin": 15,
+          "ilvl": 56
+        },
+        {
+          "tier": 3,
+          "name": "Leader's",
+          "min": [10],
+          "max": [14],
+          "avgMin": 10,
+          "ilvl": 44
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "Dominator's",
+          "min": [20],
+          "max": [25],
+          "avgMin": 20,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "Commander's",
+          "min": [15],
+          "max": [19],
+          "avgMin": 15,
+          "ilvl": 56
+        },
+        {
+          "tier": 3,
+          "name": "Leader's",
+          "min": [10],
+          "max": [14],
+          "avgMin": 10,
+          "ilvl": 44
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "Dominator's",
+          "min": [20],
+          "max": [25],
+          "avgMin": 20,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "Commander's",
+          "min": [15],
+          "max": [19],
+          "avgMin": 15,
+          "ilvl": 56
+        },
+        {
+          "tier": 3,
+          "name": "Leader's",
+          "min": [10],
+          "max": [14],
+          "avgMin": 10,
+          "ilvl": 44
+        }
+      ]
+    }
+  },
+  "explicit.stat_605218169": {
+    "text": "+#% to Melee Weapon Critical Strike Multiplier",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "of Annihilation",
+          "min": [28],
+          "max": [32],
+          "avgMin": 28,
+          "ilvl": 72
+        },
+        {
+          "tier": 2,
+          "name": "of Obliteration",
+          "min": [24],
+          "max": [27],
+          "avgMin": 24,
+          "ilvl": 64
+        },
+        {
+          "tier": 3,
+          "name": "of Carnage",
+          "min": [20],
+          "max": [23],
+          "avgMin": 20,
+          "ilvl": 56
+        },
+        {
+          "tier": 4,
+          "name": "of Slaughter",
+          "min": [16],
+          "max": [19],
+          "avgMin": 16,
+          "ilvl": 46
+        },
+        {
+          "tier": 5,
+          "name": "of Butchery",
+          "min": [12],
+          "max": [15],
+          "avgMin": 12,
+          "ilvl": 36
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "of Annihilation",
+          "min": [28],
+          "max": [32],
+          "avgMin": 28,
+          "ilvl": 72
+        },
+        {
+          "tier": 2,
+          "name": "of Obliteration",
+          "min": [24],
+          "max": [27],
+          "avgMin": 24,
+          "ilvl": 64
+        },
+        {
+          "tier": 3,
+          "name": "of Carnage",
+          "min": [20],
+          "max": [23],
+          "avgMin": 20,
+          "ilvl": 56
+        },
+        {
+          "tier": 4,
+          "name": "of Slaughter",
+          "min": [16],
+          "max": [19],
+          "avgMin": 16,
+          "ilvl": 46
+        },
+        {
+          "tier": 5,
+          "name": "of Butchery",
+          "min": [12],
+          "max": [15],
+          "avgMin": 12,
+          "ilvl": 36
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "of Annihilation",
+          "min": [28],
+          "max": [32],
+          "avgMin": 28,
+          "ilvl": 72
+        },
+        {
+          "tier": 2,
+          "name": "of Obliteration",
+          "min": [24],
+          "max": [27],
+          "avgMin": 24,
+          "ilvl": 64
+        },
+        {
+          "tier": 3,
+          "name": "of Carnage",
+          "min": [20],
+          "max": [23],
+          "avgMin": 20,
+          "ilvl": 56
+        },
+        {
+          "tier": 4,
+          "name": "of Slaughter",
+          "min": [16],
+          "max": [19],
+          "avgMin": 16,
+          "ilvl": 46
+        },
+        {
+          "tier": 5,
+          "name": "of Butchery",
+          "min": [12],
+          "max": [15],
+          "avgMin": 12,
+          "ilvl": 36
+        }
+      ]
+    }
+  },
+  "explicit.stat_791835907": {
+    "text": "+#% to Spell Critical Strike Chance",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "of the Virtuoso",
+          "min": [1.5],
+          "max": [2],
+          "avgMin": 1.5,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "of the Adept",
+          "min": [1],
+          "max": [1.4],
+          "avgMin": 1,
+          "ilvl": 56
+        },
+        {
+          "tier": 3,
+          "name": "of the Initiate",
+          "min": [0.5],
+          "max": [0.9],
+          "avgMin": 0.5,
+          "ilvl": 44
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "of the Virtuoso",
+          "min": [1.5],
+          "max": [2],
+          "avgMin": 1.5,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "of the Adept",
+          "min": [1],
+          "max": [1.4],
+          "avgMin": 1,
+          "ilvl": 56
+        },
+        {
+          "tier": 3,
+          "name": "of the Initiate",
+          "min": [0.5],
+          "max": [0.9],
+          "avgMin": 0.5,
+          "ilvl": 44
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "of the Virtuoso",
+          "min": [1.5],
+          "max": [2],
+          "avgMin": 1.5,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "of the Adept",
+          "min": [1],
+          "max": [1.4],
+          "avgMin": 1,
+          "ilvl": 56
+        },
+        {
+          "tier": 3,
+          "name": "of the Initiate",
+          "min": [0.5],
+          "max": [0.9],
+          "avgMin": 0.5,
+          "ilvl": 44
+        }
+      ]
+    }
+  },
+  "explicit.stat_2375316951": {
+    "text": "#% increased Critical Strike Chance",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "Assassin's",
+          "min": [35],
+          "max": [40],
+          "avgMin": 35,
+          "ilvl": 70
+        },
+        {
+          "tier": 2,
+          "name": "Executioner's",
+          "min": [30],
+          "max": [34],
+          "avgMin": 30,
+          "ilvl": 60
+        },
+        {
+          "tier": 3,
+          "name": "Reaper's",
+          "min": [25],
+          "max": [29],
+          "avgMin": 25,
+          "ilvl": 50
+        },
+        {
+          "tier": 4,
+          "name": "Killer's",
+          "min": [20],
+          "max": [24],
+          "avgMin": 20,
+          "ilvl": 40
+        },
+        {
+          "tier": 5,
+          "name": "Hunter's",
+          "min": [15],
+          "max": [19],
+          "avgMin": 15,
+          "ilvl": 30
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "Assassin's",
+          "min": [35],
+          "max": [40],
+          "avgMin": 35,
+          "ilvl": 70
+        },
+        {
+          "tier": 2,
+          "name": "Executioner's",
+          "min": [30],
+          "max": [34],
+          "avgMin": 30,
+          "ilvl": 60
+        },
+        {
+          "tier": 3,
+          "name": "Reaper's",
+          "min": [25],
+          "max": [29],
+          "avgMin": 25,
+          "ilvl": 50
+        },
+        {
+          "tier": 4,
+          "name": "Killer's",
+          "min": [20],
+          "max": [24],
+          "avgMin": 20,
+          "ilvl": 40
+        },
+        {
+          "tier": 5,
+          "name": "Hunter's",
+          "min": [15],
+          "max": [19],
+          "avgMin": 15,
+          "ilvl": 30
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "Assassin's",
+          "min": [35],
+          "max": [40],
+          "avgMin": 35,
+          "ilvl": 70
+        },
+        {
+          "tier": 2,
+          "name": "Executioner's",
+          "min": [30],
+          "max": [34],
+          "avgMin": 30,
+          "ilvl": 60
+        },
+        {
+          "tier": 3,
+          "name": "Reaper's",
+          "min": [25],
+          "max": [29],
+          "avgMin": 25,
+          "ilvl": 50
+        },
+        {
+          "tier": 4,
+          "name": "Killer's",
+          "min": [20],
+          "max": [24],
+          "avgMin": 20,
+          "ilvl": 40
+        },
+        {
+          "tier": 5,
+          "name": "Hunter's",
+          "min": [15],
+          "max": [19],
+          "avgMin": 15,
+          "ilvl": 30
+        }
+      ]
+    }
+  },
+  "explicit.stat_737908626": {
+    "text": "#% increased Spell Critical Strike Chance",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "Arcanist's",
+          "min": [35],
+          "max": [40],
+          "avgMin": 35,
+          "ilvl": 70
+        },
+        {
+          "tier": 2,
+          "name": "Magus's",
+          "min": [30],
+          "max": [34],
+          "avgMin": 30,
+          "ilvl": 60
+        },
+        {
+          "tier": 3,
+          "name": "Sorcerer's",
+          "min": [25],
+          "max": [29],
+          "avgMin": 25,
+          "ilvl": 50
+        },
+        {
+          "tier": 4,
+          "name": "Mage's",
+          "min": [20],
+          "max": [24],
+          "avgMin": 20,
+          "ilvl": 40
+        },
+        {
+          "tier": 5,
+          "name": "Apprentice's",
+          "min": [15],
+          "max": [19],
+          "avgMin": 15,
+          "ilvl": 30
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "Arcanist's",
+          "min": [35],
+          "max": [40],
+          "avgMin": 35,
+          "ilvl": 70
+        },
+        {
+          "tier": 2,
+          "name": "Magus's",
+          "min": [30],
+          "max": [34],
+          "avgMin": 30,
+          "ilvl": 60
+        },
+        {
+          "tier": 3,
+          "name": "Sorcerer's",
+          "min": [25],
+          "max": [29],
+          "avgMin": 25,
+          "ilvl": 50
+        },
+        {
+          "tier": 4,
+          "name": "Mage's",
+          "min": [20],
+          "max": [24],
+          "avgMin": 20,
+          "ilvl": 40
+        },
+        {
+          "tier": 5,
+          "name": "Apprentice's",
+          "min": [15],
+          "max": [19],
+          "avgMin": 15,
+          "ilvl": 30
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "Arcanist's",
+          "min": [35],
+          "max": [40],
+          "avgMin": 35,
+          "ilvl": 70
+        },
+        {
+          "tier": 2,
+          "name": "Magus's",
+          "min": [30],
+          "max": [34],
+          "avgMin": 30,
+          "ilvl": 60
+        },
+        {
+          "tier":  3,
+          "name": "Sorcerer's",
+          "min": [25],
+          "max": [29],
+          "avgMin": 25,
+          "ilvl": 50
+        },
+        {
+          "tier": 4,
+          "name": "Mage's",
+          "min": [20],
+          "max": [24],
+          "avgMin": 20,
+          "ilvl": 40
+        },
+        {
+          "tier": 5,
+          "name": "Apprentice's",
+          "min": [15],
+          "max": [19],
+          "avgMin": 15,
+          "ilvl": 30
+        }
+      ]
+    }
+  },
+  "explicit.stat_1199429645": {
+    "text": "#% increased Melee Critical Strike Chance",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "Berserker's",
+          "min": [35],
+          "max": [40],
+          "avgMin": 35,
+          "ilvl": 70
+        },
+        {
+          "tier": 2,
+          "name": "Warrior's",
+          "min": [30],
+          "max": [34],
+          "avgMin": 30,
+          "ilvl": 60
+        },
+        {
+          "tier": 3,
+          "name": "Fighter's",
+          "min": [25],
+          "max": [29],
+          "avgMin": 25,
+          "ilvl": 50
+        },
+        {
+          "tier": 4,
+          "name": "Soldier's",
+          "min": [20],
+          "max": [24],
+          "avgMin": 20,
+          "ilvl": 40
+        },
+        {
+          "tier": 5,
+          "name": "Scrapper's",
+          "min": [15],
+          "max": [19],
+          "avgMin": 15,
+          "ilvl": 30
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "Berserker's",
+          "min": [35],
+          "max": [40],
+          "avgMin": 35,
+          "ilvl": 70
+        },
+        {
+          "tier": 2,
+          "name": "Warrior's",
+          "min": [30],
+          "max": [34],
+          "avgMin": 30,
+          "ilvl": 60
+        },
+        {
+          "tier": 3,
+          "name": "Fighter's",
+          "min": [25],
+          "max": [29],
+          "avgMin": 25,
+          "ilvl": 50
+        },
+        {
+          "tier": 4,
+          "name": "Soldier's",
+          "min": [20],
+          "max": [24],
+          "avgMin": 20,
+          "ilvl": 40
+        },
+        {
+          "tier": 5,
+          "name": "Scrapper's",
+          "min": [15],
+          "max": [19],
+          "avgMin": 15,
+          "ilvl": 30
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "Berserker's",
+          "min": [35],
+          "max": [40],
+          "avgMin": 35,
+          "ilvl": 70
+        },
+        {
+          "tier": 2,
+          "name": "Warrior's",
+          "min": [30],
+          "max": [34],
+          "avgMin": 30,
+          "ilvl": 60
+        },
+        {
+          "tier": 3,
+          "name": "Fighter's",
+          "min": [25],
+          "max": [29],
+          "avgMin": 25,
+          "ilvl": 50
+        },
+        {
+          "tier": 4,
+          "name": "Soldier's",
+          "min": [20],
+          "max": [24],
+          "avgMin": 20,
+          "ilvl": 40
+        },
+        {
+          "tier": 5,
+          "name": "Scrapper's",
+          "min": [15],
+          "max": [19],
+          "avgMin": 15,
+          "ilvl": 30
+        }
+      ]
+    }
+  },
+  "explicit.stat_764295120": {
+    "text": "#% increased Critical Strike Chance with Two Handed Melee Weapons",
+    "tiers": {
+      "Gloves": [
+        {
+          "tier": 1,
+          "name": "Juggernaut's",
+          "min": [30],
+          "max": [35],
+          "avgMin": 30,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "Colossus's",
+          "min": [25],
+          "max": [29],
+          "avgMin": 25,
+          "ilvl": 58
+        },
+        {
+          "tier": 3,
+          "name": "Giant's",
+          "min": [20],
+          "max": [24],
+          "avgMin": 20,
+          "ilvl": 48
+        },
+        {
+          "tier": 4,
+          "name": "Hulk's",
+          "min": [15],
+          "max": [19],
+          "avgMin": 15,
+          "ilvl": 36
+        }
+      ],
+      "Rings": [
+        {
+          "tier": 1,
+          "name": "Juggernaut's",
+          "min": [30],
+          "max": [35],
+          "avgMin": 30,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "Colossus's",
+          "min": [25],
+          "max": [29],
+          "avgMin": 25,
+          "ilvl": 58
+        },
+        {
+          "tier": 3,
+          "name": "Giant's",
+          "min": [20],
+          "max": [24],
+          "avgMin": 20,
+          "ilvl": 48
+        },
+        {
+          "tier": 4,
+          "name": "Hulk's",
+          "min": [15],
+          "max": [19],
+          "avgMin": 15,
+          "ilvl": 36
+        }
+      ],
+      "Amulets": [
+        {
+          "tier": 1,
+          "name": "Juggernaut's",
+          "min": [30],
+          "max": [35],
+          "avgMin": 30,
+          "ilvl": 68
+        },
+        {
+          "tier": 2,
+          "name": "Colossus's",
+          "min": [25],
+          "max": [29],
+          "avgMin": 25,
+          "ilvl": 58
+        },
+        {
+          "tier": 3,
+          "name": "Giant's",
+          "min": [20],
+          "max": [24],
+          "avgMin": 20,
+          "ilvl": 48
+        },
+        {
+          "tier": 4,
+          "name": "Hulk's",
+          "min": [15],
+          "max": [19],
+          "avgMin": 15,
+          "ilvl": 36
         }
       ]
     }
