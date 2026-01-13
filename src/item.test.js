@@ -14,6 +14,8 @@ const talisman1 = await Bun.file("tests/fixtures/talisman1.txt").text();
 const charm2 = await Bun.file("tests/fixtures/charm2.txt").text();
 const sceptre1 = await Bun.file("tests/fixtures/sceptre1.txt").text();
 const chest3 = await Bun.file("tests/fixtures/chest3.txt").text();
+const staff1 = await Bun.file("tests/fixtures/staff1.txt").text();
+const staff2 = await Bun.file("tests/fixtures/staff2.txt").text();
 
 test("matchStats", () => {
   expect(getSearchQuery(lifeFlask1, stats)).toStrictEqual({
@@ -79,14 +81,10 @@ test("unique", () => {
   expect(getSearchQuery(rings1, stats)).toEqual(
     expect.objectContaining({
       stats: expect.arrayContaining([
-        // Non-attribute stats in "and" filter
+        // Non-attribute, non-spell-damage stats in "and" filter
         expect.objectContaining({
           type: "and",
           filters: expect.arrayContaining([
-            expect.objectContaining({
-              id: "explicit.stat_3291658075",
-              value: { min: "24" },
-            }),
             expect.objectContaining({
               id: "explicit.stat_1050105434",
               value: { min: "53" },
@@ -104,6 +102,18 @@ test("unique", () => {
             }),
           ]),
           value: { min: 13 },
+        }),
+        // Cold damage now in spell damage weighted filter
+        expect.objectContaining({
+          type: "weight",
+          filters: expect.arrayContaining([
+            expect.objectContaining({
+              id: "explicit.stat_3291658075", // #% increased Cold Damage
+              value: { weight: 1, min: 24 },
+              disabled: false,
+            }),
+          ]),
+          value: { min: 24 },
         }),
       ]),
       term: "Polcirkeln",
@@ -451,6 +461,152 @@ test("quarterstaff - weapon with type filter", async () => {
             value: { min: "81" },
           }),
         ]),
+      }),
+    ])
+  );
+});
+
+test("staff1 - caster staff with spell damage weighted group", () => {
+  const query = getSearchQuery(staff1, stats);
+
+  // Should have weighted filter for spell damage stats
+  // 40% increased Spell Damage + 137% increased Cold Damage = 177
+  expect(query.stats).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        type: "weight",
+        filters: expect.arrayContaining([
+          // Found spell damage stats - enabled
+          expect.objectContaining({
+            id: "explicit.stat_2974417149", // #% increased Spell Damage
+            value: { weight: 1, min: 40 },
+            disabled: false,
+          }),
+          expect.objectContaining({
+            id: "explicit.stat_3291658075", // #% increased Cold Damage
+            value: { weight: 1, min: 137 },
+            disabled: false,
+          }),
+          // Missing spell damage stats - disabled
+          expect.objectContaining({
+            id: "explicit.stat_3962278098", // #% increased Fire Damage
+            value: { weight: 1 },
+            disabled: true,
+          }),
+          expect.objectContaining({
+            id: "explicit.stat_2231156303", // #% increased Lightning Damage
+            value: { weight: 1 },
+            disabled: true,
+          }),
+          expect.objectContaining({
+            id: "explicit.stat_736967255", // #% increased Chaos Damage
+            value: { weight: 1 },
+            disabled: true,
+          }),
+          expect.objectContaining({
+            id: "explicit.stat_2768835289", // #% increased Spell Physical Damage
+            value: { weight: 1 },
+            disabled: true,
+          }),
+        ]),
+        value: { min: 177 }, // 40 + 137 = 177
+      }),
+    ])
+  );
+
+  // Other stats should be in "and" filter (mana, crit spell damage bonus, mana regen, light radius)
+  expect(query.stats).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        type: "and",
+        filters: expect.arrayContaining([
+          expect.objectContaining({
+            id: "explicit.stat_1050105434", // # to maximum Mana
+            value: { min: "352" },
+          }),
+          expect.objectContaining({
+            id: "explicit.stat_274716455", // #% increased Critical Spell Damage Bonus
+            value: { min: "58" },
+          }),
+        ]),
+      }),
+    ])
+  );
+
+  // Intelligence should be in attribute weighted group
+  expect(query.stats).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        type: "weight",
+        filters: expect.arrayContaining([
+          expect.objectContaining({
+            id: "explicit.stat_328541901", // # to Intelligence
+            value: { weight: 1, min: 10 },
+            disabled: false,
+          }),
+        ]),
+        value: { min: 10 },
+      }),
+    ])
+  );
+});
+
+test("staff2 - caster staff with gain as extra damage weighted group", () => {
+  const query = getSearchQuery(staff2, stats);
+
+  // Should have weighted filter for gain as extra damage stats
+  // 54% Fire + 53% Cold = 107
+  expect(query.stats).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        type: "weight",
+        filters: expect.arrayContaining([
+          // Found gain as extra damage stats - enabled
+          expect.objectContaining({
+            id: "explicit.stat_3015669065", // Gain #% of Damage as Extra Fire Damage
+            value: { weight: 1, min: 54 },
+            disabled: false,
+          }),
+          expect.objectContaining({
+            id: "explicit.stat_2505884597", // Gain #% of Damage as Extra Cold Damage
+            value: { weight: 1, min: 53 },
+            disabled: false,
+          }),
+          // Missing gain as extra damage stats - disabled
+          expect.objectContaining({
+            id: "explicit.stat_3278136794", // Gain #% of Damage as Extra Lightning Damage
+            value: { weight: 1 },
+            disabled: true,
+          }),
+          expect.objectContaining({
+            id: "explicit.stat_3398787959", // Gain #% of Damage as Extra Chaos Damage
+            value: { weight: 1 },
+            disabled: true,
+          }),
+          expect.objectContaining({
+            id: "explicit.stat_4019237939", // Gain #% of Damage as Extra Physical Damage
+            value: { weight: 1 },
+            disabled: true,
+          }),
+        ]),
+        value: { min: 107 }, // 54 + 53 = 107
+      }),
+    ])
+  );
+
+  // Intelligence should be in attribute weighted group
+  expect(query.stats).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        type: "weight",
+        filters: expect.arrayContaining([
+          expect.objectContaining({
+            id: "explicit.stat_328541901", // # to Intelligence
+            value: { weight: 1, min: 25 },
+            disabled: false,
+          }),
+        ]),
+        value: { min: 25 },
       }),
     ])
   );

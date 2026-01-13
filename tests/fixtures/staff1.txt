@@ -1,0 +1,18 @@
+Item Class: Staves
+Rarity: Rare
+Blood Pole
+Chiming Staff
+--------
+Requires: Level 72, 126 Int
+--------
+Item Level: 78
+--------
+Grants Skill: Level 17 Sigil of Power
+--------
+40% increased Spell Damage
+137% increased Cold Damage
++352 to maximum Mana
+58% increased Critical Spell Damage Bonus
++10 to Intelligence
+18% increased Mana Regeneration Rate
+15% increased Light Radius
