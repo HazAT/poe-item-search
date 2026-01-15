@@ -234,6 +234,13 @@ export function formatItemText(item: TradeItem): string {
     }
   }
 
+  if (item.mutatedMods && item.mutatedMods.length > 0) {
+    lines.push(SEPARATOR);
+    for (const mod of item.mutatedMods) {
+      lines.push(formatMod(mod, "mutated"));
+    }
+  }
+
   // Crafted mods
   if (item.craftedMods && item.craftedMods.length > 0) {
     lines.push(SEPARATOR);
