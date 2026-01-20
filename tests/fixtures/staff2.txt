@@ -1,0 +1,17 @@
+Item Class: Staves
+Rarity: Rare
+Spirit Goad
+Sanctified Staff
+--------
+Requires: Level 72, 70 (unmet) Str, 70 Int
+--------
+Item Level: 78
+--------
+Grants Skill: Level 17 Consecrate
+--------
+Gain 54% of Damage as Extra Fire Damage
+Gain 53% of Damage as Extra Cold Damage
++151 to maximum Mana
+80% increased Critical Hit Chance for Spells
++25 to Intelligence
+87% increased Mana Regeneration Rate

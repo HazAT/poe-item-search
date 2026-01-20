@@ -250,7 +250,7 @@ export function getSearchQuery(item, stats) {
       type: "weight",
       filters: physicalAttackDamageFilters,
       value: { min: totalPhysicalAttackDamageWeight },
-    }); 
+    });
   }
 
   // Add resistance stats as a weighted filter if any exist
@@ -278,8 +278,8 @@ export function getSearchQuery(item, stats) {
       });
     });
 
-  Object.values(resistanceIds).forEach(id => {
-    if (!resistanceStats.find(stat => normalizeStatIdToExplicit(stat.id) === id)) {
+    Object.values(resistanceIds).forEach(id => {
+      if (!resistanceStats.find(stat => normalizeStatIdToExplicit(stat.id) === id)) {
         resistanceFilters.push({
           id,
           value: { weight: 1 },
@@ -333,7 +333,7 @@ export function getSearchQuery(item, stats) {
           value: { weight: 1 },
           disabled:
             elementalAttackDamageStats.length > 0 ||
-            physicalAttackDamageStats.length > 0
+              physicalAttackDamageStats.length > 0
               ? true
               : false,
         });
@@ -345,7 +345,7 @@ export function getSearchQuery(item, stats) {
       elementalAttackDamageStats.length > 0 &&
       physicalAttackDamageStats.length > 0;
 
-    if  (!hasBothAttackBlocks){
+    if (!hasBothAttackBlocks) {
       statsArray.push({
         type: "weight",
         filters: hasBothAttackBlocks
