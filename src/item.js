@@ -51,6 +51,35 @@ export function getSearchQuery(item, stats) {
   };
   const resistanceExplicitIds = Object.values(resistanceIds);
 
+  // Increased Spell Damage stat IDs (explicit)
+  const spellDamageIds = {
+    spell: "explicit.stat_2974417149",
+    fire: "explicit.stat_3962278098",
+    cold: "explicit.stat_3291658075",
+    lightning: "explicit.stat_2231156303",
+    chaos: "explicit.stat_736967255",
+    spellPhysical: "explicit.stat_2768835289",
+  };
+  const spellDamageExplicitIds = Object.values(spellDamageIds);
+
+  // Gain as Extra Damage stat IDs (explicit)
+  const gainExtraDamageIds = {
+    fire: "explicit.stat_3015669065",
+    cold: "explicit.stat_2505884597",
+    lightning: "explicit.stat_3278136794",
+    chaos: "explicit.stat_3398787959",
+    physical: "explicit.stat_4019237939",
+  };
+  const gainExtraDamageExplicitIds = Object.values(gainExtraDamageIds);
+
+  // Attacks Gain as Extra Damage stat IDs (explicit)
+  const attacksGainExtraDamageIds = {
+    fire: "explicit.stat_1049080093",
+    cold: "explicit.stat_1484500028",
+    physicalAsChaos: "explicit.stat_261503687",
+  };
+  const attacksGainExtraDamageExplicitIds = Object.values(attacksGainExtraDamageIds);
+
   // IDs de elemental/chaos damage to Attacks
   const elementalAttackDamageIds = {
     fire: "explicit.stat_1573130764",
@@ -83,6 +112,18 @@ export function getSearchQuery(item, stats) {
       normalizedId === "explicit.stat_2300185227"; // Dexterity and Intelligence
   });
 
+  const spellDamageStats = nonRuneStats.filter((stat) =>
+    spellDamageExplicitIds.includes(normalizeStatIdToExplicit(stat.id))
+  );
+
+  const gainExtraDamageStats = nonRuneStats.filter((stat) =>
+    gainExtraDamageExplicitIds.includes(normalizeStatIdToExplicit(stat.id))
+  );
+
+  const attacksGainExtraDamageStats = nonRuneStats.filter((stat) =>
+    attacksGainExtraDamageExplicitIds.includes(normalizeStatIdToExplicit(stat.id))
+  );
+
   const elementalAttackDamageStats = nonRuneStats
     .map((stat) => {
       const resolvedId = resolveAttackDamageIdFromText(stat);
@@ -103,52 +144,39 @@ export function getSearchQuery(item, stats) {
     !resistanceExplicitIds.includes(normalizeStatIdToExplicit(stat.id)) &&
     normalizeStatIdToExplicit(stat.id) !== "explicit.stat_4080418644" &&
     normalizeStatIdToExplicit(stat.id) !== "explicit.stat_3261801346" &&
-    normalizeStatIdToExplicit(stat.id) !== "explicit.stat_328541901"
+    normalizeStatIdToExplicit(stat.id) !== "explicit.stat_328541901" &&
+    !spellDamageExplicitIds.includes(normalizeStatIdToExplicit(stat.id)) &&
+    !gainExtraDamageExplicitIds.includes(normalizeStatIdToExplicit(stat.id)) &&
+    !attacksGainExtraDamageExplicitIds.includes(normalizeStatIdToExplicit(stat.id))
   );
 
-  // ✨ NOVO: Detectar Life stats
-  const lifeStats = nonRuneStats.filter(stat =>
-    normalizeStatIdToExplicit(stat.id) === "explicit.stat_3299347043" // # to maximum Life
-  );
-
-  // Remover Life stats de nonResistanceStats para não duplicar
-  const nonResistanceStatsWithoutLife = nonResistanceStats.filter(stat =>
-    normalizeStatIdToExplicit(stat.id) !== "explicit.stat_3299347043"
-  );
+  const nonResistanceStatsWithoutLife = nonResistanceStats;
 
   const statsArray = [];
 
   // Add non-resistance stats as an "and" filter
-  if (nonResistanceStatsWithoutLife.length > 0 || runeStats.length > 0 || lifeStats.length > 0) {
-    const nonResistanceFilters = nonResistanceStatsWithoutLife.map((stat) => ({
-      id: normalizeStatIdToExplicit(stat.id),
-      ...(stat.value && { value: stat.value }),
-      disabled: elementalAttackDamageStats.some(
-        (s) => normalizeStatIdToExplicit(s.id) === normalizeStatIdToExplicit(stat.id)
-      ) || physicalAttackDamageStats.some(
-        (s) => normalizeStatIdToExplicit(s.id) === normalizeStatIdToExplicit(stat.id)
-      ),
-    }));
+  if (nonResistanceStatsWithoutLife.length > 0 || runeStats.length > 0) {
+    const nonResistanceFilters = nonResistanceStatsWithoutLife.map((stat) => {
+      const disabled =
+        elementalAttackDamageStats.some(
+          (s) => normalizeStatIdToExplicit(s.id) === normalizeStatIdToExplicit(stat.id)
+        ) ||
+        physicalAttackDamageStats.some(
+          (s) => normalizeStatIdToExplicit(s.id) === normalizeStatIdToExplicit(stat.id)
+        );
 
-    // ✨ NOVO: Adicionar pseudo Life ao invés dos stats individuais
-    if (lifeStats.length > 0) {
-      let totalLife = 0;
-      lifeStats.forEach(stat => {
-        totalLife += parseInt(stat.value.min);
-      });
-
-      nonResistanceFilters.push({
-        id: "pseudo.pseudo_total_life",
-        value: { min: totalLife },
-      });
-    }
+      return {
+        id: normalizeStatIdToExplicit(stat.id),
+        ...(stat.value && { value: stat.value }),
+        ...(disabled ? { disabled: true } : {}),
+      };
+    });
 
     // ✨ NOVO: Adicionar runas ao bloco AND
     runeStats.forEach((stat) => {
       nonResistanceFilters.push({
         id: normalizeStatIdToRune(stat.id),
         ...(stat.value && { value: stat.value }),
-        disabled: false,
       });
     });
 
@@ -273,8 +301,8 @@ export function getSearchQuery(item, stats) {
       totalWeight += adjustedValue;
       resistanceFilters.push({
         id: normalizeStatIdToExplicit(stat.id),
-        value: { weight: 1, min: 1 },
-        disabled: (elementalAttackDamageStats.length > 0 || physicalAttackDamageStats.length > 0) ? true : false,
+        value: { weight: 1, min: value },
+        disabled: false,
       });
     });
 
@@ -283,7 +311,7 @@ export function getSearchQuery(item, stats) {
         resistanceFilters.push({
           id,
           value: { weight: 1 },
-          disabled: (elementalAttackDamageStats.length > 0 || physicalAttackDamageStats.length > 0) ? true : false,
+          disabled: true,
         });
       }
     });
@@ -317,12 +345,8 @@ export function getSearchQuery(item, stats) {
 
       attributeFilters.push({
         id: normalizeStatIdToExplicit(stat.id),
-        value: { weight: 1, min: 1 },
-        disabled:
-          elementalAttackDamageStats.length > 0 ||
-            physicalAttackDamageStats.length > 0
-            ? true
-            : false,
+        value: { weight: 1, min: value },
+        disabled: false,
       });
     });
 
@@ -331,11 +355,7 @@ export function getSearchQuery(item, stats) {
         attributeFilters.push({
           id,
           value: { weight: 1 },
-          disabled:
-            elementalAttackDamageStats.length > 0 ||
-              physicalAttackDamageStats.length > 0
-              ? true
-              : false,
+          disabled: true,
         });
       }
     });
@@ -356,6 +376,114 @@ export function getSearchQuery(item, stats) {
     }
   }
 
+  // Add spell damage stats as a weighted filter if any exist
+  if (spellDamageStats.length > 0) {
+    const spellDamageFilters = [];
+    let totalWeight = 0;
+
+    spellDamageStats.forEach((stat) => {
+      const value = Math.floor(Number(stat.value?.min ?? 0));
+      totalWeight += value;
+      spellDamageFilters.push({
+        id: normalizeStatIdToExplicit(stat.id),
+        value: { weight: 1, min: value },
+        disabled: false,
+      });
+    });
+
+    spellDamageExplicitIds.forEach((id) => {
+      if (
+        !spellDamageStats.find(
+          (stat) => normalizeStatIdToExplicit(stat.id) === id
+        )
+      ) {
+        spellDamageFilters.push({
+          id,
+          value: { weight: 1 },
+          disabled: true,
+        });
+      }
+    });
+
+    statsArray.push({
+      type: "weight",
+      filters: spellDamageFilters,
+      value: { min: totalWeight },
+    });
+  }
+
+  // Add gain as extra damage stats as a weighted filter if any exist
+  if (gainExtraDamageStats.length > 0) {
+    const gainExtraDamageFilters = [];
+    let totalWeight = 0;
+
+    gainExtraDamageStats.forEach((stat) => {
+      const value = Math.floor(Number(stat.value?.min ?? 0));
+      totalWeight += value;
+      gainExtraDamageFilters.push({
+        id: normalizeStatIdToExplicit(stat.id),
+        value: { weight: 1, min: value },
+        disabled: false,
+      });
+    });
+
+    gainExtraDamageExplicitIds.forEach((id) => {
+      if (
+        !gainExtraDamageStats.find(
+          (stat) => normalizeStatIdToExplicit(stat.id) === id
+        )
+      ) {
+        gainExtraDamageFilters.push({
+          id,
+          value: { weight: 1 },
+          disabled: true,
+        });
+      }
+    });
+
+    statsArray.push({
+      type: "weight",
+      filters: gainExtraDamageFilters,
+      value: { min: totalWeight },
+    });
+  }
+
+  // Add attacks gain as extra damage stats as a weighted filter if any exist
+  if (attacksGainExtraDamageStats.length > 0) {
+    const attacksGainExtraDamageFilters = [];
+    let totalWeight = 0;
+
+    attacksGainExtraDamageStats.forEach((stat) => {
+      const value = Math.floor(Number(stat.value?.min ?? 0));
+      totalWeight += value;
+      attacksGainExtraDamageFilters.push({
+        id: normalizeStatIdToExplicit(stat.id),
+        value: { weight: 1, min: value },
+        disabled: false,
+      });
+    });
+
+    attacksGainExtraDamageExplicitIds.forEach((id) => {
+      if (
+        !attacksGainExtraDamageStats.find(
+          (stat) => normalizeStatIdToExplicit(stat.id) === id
+        )
+      ) {
+        attacksGainExtraDamageFilters.push({
+          id,
+          value: { weight: 1 },
+          disabled: true,
+        });
+      }
+    });
+
+    statsArray.push({
+      type: "weight",
+      filters: attacksGainExtraDamageFilters,
+      value: { min: totalWeight },
+    });
+  }
+
   query.stats = statsArray;
   console.log("[PoE Search] query.stats =", JSON.stringify(statsArray, null, 2));
   console.log("[PoE Search] query =", JSON.stringify(query, null, 2));
@@ -363,7 +491,8 @@ export function getSearchQuery(item, stats) {
 }
 
 export function matchUniqueItem(item) {
-  const uniqueRegex = /Rarity: Unique\n([^\n]+)/;
+  // Allow both LF and CRLF line endings
+  const uniqueRegex = /Rarity: Unique\r?\n([^\r\n]+)/;
   const match = item.match(uniqueRegex);
 
   return match ? match[1] : undefined;
@@ -571,9 +700,11 @@ export function matchStatsOnItem(item, stats) {
 
         let minValue;
         if (capturedValues.length === 2) {
+          // Range stats (e.g. Adds X to Y): use the average as a number
           minValue = (capturedValues[0] + capturedValues[1]) / 2;
         } else {
-          minValue = capturedValues[0]; // já é parseFloat, sempre número
+          // Single value: keep as string for backwards compatibility with fixtures/tests
+          minValue = m[1];
         }
 
         const cleanText = stripTag(entry.text, entry.type);
