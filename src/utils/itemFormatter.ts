@@ -264,7 +264,6 @@ export function formatItemText(item: TradeItem): string {
 
   // Crafted mods (ficam em bloco separado, se existirem)
   if (item.mutatedMods && item.mutatedMods.length > 0) {
-    lines.push(SEPARATOR);
     for (const mod of item.mutatedMods) {
       lines.push(formatMod(mod, "mutated"));
     }
