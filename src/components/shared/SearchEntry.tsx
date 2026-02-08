@@ -82,7 +82,7 @@ export function SearchEntry({
       <button
         onClick={handleClick}
         disabled={isExecuting}
-        className="w-full flex items-start gap-3 px-3 py-2 hover:bg-poe-gray transition-colors text-left disabled:opacity-50 disabled:cursor-wait"
+        className="relative w-full flex items-start gap-3 px-3 py-2 hover:bg-poe-gray transition-colors text-left disabled:opacity-50 disabled:cursor-wait"
       >
         {previewImageUrl && (
           <div className="shrink-0 w-8 h-8 rounded overflow-hidden bg-poe-dark">
@@ -134,7 +134,7 @@ export function SearchEntry({
             )}
           </div>
         </div>
-        <div className="relative flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-poe-gray from-60% to-transparent px-2">
           {isExecuting ? (
             <RefreshIcon className="w-4 h-4 text-poe-gold animate-spin" />
           ) : (

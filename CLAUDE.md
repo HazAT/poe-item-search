@@ -136,11 +136,13 @@ The overlay panel uses Shadow DOM for style isolation. Key considerations:
 - The repo is small enough that worktrees add unnecessary complexity
 
 ### Auto-Reload Development
-- Run `bun run dev` to build in dev mode (includes background reload script)
+- **Always use `bun run dev`** for local builds — never `bun run build` during development
+- `bun run dev` builds in dev mode with an auto-reload background script
 - Background service worker polls bundled files every 1 second for changes
 - When you run `bun run dev` again after code changes, the extension auto-reloads
 - **First time setup:** After first dev build, manually reload extension once in chrome://extensions to register the background script
 - Dev mode adds `tabs` permission and background script (not included in production builds)
+- `bun run build` is only for production packaging (`bun run package`)
 - Run `bun run storybook` separately if you need Storybook for component development
 
 ### Dev Mode Indicator
