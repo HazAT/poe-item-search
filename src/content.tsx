@@ -14,7 +14,7 @@ import { App } from "./App";
 // Import CSS as string for Shadow DOM injection
 import styles from "@/index.css?inline";
 
-const version = "1.3.0";
+const version = __APP_VERSION__;
 
 /**
  * Inject the interceptor script into the page's MAIN world.
