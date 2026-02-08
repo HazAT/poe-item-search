@@ -87,6 +87,20 @@ export default defineConfig({
       output: ["terminal", "console"],
     }),
     extensionAssetsPlugin(),
+    // Wrap injected scripts in IIFEs to avoid polluting global scope
+    // and prevent "already declared" errors on extension reload
+    {
+      name: "wrap-injected-iife",
+      generateBundle(_options, bundle) {
+        const injectedFiles = ["interceptor.js", "statIdExtractor.js"];
+        for (const fileName of injectedFiles) {
+          const chunk = bundle[fileName];
+          if (chunk && chunk.type === "chunk") {
+            chunk.code = `(function() {\n${chunk.code}\n})();\n`;
+          }
+        }
+      },
+    },
   ],
   build: {
     outDir: "dist",
