@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Button, TrashIcon, RefreshIcon, BookmarkIcon, SaveIcon } from "@/components/ui";
+import { Button, TrashIcon, RefreshIcon, BookmarkIcon, SaveIcon, ChevronUpIcon, ChevronDownIcon } from "@/components/ui";
 import type { TradeSiteVersion, TradeSearchQuery } from "@/types/tradeLocation";
 import type { BookmarksFolderStruct } from "@/types/bookmarks";
 import { getSortLabel, formatSortBadge } from "@/utils/sortLabel";
@@ -42,6 +42,8 @@ export interface SearchEntryProps {
   onBookmark?: (folderId: string) => void;
   onCreateFolder?: (title: string) => Promise<string>;
   onUpdate?: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }
 
 export function SearchEntry({
@@ -61,6 +63,8 @@ export function SearchEntry({
   onBookmark,
   onCreateFolder,
   onUpdate,
+  onMoveUp,
+  onMoveDown,
 }: SearchEntryProps) {
   const [showFolderPicker, setShowFolderPicker] = useState(false);
   const bookmarkButtonRef = useRef<HTMLButtonElement>(null);
@@ -166,6 +170,34 @@ export function SearchEntry({
                   title="Update with current search"
                 >
                   <SaveIcon className="w-4 h-4" />
+                </Button>
+              )}
+              {onMoveUp && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onMoveUp();
+                  }}
+                  title="Move up"
+                >
+                  <ChevronUpIcon className="w-4 h-4" />
+                </Button>
+              )}
+              {onMoveDown && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onMoveDown();
+                  }}
+                  title="Move down"
+                >
+                  <ChevronDownIcon className="w-4 h-4" />
                 </Button>
               )}
               <Button

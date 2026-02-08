@@ -41,11 +41,14 @@ interface BookmarksState {
   archiveFolder: (id: string) => Promise<void>;
   unarchiveFolder: (id: string) => Promise<void>;
 
+  moveFolder: (id: string, direction: "up" | "down") => Promise<void>;
+
   // Trade operations
   fetchTradesForFolder: (folderId: string) => Promise<void>;
   createTrade: (folderId: string, trade: Omit<BookmarksTradeStruct, "id">) => Promise<void>;
   updateTrade: (folderId: string, tradeId: string, updates: Partial<BookmarksTradeStruct>) => Promise<void>;
   deleteTrade: (folderId: string, tradeId: string) => Promise<void>;
+  moveTrade: (folderId: string, tradeId: string, direction: "up" | "down") => Promise<void>;
   executeSearch: (folderId: string, tradeId: string) => Promise<void>;
 
   // Import/Export
@@ -176,6 +179,19 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => {
     await updateFolder(id, { archivedAt: null });
   },
 
+  moveFolder: async (id, direction) => {
+    const { folders } = get();
+    const index = folders.findIndex((f) => f.id === id);
+    if (index === -1) return;
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= folders.length) return;
+    const newFolders = [...folders];
+    [newFolders[index], newFolders[targetIndex]] = [newFolders[targetIndex], newFolders[index]];
+    await storageService.setValue(FOLDERS_KEY, newFolders);
+    set({ folders: newFolders });
+    syncService.schedulePush();
+  },
+
   fetchTradesForFolder: async (folderId) => {
     const folderTrades =
       (await storageService.getValue<BookmarksTradeStruct[]>(
@@ -229,6 +245,22 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => {
 
     // Add tombstone for sync
     syncService.addTombstone(tradeId, 'bookmark');
+    syncService.schedulePush();
+  },
+
+  moveTrade: async (folderId, tradeId, direction) => {
+    const { trades } = get();
+    const folderTrades = trades[folderId] ?? [];
+    const index = folderTrades.findIndex((t) => t.id === tradeId);
+    if (index === -1) return;
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= folderTrades.length) return;
+    const newFolderTrades = [...folderTrades];
+    [newFolderTrades[index], newFolderTrades[targetIndex]] = [newFolderTrades[targetIndex], newFolderTrades[index]];
+    await storageService.setValue(`${TRADES_KEY_PREFIX}-${folderId}`, newFolderTrades);
+    set((state) => ({
+      trades: { ...state.trades, [folderId]: newFolderTrades },
+    }));
     syncService.schedulePush();
   },
 
