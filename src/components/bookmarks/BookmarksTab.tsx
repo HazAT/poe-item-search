@@ -34,7 +34,6 @@ export function BookmarksTab() {
     createFolder,
     updateFolder,
     importFolder,
-    forceRefetch,
   } = useBookmarksStore();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);

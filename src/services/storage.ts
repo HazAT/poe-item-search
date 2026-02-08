@@ -144,7 +144,7 @@ class StorageService {
         }
       });
       debug.log("[Storage] cross-tab listener registered (chrome.storage.onChanged)");
-    } else {
+    } else if (typeof window !== "undefined") {
       // Fallback for Storybook/tests: listen for localStorage changes from other tabs
       window.addEventListener("storage", (event) => {
         if (event.key) {

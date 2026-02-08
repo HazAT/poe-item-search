@@ -40,7 +40,7 @@ extractStatIds();
 function setupObserver(): void {
   const target = document.querySelector('#trade') || document.body;
 
-  const observer = new MutationObserver((mutations) => {
+  const observer = new MutationObserver((_mutations) => {
     // Only log occasionally to avoid spam
     const now = Date.now();
     if (!((window as any).__lastMutationLog) || now - (window as any).__lastMutationLog > 1000) {
