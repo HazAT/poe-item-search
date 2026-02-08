@@ -76,11 +76,13 @@ export interface TradeItem {
   explicitMods?: string[];
   fracturedMods?: string[];
   desecratedMods?: string[];
+  mutatedMods?: string[];
   runeMods?: string[];
   enchantMods?: string[];
   craftedMods?: string[];
   fractured?: boolean;
   desecrated?: boolean;
+  mutated?: boolean;
   flavourText?: string[];
   extended?: TradeItemExtended;
 }
