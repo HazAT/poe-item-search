@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useBookmarksStore } from "@/stores/bookmarksStore";
 import { useHistoryStore } from "@/stores/historyStore";
-import { useSyncStore } from "@/stores/syncStore";
 import {
   Button,
   PlusIcon,
@@ -37,20 +36,6 @@ export function BookmarksTab() {
     importFolder,
     forceRefetch,
   } = useBookmarksStore();
-
-  const { hasNewData, clearNewDataIndicator } = useSyncStore();
-
-  // Refetch bookmarks when cloud sync detects new data
-  useEffect(() => {
-    if (hasNewData) {
-      forceRefetch();
-    }
-  }, [hasNewData, forceRefetch]);
-
-  // Clear sync indicator when user views bookmarks tab
-  useEffect(() => {
-    clearNewDataIndicator();
-  }, [clearNewDataIndicator]);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);

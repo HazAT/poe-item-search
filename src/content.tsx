@@ -6,7 +6,6 @@ import { usePanelStore } from "@/stores/panelStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { initSearchInterceptor } from "@/services/searchInterceptor";
 import { initSentry, captureException } from "@/services/sentry";
-import { syncService } from "@/services/syncService";
 import { injectTierDropdowns, observeFilterChanges, injectStatIdExtractor } from "@/services/tierInjector";
 import { getExtensionUrl } from "@/utils/extensionApi";
 import { debug } from "@/utils/debug";
@@ -114,12 +113,6 @@ async function initialize() {
 
     // Initialize interceptor listener in content script
     initSearchInterceptor();
-
-    // Initialize cloud sync
-    syncService.init().catch((e) => {
-      debug.error("[Sync] Init failed:", e);
-      captureException(e, { context: "sync-init" });
-    });
 
     await waitForTradePage();
 

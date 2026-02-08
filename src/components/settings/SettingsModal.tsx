@@ -2,7 +2,6 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { GitHubIcon, ExternalLinkIcon } from "@/components/ui/Icons";
-import { SyncStatusSection } from "./SyncStatusSection";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -55,10 +54,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </button>
           </div>
         )}
-
-        <div className="pt-4 border-t border-poe-gray">
-          <SyncStatusSection />
-        </div>
 
         <div className="pt-4 border-t border-poe-gray space-y-3">
           <a

@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import LZString from "lz-string";
 import { storageService } from "@/services/storage";
-import { syncService } from "@/services/syncService";
 import { uniqueId } from "@/utils/uniqueId";
 import { buildTradeUrl } from "@/services/tradeLocation";
 import { debug } from "@/utils/debug";
@@ -142,7 +141,6 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => {
     const newFolders = [...folders, newFolder];
     await storageService.setValue(FOLDERS_KEY, newFolders);
     set({ folders: newFolders });
-    syncService.schedulePush();
   },
 
   updateFolder: async (id, updates) => {
@@ -152,7 +150,6 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => {
     );
     await storageService.setValue(FOLDERS_KEY, newFolders);
     set({ folders: newFolders });
-    syncService.schedulePush();
   },
 
   deleteFolder: async (id) => {
@@ -164,9 +161,6 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => {
     delete newTrades[id];
     set({ folders: newFolders, trades: newTrades });
 
-    // Add tombstone for sync
-    syncService.addTombstone(id, 'folder');
-    syncService.schedulePush();
   },
 
   archiveFolder: async (id) => {
@@ -189,7 +183,6 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => {
     [newFolders[index], newFolders[targetIndex]] = [newFolders[targetIndex], newFolders[index]];
     await storageService.setValue(FOLDERS_KEY, newFolders);
     set({ folders: newFolders });
-    syncService.schedulePush();
   },
 
   fetchTradesForFolder: async (folderId) => {
@@ -218,7 +211,6 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => {
     set((state) => ({
       trades: { ...state.trades, [folderId]: newFolderTrades },
     }));
-    syncService.schedulePush();
   },
 
   updateTrade: async (folderId, tradeId, updates) => {
@@ -231,7 +223,6 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => {
     set((state) => ({
       trades: { ...state.trades, [folderId]: newFolderTrades },
     }));
-    syncService.schedulePush();
   },
 
   deleteTrade: async (folderId, tradeId) => {
@@ -243,9 +234,6 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => {
       trades: { ...state.trades, [folderId]: newFolderTrades },
     }));
 
-    // Add tombstone for sync
-    syncService.addTombstone(tradeId, 'bookmark');
-    syncService.schedulePush();
   },
 
   moveTrade: async (folderId, tradeId, direction) => {
@@ -261,7 +249,6 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => {
     set((state) => ({
       trades: { ...state.trades, [folderId]: newFolderTrades },
     }));
-    syncService.schedulePush();
   },
 
   executeSearch: async (folderId, tradeId) => {
