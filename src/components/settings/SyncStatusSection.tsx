@@ -114,6 +114,29 @@ export function SyncStatusSection() {
   const isOverQuota = quotaPercentage >= 100;
   const actualSyncing = isSyncing || syncStatus.isSyncing;
 
+  const CopyableBlock = ({ label, field, content, isLoading: blockLoading }: {
+    label: string;
+    field: string;
+    content: string;
+    isLoading?: boolean;
+  }) => (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-poe-gray-alt">{label}:</span>
+        <button
+          onClick={() => handleCopy(content, field)}
+          disabled={!content}
+          className="text-poe-beige hover:text-poe-white disabled:text-poe-gray-alt disabled:cursor-not-allowed transition-colors"
+        >
+          {copiedField === field ? "Copied!" : "Copy"}
+        </button>
+      </div>
+      <div className="font-mono text-poe-beige bg-poe-gray rounded p-2 break-all max-h-20 overflow-y-auto">
+        {blockLoading ? "Loading..." : content ? truncateString(content, 500) : "No data"}
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-3">
       <div className="text-sm text-poe-beige font-fontin">Cloud Sync</div>
@@ -193,64 +216,23 @@ export function SyncStatusSection() {
       {/* Debug Info Content */}
       {debugExpanded && (
         <div className="bg-poe-black rounded p-3 space-y-3 text-xs border border-poe-gray">
-          {/* Compressed (for transfer) */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-poe-gray-alt">Compressed (for transfer):</span>
-              <button
-                onClick={() => handleCopy(cloudData.compressed ?? "", "compressed")}
-                disabled={!cloudData.compressed}
-                className="text-poe-beige hover:text-poe-white disabled:text-poe-gray-alt disabled:cursor-not-allowed transition-colors"
-              >
-                {copiedField === "compressed" ? "Copied!" : "Copy"}
-              </button>
-            </div>
-            <div className="font-mono text-poe-beige bg-poe-gray rounded p-2 break-all max-h-20 overflow-y-auto">
-              {cloudData.loading
-                ? "Loading..."
-                : cloudData.compressed
-                  ? truncateString(cloudData.compressed, 500)
-                  : "No data"}
-            </div>
-          </div>
-
-          {/* Local JSON */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-poe-gray-alt">Local JSON:</span>
-              <button
-                onClick={() => handleCopy(localJson, "local")}
-                disabled={!localJson}
-                className="text-poe-beige hover:text-poe-white disabled:text-poe-gray-alt disabled:cursor-not-allowed transition-colors"
-              >
-                {copiedField === "local" ? "Copied!" : "Copy"}
-              </button>
-            </div>
-            <div className="font-mono text-poe-beige bg-poe-gray rounded p-2 break-all max-h-20 overflow-y-auto">
-              {localJson ? truncateString(localJson, 500) : "No data"}
-            </div>
-          </div>
-
-          {/* Cloud JSON */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-poe-gray-alt">Cloud JSON:</span>
-              <button
-                onClick={() => handleCopy(cloudJson, "cloud")}
-                disabled={!cloudJson}
-                className="text-poe-beige hover:text-poe-white disabled:text-poe-gray-alt disabled:cursor-not-allowed transition-colors"
-              >
-                {copiedField === "cloud" ? "Copied!" : "Copy"}
-              </button>
-            </div>
-            <div className="font-mono text-poe-beige bg-poe-gray rounded p-2 break-all max-h-20 overflow-y-auto">
-              {cloudData.loading
-                ? "Loading..."
-                : cloudJson
-                  ? truncateString(cloudJson, 500)
-                  : "No data"}
-            </div>
-          </div>
+          <CopyableBlock
+            label="Compressed (for transfer)"
+            field="compressed"
+            content={cloudData.compressed ?? ""}
+            isLoading={cloudData.loading}
+          />
+          <CopyableBlock
+            label="Local JSON"
+            field="local"
+            content={localJson}
+          />
+          <CopyableBlock
+            label="Cloud JSON"
+            field="cloud"
+            content={cloudJson}
+            isLoading={cloudData.loading}
+          />
         </div>
       )}
     </div>
