@@ -59,7 +59,32 @@ interface BookmarksState {
   forceRefetch: () => Promise<void>;
 }
 
-export const useBookmarksStore = create<BookmarksState>((set, get) => ({
+export const useBookmarksStore = create<BookmarksState>((set, get) => {
+  // Listen for cross-tab changes to folders and re-read
+  storageService.onKeyChange(FOLDERS_KEY, async () => {
+    debug.log("[Bookmarks] cross-tab change detected for folders, re-reading");
+    const folders =
+      (await storageService.getValue<BookmarksFolderStruct[]>(FOLDERS_KEY)) ?? [];
+    set({ folders });
+  });
+
+  // Listen for cross-tab changes to any trades key and re-read affected folder
+  storageService.onKeyPrefixChange(TRADES_KEY_PREFIX, async () => {
+    debug.log("[Bookmarks] cross-tab change detected for trades, re-reading expanded folders");
+    // Re-fetch trades for all currently loaded folders
+    const { trades } = get();
+    const newTrades: Record<string, BookmarksTradeStruct[]> = {};
+    for (const folderId of Object.keys(trades)) {
+      const folderTrades =
+        (await storageService.getValue<BookmarksTradeStruct[]>(
+          `${TRADES_KEY_PREFIX}-${folderId}`
+        )) ?? [];
+      newTrades[folderId] = folderTrades;
+    }
+    set({ trades: newTrades });
+  });
+
+  return {
   folders: [],
   trades: {},
   expandedFolders: [],
@@ -357,4 +382,5 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => ({
     set({ hasFetched: false });
     await get().fetchFolders();
   },
-}));
+};
+});

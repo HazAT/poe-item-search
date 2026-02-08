@@ -36,6 +36,7 @@ class StorageService {
   private _syncQuotaInfo: SyncQuotaInfo | null = null;
   private _initialized: boolean = false;
   private _listeners: Set<() => void> = new Set();
+  private _keyChangeListeners: Map<string, Set<() => void>> = new Map();
 
   get syncEnabled(): boolean {
     return this._syncEnabled;
@@ -53,6 +54,61 @@ class StorageService {
 
   private notify() {
     this._listeners.forEach((listener) => listener());
+  }
+
+  /**
+   * Subscribe to changes for a specific storage key (unformatted, e.g. "trade-history").
+   * Fires when another tab writes to this key via chrome.storage.onChanged.
+   */
+  onKeyChange(key: string, listener: () => void): () => void {
+    const formattedKey = this.formatKey(key);
+    if (!this._keyChangeListeners.has(formattedKey)) {
+      this._keyChangeListeners.set(formattedKey, new Set());
+    }
+    this._keyChangeListeners.get(formattedKey)!.add(listener);
+    return () => {
+      this._keyChangeListeners.get(formattedKey)?.delete(listener);
+    };
+  }
+
+  /**
+   * Subscribe to changes for keys matching a prefix (unformatted, e.g. "bookmark-trades").
+   * Fires when another tab writes to any key starting with this prefix.
+   */
+  onKeyPrefixChange(prefix: string, listener: () => void): () => void {
+    const formattedPrefix = this.formatKey(prefix);
+    // Store with a special marker to distinguish from exact keys
+    const markerKey = `__prefix__${formattedPrefix}`;
+    if (!this._keyChangeListeners.has(markerKey)) {
+      this._keyChangeListeners.set(markerKey, new Set());
+    }
+    this._keyChangeListeners.get(markerKey)!.add(listener);
+    return () => {
+      this._keyChangeListeners.get(markerKey)?.delete(listener);
+    };
+  }
+
+  private notifyKeyChangeListeners(changedKey: string): void {
+    // Exact match listeners
+    const exactListeners = this._keyChangeListeners.get(changedKey);
+    if (exactListeners) {
+      exactListeners.forEach((listener) => listener());
+    }
+
+    // Prefix match listeners
+    for (const [markerKey, listeners] of this._keyChangeListeners) {
+      if (markerKey.startsWith("__prefix__")) {
+        const prefix = markerKey.slice("__prefix__".length);
+        if (changedKey.startsWith(prefix)) {
+          listeners.forEach((listener) => listener());
+        }
+      }
+    }
+  }
+
+  constructor() {
+    // Set up cross-tab listener eagerly (doesn't depend on initialize)
+    this.setupCrossTabListener();
   }
 
   async initialize(): Promise<void> {
@@ -73,6 +129,31 @@ class StorageService {
 
     this._initialized = true;
     debug.log("[Storage] initialize() complete");
+  }
+
+  private setupCrossTabListener(): void {
+    if (typeof chrome !== "undefined" && chrome.storage?.onChanged) {
+      chrome.storage.onChanged.addListener((changes, areaName) => {
+        // Only listen to the backend we're using
+        const expectedArea = this._syncEnabled ? "sync" : "local";
+        if (areaName !== expectedArea) return;
+
+        for (const key of Object.keys(changes)) {
+          debug.log(`[Storage] cross-tab change detected: ${key} (${areaName})`);
+          this.notifyKeyChangeListeners(key);
+        }
+      });
+      debug.log("[Storage] cross-tab listener registered (chrome.storage.onChanged)");
+    } else {
+      // Fallback for Storybook/tests: listen for localStorage changes from other tabs
+      window.addEventListener("storage", (event) => {
+        if (event.key) {
+          debug.log(`[Storage] cross-tab change detected (localStorage): ${event.key}`);
+          this.notifyKeyChangeListeners(event.key);
+        }
+      });
+      debug.log("[Storage] cross-tab listener registered (window.storage fallback)");
+    }
   }
 
   private getBackendForKey(key: string): StorageBackend {

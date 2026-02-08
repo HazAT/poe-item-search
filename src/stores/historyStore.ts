@@ -30,7 +30,16 @@ interface HistoryState {
   updateEntryPreviewImage: (slug: string, imageUrl: string) => Promise<void>;
 }
 
-export const useHistoryStore = create<HistoryState>((set, get) => ({
+export const useHistoryStore = create<HistoryState>((set, get) => {
+  // Listen for cross-tab changes to history and re-read
+  storageService.onKeyChange(HISTORY_KEY, async () => {
+    debug.log("[History] cross-tab change detected, re-reading entries");
+    const entries =
+      (await storageService.getValue<TradeLocationHistoryStruct[]>(HISTORY_KEY)) ?? [];
+    set({ entries });
+  });
+
+  return {
   entries: [],
   isLoading: false,
   isExecuting: null,
@@ -167,4 +176,5 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       imageUrl: imageUrl.slice(0, 60),
     });
   },
-}));
+};
+});
