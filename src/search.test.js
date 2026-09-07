@@ -1,5 +1,5 @@
 import { expect, test, describe } from "bun:test";
-import { buildSearchQuery, buildTradeRequest, getUniqueItemName, clearStatsCache } from "./search.js";
+import { buildSearchQuery, buildTradeRequest, getUniqueItemName } from "./search.js";
 import stats from "../tests/fixtures/stats.json";
 
 const gloves1 = await Bun.file("tests/fixtures/gloves1.txt").text();

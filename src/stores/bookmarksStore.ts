@@ -200,7 +200,7 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => {
     if (!trades[folderId]) {
       await fetchTradesForFolder(folderId);
     }
-    const folderTrades = trades[folderId] ?? [];
+    const folderTrades = get().trades[folderId] ?? [];
     const newTrade: BookmarksTradeStruct = {
       ...trade,
       id: uniqueId(),

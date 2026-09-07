@@ -1,0 +1,92 @@
+{
+  "pageSlug": "H4sIAAAAAAAACo3SWWrDMBAG4LvMswnWaBlJVykhuLaaCLwEWU4bjO5e7Jji1nFbPWnhGzG_NEIfizj0YEfortF3LVjoXTmE4rV2kLL5vAf7MkK8Xx1YKNoKMnjzdXThceArsOA-rrUvfTxM4MSNZihyIgUZ3Ip6cNMNjW_B8jyl7DkS2pDGPMcNkrSLuELNkBTfILF_k0SuFRktN4ixlfLNWiFKhmRypK1K6TipJaN358-X-HdMAqduyaBYV1y0ZdnSh9hvnlCiQEG_ec73PFPEOCk--8r306NXYGMY3LN6e2XQIBdaoTT_LHP8mR_RvPkV1yPJ02q9mpZFdOcu3L992iI03RAO5cX1EdI0PgH_f3aG3AIAAA",
+  "historySlug": "H4sIAAAAAAAAA42S3Y6CMBBG36XXxNDpz1BeZWNMF6o2ATFtcdcY332n0WRxEVeuSuk5X_oNF7b1XXIhsvrC0vnoNpP3ybKxye2GcM7r4Zj8cGA1s6EfxrBq9i4mdqWnYDHZRMDHTZbPHFpW_Jrog29p230fO9_4tMrARpiKgywRNZ092W50Oaf3OUSUpC6eY7IyWEFZwhxTuIwJDZSHWswx-SJNgag0mkrNMc6nnO-nHICiMFMCPuGIWmfu3taX87t9-r8wCfnWaEBOnXe65sVNLyVNpPXRfnaOHFvbRbfYCYICCRJfCYV4W8g1ckEVLwgfPCmMSxowQFPWoMybmvXfjhGveTPbxvjw-0bXjCGzNIQfnTJVZggDAAA",
+  "replaySlug": "H4sIAAAAAAAAA42S3W6DMAyF3yXXqCLOjwmvMlVVBlkbCQoKoVuF8u5LKJrYKNtyldj-juXjTGTw2o8DKSfS9d52V1KSwVSj06-NISGb8zH9MhF_703M6mtNMvJmG2_cI2HrGDYffWMr6w8JODFVUOA5ooy1N92MJnVobZRneQjZc4gXCgvIc9hAAnchJiH2Qsk2EN_vJIAVElUhNhClK8q2awpAxEYqB9xSIRwTtXj0buz54v-2iUOaFhXwteJClzRb5uD7wyMI4MDxN56xPZ5KpCxaN_O1HdLSY5V3o3mmtycDCuLuJAj1T5njT_8Q5-CXXQ8nT6v36lppb86du3_7tNq13egO1cUMnoR0PgH_f3aG3AIAAA",
+  "query": {
+    "status": {
+      "option": "securable"
+    },
+    "stats": [
+      {
+        "type": "and",
+        "filters": [
+          {
+            "id": "explicit.stat_3981240776",
+            "value": {
+              "min": 30
+            }
+          },
+          {
+            "id": "explicit.stat_3489782002",
+            "value": {
+              "min": 57
+            }
+          },
+          {
+            "id": "explicit.stat_3362812763",
+            "value": {
+              "min": 40
+            }
+          },
+          {
+            "id": "explicit.stat_3523867985",
+            "value": {
+              "min": 110
+            }
+          },
+          {
+            "id": "implicit.stat_2251279027",
+            "value": {
+              "min": 1
+            }
+          }
+        ]
+      },
+      {
+        "type": "weight",
+        "filters": [
+          {
+            "id": "explicit.stat_4220027924",
+            "value": {
+              "weight": 1,
+              "min": 44
+            }
+          },
+          {
+            "id": "explicit.stat_3372524247",
+            "value": {
+              "weight": 1,
+              "min": 33
+            }
+          },
+          {
+            "id": "explicit.stat_1671376347",
+            "disabled": true,
+            "value": {
+              "weight": 1
+            }
+          },
+          {
+            "id": "explicit.stat_2923486259",
+            "disabled": true,
+            "value": {
+              "weight": 1
+            }
+          }
+        ],
+        "value": {
+          "min": 77
+        }
+      }
+    ],
+    "filters": {
+      "type_filters": {
+        "filters": {
+          "category": {
+            "option": "armour.chest"
+          }
+        }
+      }
+    }
+  }
+}

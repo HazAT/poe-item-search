@@ -18,7 +18,9 @@ import {
 } from "@/components/ui";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
-import { getCurrentTradeLocation } from "@/services/tradeLocation";
+import { compareTradeLocations, getCurrentTradeLocation } from "@/services/tradeLocation";
+import { findCurrentHistoryEntry, type CurrentSearch } from "@/services/currentSearch";
+import type { TradeLocationHistoryStruct } from "@/types/tradeLocation";
 import { BookmarkModal } from "./BookmarkModal";
 import { SearchEntry } from "@/components/shared/SearchEntry";
 import type { BookmarksFolderStruct, BookmarksTradeStruct } from "@/types/bookmarks";
@@ -39,7 +41,12 @@ export function BookmarksTab() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
   const [newFolderTitle, setNewFolderTitle] = useState("");
-  const [canBookmark, setCanBookmark] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState(getCurrentTradeLocation);
+  const [currentHistoryEntry, setCurrentHistoryEntry] = useState<TradeLocationHistoryStruct | null>(null);
+  const entries = useHistoryStore(state => state.entries);
+  const fetchEntries = useHistoryStore(state => state.fetchEntries);
+  const currentSearch = { location: currentLocation, historyEntry: currentHistoryEntry };
+  const canBookmark = !!(currentLocation.slug && currentLocation.league);
   const [isRenameFolderOpen, setIsRenameFolderOpen] = useState(false);
   const [renamingFolder, setRenamingFolder] = useState<BookmarksFolderStruct | null>(null);
   const [renameFolderTitle, setRenameFolderTitle] = useState("");
@@ -49,8 +56,17 @@ export function BookmarksTab() {
 
   useEffect(() => {
     fetchFolders();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    fetchEntries();
+  }, [fetchFolders, fetchEntries]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setCurrentHistoryEntry(null);
+    void findCurrentHistoryEntry(currentLocation, entries).then(entry => {
+      if (!cancelled) setCurrentHistoryEntry(entry);
+    });
+    return () => { cancelled = true; };
+  }, [currentLocation, entries]);
 
   // Fetch trades for all folders to show counts
   useEffect(() => {
@@ -65,7 +81,7 @@ export function BookmarksTab() {
   useEffect(() => {
     const checkLocation = () => {
       const location = getCurrentTradeLocation();
-      setCanBookmark(!!(location?.slug && location?.league));
+      setCurrentLocation(previous => compareTradeLocations(previous, location) ? previous : location);
     };
 
     checkLocation();
@@ -200,6 +216,7 @@ export function BookmarksTab() {
                 onRename={() => openRenameModal(folder)}
                 isFirst={index === 0}
                 isLast={index === visibleFolders.length - 1}
+                currentSearch={currentSearch}
               />
             ))}
           </ul>
@@ -274,6 +291,7 @@ export function BookmarksTab() {
       <BookmarkModal
         isOpen={isBookmarkModalOpen}
         onClose={() => setIsBookmarkModalOpen(false)}
+        currentSearch={currentSearch}
       />
 
       {/* Import Modal */}
@@ -325,13 +343,14 @@ export function BookmarksTab() {
 }
 
 interface BookmarkFolderProps {
+  currentSearch: CurrentSearch;
   folder: BookmarksFolderStruct;
   onRename: () => void;
   isFirst: boolean;
   isLast: boolean;
 }
 
-function BookmarkFolder({ folder, onRename, isFirst, isLast }: BookmarkFolderProps) {
+function BookmarkFolder({ folder, onRename, isFirst, isLast, currentSearch }: BookmarkFolderProps) {
   const { trades, isExecuting, expandedFolders, toggleFolderExpanded, fetchTradesForFolder, deleteFolder, archiveFolder, unarchiveFolder, exportFolder, moveFolder, moveTrade } =
     useBookmarksStore();
   const isExpanded = expandedFolders.includes(folder.id!);
@@ -349,24 +368,27 @@ function BookmarkFolder({ folder, onRename, isFirst, isLast }: BookmarkFolderPro
 
   return (
     <li className={isArchived ? "opacity-60" : ""}>
-      <button
-        onClick={() => toggleFolderExpanded(folder.id!)}
-        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-poe-gray transition-colors group text-left"
-      >
-        {isExpanded ? (
-          <ChevronDownIcon className="w-4 h-4 text-poe-gray-alt shrink-0" />
-        ) : (
-          <ChevronRightIcon className="w-4 h-4 text-poe-gray-alt shrink-0" />
-        )}
-        <FolderIcon className="w-4 h-4 text-poe-gold shrink-0" />
-        <span className="font-fontin text-sm text-poe-beige truncate">
-          {folder.title}
-        </span>
-        <span className="text-xs text-poe-gray-alt shrink-0">
-          ({folderTrades.length})
-        </span>
-        <div className="flex-1" />
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="group flex items-center hover:bg-poe-gray transition-colors">
+        <button
+          type="button"
+          onClick={() => toggleFolderExpanded(folder.id!)}
+          aria-expanded={isExpanded}
+          className="min-w-0 flex-1 flex items-center gap-2 pl-3 pr-1 py-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-poe-gold focus-visible:-outline-offset-2"
+        >
+          {isExpanded ? (
+            <ChevronDownIcon className="w-4 h-4 text-poe-gray-alt shrink-0" />
+          ) : (
+            <ChevronRightIcon className="w-4 h-4 text-poe-gray-alt shrink-0" />
+          )}
+          <FolderIcon className="w-4 h-4 text-poe-gold shrink-0" />
+          <span className="font-fontin text-sm text-poe-beige truncate">
+            {folder.title}
+          </span>
+          <span className="text-xs text-poe-gray-alt shrink-0">
+            ({folderTrades.length})
+          </span>
+        </button>
+        <div className="shrink-0 flex items-center gap-1 pr-3 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
           {!isFirst && (
             <Button
               variant="ghost"
@@ -423,7 +445,11 @@ function BookmarkFolder({ folder, onRename, isFirst, isLast }: BookmarkFolderPro
             size="sm"
             onClick={(e) => {
               e.stopPropagation();
-              isArchived ? unarchiveFolder(folder.id!) : archiveFolder(folder.id!);
+              if (isArchived) {
+                unarchiveFolder(folder.id!);
+              } else {
+                archiveFolder(folder.id!);
+              }
             }}
             title={isArchived ? "Unarchive" : "Archive"}
           >
@@ -441,7 +467,7 @@ function BookmarkFolder({ folder, onRename, isFirst, isLast }: BookmarkFolderPro
             <TrashIcon className="w-4 h-4" />
           </Button>
         </div>
-      </button>
+      </div>
       {isExpanded && (
         <ul className="bg-poe-black/50 border-t border-poe-gray">
           {folderTrades.length === 0 ? (
@@ -459,6 +485,7 @@ function BookmarkFolder({ folder, onRename, isFirst, isLast }: BookmarkFolderPro
                 isLast={index === folderTrades.length - 1}
                 onMoveUp={() => moveTrade(folder.id!, trade.id!, "up")}
                 onMoveDown={() => moveTrade(folder.id!, trade.id!, "down")}
+                currentSearch={currentSearch}
               />
             ))
           )}
@@ -469,6 +496,7 @@ function BookmarkFolder({ folder, onRename, isFirst, isLast }: BookmarkFolderPro
 }
 
 interface BookmarkTradeProps {
+  currentSearch: CurrentSearch;
   folderId: string;
   trade: BookmarksTradeStruct;
   isExecuting: boolean;
@@ -478,29 +506,10 @@ interface BookmarkTradeProps {
   onMoveDown: () => void;
 }
 
-function BookmarkTrade({ folderId, trade, isExecuting, isFirst, isLast, onMoveUp, onMoveDown }: BookmarkTradeProps) {
+function BookmarkTrade({ folderId, trade, isExecuting, isFirst, isLast, onMoveUp, onMoveDown, currentSearch }: BookmarkTradeProps) {
   const { deleteTrade, executeSearch } = useBookmarksStore();
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [hasCurrentSearch, setHasCurrentSearch] = useState(false);
-
-  // Check if there's a current search that can be used for update
-  useEffect(() => {
-    const checkCurrentSearch = () => {
-      const location = getCurrentTradeLocation();
-      if (!location?.slug || !location?.league) {
-        setHasCurrentSearch(false);
-        return;
-      }
-      const { entries } = useHistoryStore.getState();
-      const historyEntry = entries.find((e) => e.slug === location.slug);
-      setHasCurrentSearch(!!historyEntry?.queryPayload);
-    };
-
-    checkCurrentSearch();
-    // Re-check periodically for URL changes
-    const interval = setInterval(checkCurrentSearch, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const hasCurrentSearch = !!currentSearch.historyEntry?.queryPayload;
 
   return (
     <>
@@ -525,6 +534,7 @@ function BookmarkTrade({ folderId, trade, isExecuting, isFirst, isLast, onMoveUp
         isOpen={isUpdateModalOpen}
         onClose={() => setIsUpdateModalOpen(false)}
         editMode={{ folderId, trade }}
+        currentSearch={currentSearch}
       />
     </>
   );

@@ -17,6 +17,43 @@ const chest3 = await Bun.file("tests/fixtures/chest3.txt").text();
 const staff1 = await Bun.file("tests/fixtures/staff1.txt").text();
 const staff2 = await Bun.file("tests/fixtures/staff2.txt").text();
 
+test("signed decimal modifiers retain their values in ordinary and weighted filters", () => {
+  const query = getSearchQuery(`Item Class: Rings
+Rarity: Rare
+Test Ring
+Gold Ring
+--------
+-5 to maximum Mana
+-12% to Fire Resistance
++30.5% to Cold Resistance
+Gains 0.25 Charges per Second`, stats);
+
+  expect(query.stats[0]).toEqual({
+    type: "and",
+    filters: expect.arrayContaining([
+      { id: "explicit.stat_1050105434", value: { min: "-5" } },
+      { id: "explicit.stat_1873752457", value: { min: "0.25" } },
+    ]),
+  });
+  expect(query.stats[1]).toEqual({
+    type: "weight",
+    filters: [
+      { id: "explicit.stat_4220027924", value: { weight: 1, min: 30.5 }, disabled: false },
+      { id: "explicit.stat_3372524247", value: { weight: 1, min: -12 }, disabled: false },
+      { id: "explicit.stat_1671376347", value: { weight: 1 }, disabled: true },
+      { id: "explicit.stat_2923486259", value: { weight: 1 }, disabled: true },
+    ],
+    value: { min: 18.5 },
+  });
+});
+
+test("damage ranges average signed decimal values", () => {
+  const query = getSearchQuery("Adds -2.5 to 7.5 Physical Damage to Attacks", stats);
+  expect(query.stats).toEqual([
+    { type: "and", filters: [{ id: "explicit.stat_3032590688", value: { min: 2.5 } }] },
+  ]);
+});
+
 test("matchStats", () => {
   expect(getSearchQuery(lifeFlask1, stats)).toStrictEqual({
     filters: {

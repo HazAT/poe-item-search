@@ -1,5 +1,6 @@
 import { describe, test, expect } from "bun:test";
 import { formatItemText } from "./itemFormatter";
+import { getCategoryFromItemText } from "@/itemClass.js";
 import type { TradeItem } from "@/types/tradeItem";
 
 describe("itemFormatter", () => {
@@ -54,7 +55,28 @@ describe("itemFormatter", () => {
     expect(result).not.toContain("[Corrupted]");
   });
 
-  test("strips bracket notation from mods", async () => {
+  test.each([
+    ["Ring", "Rings", "accessory.ring"],
+    ["Rings", "Rings", "accessory.ring"],
+    ["Gloves", "Gloves", "armour.gloves"],
+    ["Boots", "Boots", "armour.boots"],
+    ["Wands", "Wands", "weapon.wand"],
+    ["Staff", "Staves", "weapon.staff"],
+    ["Quarterstaff", "Quarterstaves", "weapon.warstaff"],
+    ["Focus", "Foci", "armour.focus"],
+    ["Foci", "Foci", "armour.focus"],
+    ["Body Armour", "Body Armours", "armour.chest"],
+  ])("preserves the category when copying %s items", async (propertyName, itemClass, category) => {
+    const item = await Bun.file("tests/fixtures/api-chest-rare.json").json() as TradeItem;
+    item.properties = [{ name: propertyName, values: [], displayMode: 0 }];
+
+    const result = formatItemText(item);
+
+    expect(result.split("\n")[0]).toBe(`Item Class: ${itemClass}`);
+    expect(getCategoryFromItemText(result)).toBe(category);
+  });
+
+  test("strips bracket notation from mods", () => {
     const item: TradeItem = {
       id: "test",
       realm: "poe2",
@@ -146,6 +168,7 @@ describe("itemFormatter", () => {
 
     const result = formatItemText(item);
 
+    expect(result).toContain("Item Class: Rings\n");
     expect(result).toContain("Rarity: Unique");
     expect(result).toContain("Polcirkeln");
     expect(result).toContain("Sapphire Ring");

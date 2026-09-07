@@ -1,4 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import { DevConnectionStatus } from "../src/components/panel/DevModeIndicator";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { PanelHeader } from "../src/components/panel/PanelHeader";
 import { TabMenu } from "../src/components/panel/TabMenu";
 import { usePanelStore } from "../src/stores/panelStore";
@@ -59,36 +60,6 @@ export const FullPanelLayout: StoryObj = {
   },
 };
 
-// Dev Mode Indicator Stories - mock display since chrome.runtime isn't available in Storybook
-const DevIndicatorMock = ({
-  status,
-}: {
-  status: "connected" | "disconnected" | "checking";
-}) => {
-  const statusColors = {
-    connected: "bg-green-500",
-    disconnected: "bg-red-500",
-    checking: "bg-yellow-500",
-  };
-  const statusLabels = {
-    connected: "Dev reload active",
-    disconnected: "Dev reload disconnected",
-    checking: "Checking...",
-  };
-  return (
-    <div className="flex items-center gap-1.5" title={statusLabels[status]}>
-      <span className="text-xs text-poe-gray-alt uppercase tracking-wider">
-        DEV
-      </span>
-      <div
-        className={`w-2 h-2 rounded-full ${statusColors[status]} ${
-          status === "checking" ? "animate-pulse" : ""
-        }`}
-      />
-    </div>
-  );
-};
-
 export const DevIndicatorConnected: StoryObj = {
   render: () => (
     <div className="w-panel bg-poe-black p-4">
@@ -96,8 +67,8 @@ export const DevIndicatorConnected: StoryObj = {
         <h1 className="font-fontin text-xl text-poe-beige tracking-wide">
           PoE Search
         </h1>
-        <span className="text-sm text-poe-gray-alt">v1.2.0</span>
-        <DevIndicatorMock status="connected" />
+        <span className="text-sm text-poe-gray-alt">v{__APP_VERSION__}</span>
+        <DevConnectionStatus status="connected" />
       </div>
     </div>
   ),
@@ -110,8 +81,8 @@ export const DevIndicatorDisconnected: StoryObj = {
         <h1 className="font-fontin text-xl text-poe-beige tracking-wide">
           PoE Search
         </h1>
-        <span className="text-sm text-poe-gray-alt">v1.2.0</span>
-        <DevIndicatorMock status="disconnected" />
+        <span className="text-sm text-poe-gray-alt">v{__APP_VERSION__}</span>
+        <DevConnectionStatus status="disconnected" />
       </div>
     </div>
   ),
@@ -124,8 +95,8 @@ export const DevIndicatorChecking: StoryObj = {
         <h1 className="font-fontin text-xl text-poe-beige tracking-wide">
           PoE Search
         </h1>
-        <span className="text-sm text-poe-gray-alt">v1.2.0</span>
-        <DevIndicatorMock status="checking" />
+        <span className="text-sm text-poe-gray-alt">v{__APP_VERSION__}</span>
+        <DevConnectionStatus status="checking" />
       </div>
     </div>
   ),

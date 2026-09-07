@@ -1,359 +1,36 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { useState } from "react";
-import {
-  Button,
-  PlusIcon,
-  FolderIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  TrashIcon,
-  ArchiveIcon,
-  BookmarkIcon,
-  SaveIcon,
-  EditIcon,
-} from "../src/components/ui";
-import { Modal } from "../src/components/ui/Modal";
-import { Input } from "../src/components/ui/Input";
-import { Select } from "../src/components/ui/Select";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, userEvent, waitFor, within } from "storybook/test";
+import { BookmarksTab } from "../src/components/bookmarks/BookmarksTab";
+import { setupTradeStory, TradeStoryFrame, type TradeStoryData } from "./helpers/TradeStoryFixture";
+import { storageService } from "../src/services/storage";
+import { itemPreviews } from "./helpers/itemPreviews";
 import type { BookmarksFolderStruct, BookmarksTradeStruct } from "../src/types/bookmarks";
-import { getSortLabel, formatSortBadge } from "../src/utils/sortLabel";
-import { getPriceLabel, formatPriceBadge } from "../src/utils/priceLabel";
+import type { TradeLocationHistoryStruct } from "../src/types/tradeLocation";
+import { useHistoryStore } from "../src/stores/historyStore";
+import compressedSearch from "../tests/fixtures/compressed-search.json";
 
-// Standalone display component for stories (doesn't use store)
-interface BookmarksTabDisplayProps {
+interface BookmarkStoryArgs extends Pick<TradeStoryData, "entries" | "currentLocation" | "historyInitiallyEmpty"> {
   folders: BookmarksFolderStruct[];
   trades: Record<string, BookmarksTradeStruct[]>;
   showArchived?: boolean;
   canBookmark?: boolean;
-  canUpdate?: boolean;
-  onBookmarkClick?: () => void;
 }
 
-function BookmarksTabDisplay({
-  folders,
-  trades,
-  showArchived = false,
-  canBookmark = true,
-  canUpdate = true,
-  onBookmarkClick,
-}: BookmarksTabDisplayProps) {
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
-
-  const visibleFolders = folders.filter((folder) =>
-    showArchived ? true : !folder.archivedAt
-  );
-
-  const archivedCount = folders.filter((f) => f.archivedAt).length;
-
-  const toggleFolder = (id: string) => {
-    setExpandedFolders((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
-  return (
-    <div className="flex flex-col h-full">
-      {/* Header with actions */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-poe-gray">
-        <span className="text-sm text-poe-gray-alt">
-          {folders.length} {folders.length === 1 ? "folder" : "folders"}
-        </span>
-        <div className="flex items-center gap-2">
-          {archivedCount > 0 && (
-            <Button variant="ghost" size="sm">
-              <ArchiveIcon className="w-4 h-4 mr-1" />
-              {showArchived ? "Hide" : "Show"} archived ({archivedCount})
-            </Button>
-          )}
-          <Button variant="primary" size="sm" onClick={() => setIsCreateModalOpen(true)}>
-            <PlusIcon className="w-4 h-4 mr-1" />
-            New Folder
-          </Button>
-        </div>
-      </div>
-
-      {/* Bookmark current search button */}
-      <div className="px-3 py-2 border-b border-poe-gray">
-        <Button
-          variant="default"
-          size="sm"
-          className="w-full"
-          onClick={() => {
-            onBookmarkClick?.();
-            setIsBookmarkModalOpen(true);
-          }}
-          disabled={!canBookmark}
-        >
-          <BookmarkIcon className="w-4 h-4 mr-2" />
-          {canBookmark ? "Bookmark Current Search" : "No active search"}
-        </Button>
-      </div>
-
-      {/* Folders list */}
-      <div className="flex-1 overflow-y-auto">
-        {visibleFolders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full p-4 text-center">
-            <FolderIcon className="w-8 h-8 text-poe-gray-alt mb-2" />
-            <span className="text-poe-gray-alt mb-2">No bookmarks yet</span>
-            <span className="text-xs text-poe-gray-alt">
-              Create a folder to organize your searches
-            </span>
-          </div>
-        ) : (
-          <ul className="divide-y divide-poe-gray">
-            {visibleFolders.map((folder) => (
-              <BookmarkFolderDisplay
-                key={folder.id}
-                folder={folder}
-                trades={trades[folder.id!] ?? []}
-                isExpanded={expandedFolders.has(folder.id!)}
-                onToggle={() => toggleFolder(folder.id!)}
-                canUpdate={canUpdate}
-              />
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* Create Folder Modal */}
-      <Modal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        title="Create Folder"
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setIsCreateModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={() => setIsCreateModalOpen(false)}>
-              Create
-            </Button>
-          </>
-        }
-      >
-        <Input label="Folder Name" placeholder="e.g., Leveling Gear" autoFocus />
-      </Modal>
-
-      {/* Bookmark Modal */}
-      <Modal
-        isOpen={isBookmarkModalOpen}
-        onClose={() => setIsBookmarkModalOpen(false)}
-        title="Bookmark Search"
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setIsBookmarkModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={() => setIsBookmarkModalOpen(false)}>
-              Save Bookmark
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <Input label="Title" placeholder="e.g., Chaos Res Ring" autoFocus />
-          <Select
-            label="Folder"
-            options={folders.map((f) => ({ value: f.id!, label: f.title }))}
-            placeholder="Select a folder..."
-          />
-          <Button variant="ghost" size="sm">
-            <PlusIcon className="w-4 h-4 mr-1" />
-            Create New Folder
-          </Button>
-        </div>
-      </Modal>
-    </div>
-  );
-}
-
-interface BookmarkFolderDisplayProps {
-  folder: BookmarksFolderStruct;
-  trades: BookmarksTradeStruct[];
-  isExpanded: boolean;
-  onToggle: () => void;
-  canUpdate?: boolean;
-}
-
-function BookmarkFolderDisplay({
-  folder,
-  trades,
-  isExpanded,
-  onToggle,
-  canUpdate = true,
-}: BookmarkFolderDisplayProps) {
-  const isArchived = !!folder.archivedAt;
-
-  return (
-    <li className={isArchived ? "opacity-60" : ""}>
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-poe-gray transition-colors group text-left"
-      >
-        {isExpanded ? (
-          <ChevronDownIcon className="w-4 h-4 text-poe-gray-alt shrink-0" />
-        ) : (
-          <ChevronRightIcon className="w-4 h-4 text-poe-gray-alt shrink-0" />
-        )}
-        <FolderIcon className="w-4 h-4 text-poe-gold shrink-0" />
-        <span className="font-fontin text-sm text-poe-beige truncate">
-          {folder.title}
-        </span>
-        <span className="text-xs text-poe-gray-alt shrink-0">({trades.length})</span>
-        <div className="flex-1" />
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            variant="ghost"
-            size="sm"
-            title="Rename"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <EditIcon className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            title={isArchived ? "Unarchive" : "Archive"}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ArchiveIcon className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            title="Delete"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <TrashIcon className="w-4 h-4" />
-          </Button>
-        </div>
-      </button>
-      {isExpanded && (
-        <ul className="bg-poe-black/50 border-t border-poe-gray">
-          {trades.length === 0 ? (
-            <li className="px-6 py-3 text-sm text-poe-gray-alt text-center">
-              No bookmarks in this folder
-            </li>
-          ) : (
-            trades.map((trade) => (
-              <BookmarkTradeDisplay key={trade.id} trade={trade} canUpdate={canUpdate} />
-            ))
-          )}
-        </ul>
-      )}
-    </li>
-  );
-}
-
-function BookmarkTradeDisplay({ trade, canUpdate = true }: { trade: BookmarksTradeStruct; canUpdate?: boolean }) {
-  const timeAgo = trade.createdAt ? getRelativeTime(trade.createdAt) : null;
-  const sortInfo = getSortLabel(trade.queryPayload?.sort);
-  const priceInfo = getPriceLabel(trade.queryPayload);
-
-  return (
-    <li className="group">
-      <button className="w-full flex items-start gap-3 px-3 py-2 hover:bg-poe-gray transition-colors text-left">
-        {trade.previewImageUrl && (
-          <div className="shrink-0 w-8 h-8 rounded overflow-hidden bg-poe-dark">
-            <img
-              src={trade.previewImageUrl}
-              alt=""
-              className="w-full h-full object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
-            />
-          </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="font-fontin text-sm text-poe-beige truncate">
-              {trade.title || "Untitled Search"}
-            </span>
-            <span className="text-xs text-poe-gray-alt shrink-0">
-              {trade.location.version === "2" ? "PoE2" : "PoE1"}
-            </span>
-            {sortInfo && (
-              <span className="text-xs text-poe-accent shrink-0">
-                {formatSortBadge(sortInfo)}
-              </span>
-            )}
-            {priceInfo && (
-              <span className="text-xs text-poe-accent shrink-0">
-                {formatPriceBadge(priceInfo)}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-poe-gray-alt truncate">
-              {trade.location.league} • {trade.location.type}
-            </span>
-            {trade.resultCount !== undefined && (
-              <span className="text-xs text-poe-gold shrink-0">
-                {trade.resultCount.toLocaleString()} results
-              </span>
-            )}
-            {timeAgo && (
-              <span className="text-xs text-poe-gray-alt shrink-0">{timeAgo}</span>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          {canUpdate && (
-            <Button variant="ghost" size="sm" title="Update with current search">
-              <SaveIcon className="w-4 h-4" />
-            </Button>
-          )}
-          <Button variant="ghost" size="sm" title="Delete">
-            <TrashIcon className="w-4 h-4" />
-          </Button>
-        </div>
-      </button>
-    </li>
-  );
-}
-
-function getRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffMins < 1) return "just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString();
-}
-
-const meta: Meta<typeof BookmarksTabDisplay> = {
+const meta: Meta<BookmarkStoryArgs> = {
   title: "Tabs/BookmarksTab",
-  component: BookmarksTabDisplay,
-  parameters: {
-    layout: "centered",
-  },
-  decorators: [
-    (Story) => (
-      <div className="w-panel h-[500px] bg-poe-black border border-poe-gray overflow-hidden flex flex-col">
-        <Story />
-      </div>
-    ),
-  ],
+  component: BookmarksTab,
+  parameters: { layout: "centered" },
+  beforeEach: ({ args: { canBookmark = true, ...data } }) =>
+    setupTradeStory({ ...data, activeSearch: canBookmark, expandedFolders: ["1"] }),
+  render: () => (
+    <TradeStoryFrame>
+      <BookmarksTab />
+    </TradeStoryFrame>
+  ),
 };
 
 export default meta;
-type Story = StoryObj<typeof BookmarksTabDisplay>;
-
+type Story = StoryObj<BookmarkStoryArgs>;
 // Mock data
 const mockFolders: BookmarksFolderStruct[] = [
   { id: "1", title: "Leveling Gear", version: "2", icon: null, archivedAt: null },
@@ -408,7 +85,7 @@ const mockTrades: Record<string, BookmarksTradeStruct[]> = {
       createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 mins ago
       queryPayload: mockQueryPayloadWithPrice,
       resultCount: 150,
-      previewImageUrl: "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvUmluZ3MvUmluZzEiLCJ3IjoxLCJoIjoxLCJzY2FsZSI6MSwicmVhbG0iOiJwb2UyIn1d/1b7c0b5e5e/Ring1.png",
+      previewImageUrl: itemPreviews.ring,
     },
     {
       id: "t2",
@@ -417,7 +94,7 @@ const mockTrades: Record<string, BookmarksTradeStruct[]> = {
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
       queryPayload: mockQueryPayloadWithChaosPrice,
       resultCount: 42,
-      previewImageUrl: "https://web.poecdn.com/gen/image/WzI1LDE0LHsiZiI6IjJESXRlbXMvQXJtb3Vycy9Cb290cy9Cb290c0RleDFBMSIsInciOjIsImgiOjIsInNjYWxlIjoxLCJyZWFsbSI6InBvZTIifV0/abc123/BootsDex1A1.png",
+      previewImageUrl: itemPreviews.boots,
     },
   ],
   "2": [
@@ -438,12 +115,23 @@ export const Empty: Story = {
     folders: [],
     trades: {},
   },
+  play: async ({ canvasElement }) => {
+    await expect(await within(canvasElement).findByText("No bookmarks yet")).toBeVisible();
+  },
 };
 
 export const WithFolders: Story = {
   args: {
     folders: mockFolders.filter((f) => !f.archivedAt),
     trades: mockTrades,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(await canvas.findByText("Life + Res Ring")).toBeVisible();
+    await userEvent.click(canvas.getByText("Leveling Gear"));
+    await expect(canvas.queryByText("Life + Res Ring")).not.toBeInTheDocument();
+    await userEvent.click(canvas.getByText("Leveling Gear"));
+    await expect(await canvas.findByText("Life + Res Ring")).toBeVisible();
   },
 };
 
@@ -453,6 +141,13 @@ export const WithArchivedFolders: Story = {
     trades: mockTrades,
     showArchived: true,
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByRole("button", { name: "Hide archived (1)" }));
+    await expect(canvas.queryByText("Archived Folder")).not.toBeInTheDocument();
+    await userEvent.click(canvas.getByRole("button", { name: "Show archived (1)" }));
+    await expect(await canvas.findByText("Archived Folder")).toBeVisible();
+  },
 };
 
 export const NoActiveSearch: Story = {
@@ -461,11 +156,105 @@ export const NoActiveSearch: Story = {
     trades: mockTrades,
     canBookmark: false,
   },
+  play: async ({ canvasElement }) => {
+    await expect(await within(canvasElement).findByRole("button", { name: "No active search" })).toBeDisabled();
+  },
 };
 
 export const SingleFolder: Story = {
   args: {
     folders: [mockFolders[0]],
     trades: { "1": mockTrades["1"] },
+  },
+};
+
+export const CreateFolder: Story = {
+  args: { folders: [], trades: {} },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByRole("button", { name: "New Folder" }));
+    await userEvent.type(canvas.getByPlaceholderText("e.g., Leveling Gear"), "New gear");
+    await userEvent.click(canvas.getByRole("button", { name: "Create" }));
+    await expect(await canvas.findByText("New gear")).toBeVisible();
+    await expect(canvas.queryByText("No bookmarks yet")).not.toBeInTheDocument();
+    await expect(await storageService.getValue("bookmark-folders")).toEqual([
+      expect.objectContaining({ title: "New gear", version: "2" }),
+    ]);
+  },
+};
+
+export const RenameWithoutExpanding: Story = {
+  args: { folders: [mockFolders[1]], trades: mockTrades },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const folder = await canvas.findByRole("button", { name: /Endgame Items/ });
+    await expect(folder).toHaveAttribute("aria-expanded", "false");
+    folder.focus();
+    await userEvent.click(canvas.getByTitle("Rename"));
+    await waitFor(() => expect(canvas.getByRole("heading", { name: "Rename Folder" })).toBeVisible());
+    await expect(folder).toHaveAttribute("aria-expanded", "false");
+    await userEvent.click(canvas.getByRole("button", { name: "Cancel" }));
+    await expect(folder).toHaveAttribute("aria-expanded", "false");
+  },
+};
+
+const pastedEntry: TradeLocationHistoryStruct = {
+  id: "pasted-item", title: "Miracle Guardian", version: "2", type: "search", league: "poe2/Standard",
+  slug: compressedSearch.historySlug, createdAt: "2026-09-07T00:00:00Z", source: "extension", resultCount: 0,
+  queryPayload: { query: compressedSearch.query },
+};
+
+async function saveCurrentSearch(canvasElement: HTMLElement, expectedSlug: string) {
+  const canvas = within(canvasElement);
+  await userEvent.click(await canvas.findByRole("button", { name: "Bookmark Current Search" }));
+  await waitFor(() => expect(canvas.getByRole("button", { name: "Save Bookmark" })).toBeEnabled());
+  await expect(canvas.getByRole("textbox")).toHaveValue("Miracle Guardian");
+  await userEvent.click(canvas.getByRole("button", { name: "Save Bookmark" }));
+  await waitFor(async () => expect(await storageService.getValue("bookmark-trades-1")).toEqual([
+    expect.objectContaining({
+      title: "Miracle Guardian", queryPayload: pastedEntry.queryPayload,
+      location: { version: "2", type: "search", league: "poe2/Standard", slug: expectedSlug },
+    }),
+  ]));
+  await expect(await storageService.getValue("trade-history")).toHaveLength(1);
+  await expect(useHistoryStore.getState().entries).toHaveLength(1);
+}
+
+export const BookmarkAfterReload: Story = {
+  args: {
+    folders: [mockFolders[0]], trades: {},
+    entries: [{ ...pastedEntry, slug: "story-search" }], historyInitiallyEmpty: true,
+  },
+  play: async ({ canvasElement }) => saveCurrentSearch(canvasElement, "story-search"),
+};
+
+export const BookmarkCompressedCurrentSearch: Story = {
+  args: {
+    folders: [mockFolders[0]], trades: {}, entries: [pastedEntry], historyInitiallyEmpty: true,
+    currentLocation: { version: "2", type: "search", league: "poe2/Standard", slug: compressedSearch.pageSlug },
+  },
+  play: async ({ canvasElement }) => saveCurrentSearch(canvasElement, compressedSearch.pageSlug),
+};
+
+export const UpdateFromCompressedCurrentSearch: Story = {
+  args: {
+    folders: [mockFolders[0]], trades: { "1": [mockTrades["1"][0]] }, entries: [pastedEntry],
+    currentLocation: { version: "2", type: "search", league: "poe2/Standard", slug: compressedSearch.pageSlug },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const update = await canvas.findByTitle("Update with current search");
+    update.focus();
+    await userEvent.click(update);
+    await expect(canvas.getByRole("textbox")).toHaveValue("Life + Res Ring");
+    await userEvent.click(canvas.getByRole("button", { name: "Update Bookmark" }));
+    await waitFor(async () => expect(await storageService.getValue("bookmark-trades-1")).toEqual([
+      expect.objectContaining({
+        id: "t1", title: "Life + Res Ring", createdAt: mockTrades["1"][0].createdAt,
+        queryPayload: pastedEntry.queryPayload,
+        location: { version: "2", type: "search", league: "poe2/Standard", slug: compressedSearch.pageSlug },
+      }),
+    ]));
+    await expect(await storageService.getValue("trade-history")).toEqual([pastedEntry]);
   },
 };

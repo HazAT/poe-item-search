@@ -1,9 +1,9 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
-import Terminal from "vite-plugin-terminal";
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
+import { Script } from "node:vm";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -13,16 +13,18 @@ const SENTRY_DSN = "https://2f310e8a7b71228d08e5e09060ecdab9@o55934.ingest.us.se
 // Read version from package.json
 const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, "package.json"), "utf-8"));
 const APP_VERSION = packageJson.version;
+const IS_DEV = process.env.BUILD_MODE === "dev";
 
 // Plugin to generate production manifest and copy assets
 function extensionAssetsPlugin(): Plugin {
+  let outDir: string;
   return {
     name: "extension-assets",
     apply: "build",
-    closeBundle() {
-      // Generate manifest for dist folder
-      // Check if running in watch mode (dev) - use BUILD_MODE env var set by dev script
-      const isDev = process.env.BUILD_MODE === "dev";
+    configResolved(config) {
+      outDir = path.resolve(config.root, config.build.outDir);
+    },
+    writeBundle() {
       const manifest: Record<string, unknown> = {
         manifest_version: 3,
         name: "Path of Exile 2 - Trading Buddy",
@@ -48,7 +50,7 @@ function extensionAssetsPlugin(): Plugin {
       };
 
       // Add background script for auto-reload in dev mode
-      if (isDev) {
+      if (IS_DEV) {
         manifest.background = {
           service_worker: "background/reload.js",
           type: "module",
@@ -58,17 +60,17 @@ function extensionAssetsPlugin(): Plugin {
         console.log("[vite] Dev mode: background reload script enabled");
       }
       fs.writeFileSync(
-        path.resolve(__dirname, "dist/manifest.json"),
+        path.join(outDir, "manifest.json"),
         JSON.stringify(manifest, null, 2)
       );
-      console.log("[vite] Manifest written to dist/manifest.json");
+      console.log(`[vite] Manifest written to ${path.join(outDir, "manifest.json")}`);
 
       // Copy assets folder
       const assetsSource = path.resolve(__dirname, "assets");
-      const assetsDest = path.resolve(__dirname, "dist/assets");
+      const assetsDest = path.join(outDir, "assets");
       if (fs.existsSync(assetsSource)) {
         fs.cpSync(assetsSource, assetsDest, { recursive: true });
-        console.log("[vite] Assets copied to dist/assets");
+        console.log(`[vite] Assets copied to ${assetsDest}`);
       }
     },
   };
@@ -76,27 +78,36 @@ function extensionAssetsPlugin(): Plugin {
 
 export default defineConfig({
   define: {
-    __DEV_MODE__: JSON.stringify(process.env.BUILD_MODE === "dev"),
+    __DEV_MODE__: JSON.stringify(IS_DEV),
     __APP_VERSION__: JSON.stringify(APP_VERSION),
     __SENTRY_DSN__: JSON.stringify(SENTRY_DSN),
   },
   plugins: [
     react(),
-    Terminal({
-      console: "terminal",
-      output: ["terminal", "console"],
-    }),
     extensionAssetsPlugin(),
     // Wrap injected scripts in IIFEs to avoid polluting global scope
     // and prevent "already declared" errors on extension reload
     {
-      name: "wrap-injected-iife",
+      name: "extension-scripts",
       generateBundle(_options, bundle) {
         const injectedFiles = ["interceptor.js", "statIdExtractor.js"];
-        for (const fileName of injectedFiles) {
-          const chunk = bundle[fileName];
-          if (chunk && chunk.type === "chunk") {
+        for (const chunk of Object.values(bundle)) {
+          if (chunk.type !== "chunk") continue;
+
+          // Content and injected scripts load as classic scripts; the reload
+          // worker also expects each watched entry to be self-contained.
+          if (!chunk.isEntry || chunk.imports.length || chunk.dynamicImports.length || chunk.exports.length) {
+            this.error(`Extension script ${chunk.fileName} must be self-contained without imports or exports.`);
+          }
+
+          if (injectedFiles.includes(chunk.fileName)) {
             chunk.code = `(function() {\n${chunk.code}\n})();\n`;
+          }
+
+          try {
+            new Script(chunk.code, { filename: chunk.fileName });
+          } catch (error) {
+            this.error(`Invalid classic extension script ${chunk.fileName}: ${String(error)}`);
           }
         }
       },
@@ -105,12 +116,12 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
-    rollupOptions: {
+    rolldownOptions: {
       input: {
         content: path.resolve(__dirname, "src/content.tsx"),
         interceptor: path.resolve(__dirname, "src/injected/interceptor.ts"),
         statIdExtractor: path.resolve(__dirname, "src/injected/statIdExtractor.ts"),
-        "background/reload": path.resolve(__dirname, "src/background/reload.ts"),
+        ...(IS_DEV ? { "background/reload": path.resolve(__dirname, "src/background/reload.ts") } : {}),
       },
       output: {
         entryFileNames: "[name].js",

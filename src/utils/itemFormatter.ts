@@ -123,7 +123,14 @@ function getItemClass(properties: TradeItemProperty[] | undefined): string | nul
   // First property with empty values is usually the item class
   const classProperty = properties.find((p) => !p.values || p.values.length === 0);
   if (classProperty) {
-    return stripBracketNotation(classProperty.name);
+    const name = stripBracketNotation(classProperty.name);
+    const irregularPlurals: Record<string, string> = {
+      Staff: "Staves",
+      Quarterstaff: "Quarterstaves",
+      Focus: "Foci",
+      Foci: "Foci",
+    };
+    return irregularPlurals[name] ?? (name.endsWith("s") ? name : `${name}s`);
   }
 
   return null;
@@ -146,7 +153,7 @@ export function formatItemText(item: TradeItem): string {
   // Item Class
   const itemClass = getItemClass(item.properties);
   if (itemClass) {
-    lines.push(`Item Class: ${itemClass}s`); // Add 's' for plural (Body Armour → Body Armours)
+    lines.push(`Item Class: ${itemClass}`);
   }
 
   // Rarity
@@ -186,66 +193,19 @@ export function formatItemText(item: TradeItem): string {
   lines.push(SEPARATOR);
   lines.push(`Item Level: ${item.ilvl}`);
 
-  // Rune mods (if any)
-  if (item.runeMods && item.runeMods.length > 0) {
-    lines.push(SEPARATOR);
-    for (const mod of item.runeMods) {
-      lines.push(formatMod(mod, "rune"));
-    }
-  }
-
-  // Enchant mods (if any)
-  if (item.enchantMods && item.enchantMods.length > 0) {
-    lines.push(SEPARATOR);
-    for (const mod of item.enchantMods) {
-      lines.push(formatMod(mod, "enchant"));
-    }
-  }
-
-  // Implicit mods
-  if (item.implicitMods && item.implicitMods.length > 0) {
-    lines.push(SEPARATOR);
-    for (const mod of item.implicitMods) {
-      lines.push(formatMod(mod, "implicit"));
-    }
-  }
-
-  // Fractured mods (before explicit - they're special locked mods)
-  if (item.fracturedMods && item.fracturedMods.length > 0) {
-    lines.push(SEPARATOR);
-    for (const mod of item.fracturedMods) {
-      lines.push(formatMod(mod, "fractured"));
-    }
-  }
-
-  // Explicit mods
-  if (item.explicitMods && item.explicitMods.length > 0) {
-    lines.push(SEPARATOR);
-    for (const mod of item.explicitMods) {
-      lines.push(formatMod(mod));
-    }
-  }
-
-  // Desecrated mods (mods from desecrated items - special modifier type)
-  if (item.desecratedMods && item.desecratedMods.length > 0) {
-    lines.push(SEPARATOR);
-    for (const mod of item.desecratedMods) {
-      lines.push(formatMod(mod, "desecrated"));
-    }
-  }
-
-  if (item.mutatedMods && item.mutatedMods.length > 0) {
-    lines.push(SEPARATOR);
-    for (const mod of item.mutatedMods) {
-      lines.push(formatMod(mod, "mutated"));
-    }
-  }
-
-  // Crafted mods
-  if (item.craftedMods && item.craftedMods.length > 0) {
-    lines.push(SEPARATOR);
-    for (const mod of item.craftedMods) {
-      lines.push(formatMod(mod, "crafted"));
+  const modSections: [string[] | undefined, string?][] = [
+    [item.runeMods, "rune"],
+    [item.enchantMods, "enchant"],
+    [item.implicitMods, "implicit"],
+    [item.fracturedMods, "fractured"],
+    [item.explicitMods],
+    [item.desecratedMods, "desecrated"],
+    [item.mutatedMods, "mutated"],
+    [item.craftedMods, "crafted"],
+  ];
+  for (const [mods, suffix] of modSections) {
+    if (mods?.length) {
+      lines.push(SEPARATOR, ...mods.map((mod) => formatMod(mod, suffix)));
     }
   }
 

@@ -19,11 +19,11 @@ const CACHE_TTL = 1000 * 60 * 60; // 1 hour
 
 /**
  * Fetches stats from the PoE trade API
- * @param {string} league - The league to fetch stats for (default: "Standard")
+ * @param {string} _league - Retained for compatibility; stats are shared across leagues
  * @param {boolean} poe2 - Whether to use PoE 2 API (default: true)
  * @returns {Promise<object>} The stats data
  */
-async function fetchStats(league = "Standard", poe2 = true) {
+async function fetchStats(_league = "Standard", poe2 = true) {
   const baseUrl = poe2
     ? "https://www.pathofexile.com/api/trade2/data/stats"
     : "https://www.pathofexile.com/api/trade/data/stats";
@@ -96,18 +96,8 @@ export async function buildSearchQuery(itemText, options = {}) {
     throw new Error("itemText must be a non-empty string");
   }
 
-  // Get stats (from provided, cache, or fetch)
-  let regexStats;
-  if (providedStats) {
-    regexStats = providedStats.result ? addRegexToStats(providedStats) : providedStats;
-  } else {
-    regexStats = await getStats({ forceRefresh, poe2 });
-  }
-
-  // Build the search query
-  const query = getSearchQuery(itemText, regexStats);
-
-  return query;
+  const stats = providedStats ?? await getStats({ forceRefresh, poe2 });
+  return getSearchQuery(itemText, stats);
 }
 
 /**

@@ -55,6 +55,10 @@ export function DevModeIndicator() {
     return () => clearInterval(intervalId);
   }, [checkConnection]);
 
+  return <DevConnectionStatus status={status} />;
+}
+
+export function DevConnectionStatus({ status }: { status: ConnectionStatus }) {
   const statusColors = {
     connected: "bg-green-500",
     disconnected: "bg-red-500",

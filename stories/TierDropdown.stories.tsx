@@ -1,5 +1,5 @@
 // stories/TierDropdown.stories.tsx
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { TierDropdown } from '../src/components/tiers';
 
 const meta: Meta<typeof TierDropdown> = {

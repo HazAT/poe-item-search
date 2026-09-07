@@ -1,4 +1,4 @@
-export { OverlayPanel, CollapsedToggle } from "./OverlayPanel";
+export { CollapsedToggle } from "./CollapsedToggle";
 export { PanelContent } from "./PanelContent";
 export { PanelHeader } from "./PanelHeader";
 export { TabMenu } from "./TabMenu";

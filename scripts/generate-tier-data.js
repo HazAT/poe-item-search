@@ -4,7 +4,6 @@ import fs from 'fs';
 import path from 'path';
 
 const MODS_PATH = 'tests/fixtures/mods.json';
-const MODS_BY_BASE_PATH = 'tests/fixtures/mods_by_base.json';
 const OUTPUT_PATH = 'src/data/tiers.json';
 
 // Stat IDs we care about (trade API ID -> game data stat pattern)

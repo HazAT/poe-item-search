@@ -30,7 +30,7 @@ export interface SyncResult {
   error?: string;
 }
 
-class StorageService {
+export class StorageService {
   private prefix = "poe-search-";
   private _syncEnabled: boolean = false;
   private _syncQuotaInfo: SyncQuotaInfo | null = null;
@@ -132,27 +132,59 @@ class StorageService {
   }
 
   private setupCrossTabListener(): void {
-    if (typeof chrome !== "undefined" && chrome.storage?.onChanged) {
-      chrome.storage.onChanged.addListener((changes, areaName) => {
-        // Only listen to the backend we're using
-        const expectedArea = this._syncEnabled ? "sync" : "local";
-        if (areaName !== expectedArea) return;
+    const handleChange = (key: string, areaName: string) => {
+      if (!key.startsWith(this.prefix)) return;
+      if (areaName !== this.getBackendForKey(key.slice(this.prefix.length))) return;
+      debug.log(`[Storage] cross-tab change detected: ${key} (${areaName})`);
+      this.notifyKeyChangeListeners(key);
+    };
 
+    const usesChromeStorage = typeof chrome !== "undefined" && !!chrome.storage?.onChanged;
+    if (usesChromeStorage) {
+      chrome.storage.onChanged.addListener((changes, areaName) => {
         for (const key of Object.keys(changes)) {
-          debug.log(`[Storage] cross-tab change detected: ${key} (${areaName})`);
-          this.notifyKeyChangeListeners(key);
+          handleChange(key, areaName);
         }
       });
       debug.log("[Storage] cross-tab listener registered (chrome.storage.onChanged)");
-    } else if (typeof window !== "undefined") {
-      // Fallback for Storybook/tests: listen for localStorage changes from other tabs
-      window.addEventListener("storage", (event) => {
-        if (event.key) {
-          debug.log(`[Storage] cross-tab change detected (localStorage): ${event.key}`);
-          this.notifyKeyChangeListeners(event.key);
+    }
+
+    if (typeof window !== "undefined") {
+      // The sync preference lives in localStorage even when data uses Chrome storage.
+      window.addEventListener("storage", async (event) => {
+        if (event.key === SYNC_ENABLED_KEY) {
+          await this.refreshSyncPreference();
+          return;
         }
+        if (usesChromeStorage) return;
+        // The fallback API prefixes each key with its emulated storage area.
+        const match = event.key?.match(/^poe-search-(local|sync)-(.+)$/);
+        if (match) handleChange(match[2], match[1]);
       });
-      debug.log("[Storage] cross-tab listener registered (window.storage fallback)");
+      debug.log("[Storage] cross-tab listener registered (window.storage)");
+    }
+  }
+
+  private async refreshSyncPreference(): Promise<void> {
+    const enabled = localStorage.getItem(SYNC_ENABLED_KEY) === "true";
+    if (enabled === this._syncEnabled) return;
+
+    // The originating tab already migrated the data before publishing this preference.
+    this._syncEnabled = enabled;
+    this._syncQuotaInfo = null;
+    debug.log(`[Storage] sync preference changed in another tab: ${enabled}`);
+    this.notify();
+
+    // Migration writes may have arrived while we still listened to the old backend.
+    const listeners = new Set([...this._keyChangeListeners.values()].flatMap((callbacks) => [...callbacks]));
+    listeners.forEach((listener) => listener());
+
+    if (enabled) {
+      try {
+        await this.updateSyncQuotaInfo();
+      } catch (error) {
+        debug.error("[Storage] failed to refresh sync quota after preference change", error);
+      }
     }
   }
 
@@ -375,7 +407,7 @@ class StorageService {
       isNearItemLimit: itemCount >= syncApi.MAX_ITEMS * 0.9,
     };
 
-    this._syncQuotaInfo = quotaInfo;
+    this._syncQuotaInfo = this._syncEnabled ? quotaInfo : null;
     this.notify();
     return quotaInfo;
   }

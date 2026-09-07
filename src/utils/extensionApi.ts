@@ -25,20 +25,6 @@ interface ExtensionApi {
   };
 }
 
-// Unused but kept for potential future use
-export function isExtensionContextValid(): boolean {
-  try {
-    return typeof chrome !== "undefined" && !!chrome.runtime?.id;
-  } catch {
-    return false;
-  }
-}
-
-// Unused but kept for potential future use
-export function enableLocalStorageFallback(): void {
-  // No-op - we always use localStorage now
-}
-
 export const extensionApi = (): ExtensionApi => {
   // Use real Chrome APIs when available, fallback to localStorage for Storybook/tests
   if (typeof chrome !== "undefined" && chrome.storage?.sync) {

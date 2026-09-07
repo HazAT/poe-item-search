@@ -1,55 +1,39 @@
 import { useState, useEffect, useMemo } from "react";
 import { useBookmarksStore } from "@/stores/bookmarksStore";
-import { useHistoryStore } from "@/stores/historyStore";
-import { getCurrentTradeLocation } from "@/services/tradeLocation";
+import type { CurrentSearch } from "@/services/currentSearch";
 import { Button, Input, Select, Modal, PlusIcon } from "@/components/ui";
-import type { TradeLocationStruct, TradeLocationHistoryStruct } from "@/types/tradeLocation";
 import type { BookmarksTradeStruct } from "@/types/bookmarks";
 
 interface BookmarkModalProps {
   isOpen: boolean;
   onClose: () => void;
+  currentSearch: CurrentSearch;
   editMode?: {
     folderId: string;
     trade: BookmarksTradeStruct;
   };
 }
 
-export function BookmarkModal({ isOpen, onClose, editMode }: BookmarkModalProps) {
+export function BookmarkModal({ isOpen, onClose, editMode, currentSearch }: BookmarkModalProps) {
   const { folders, fetchFolders, createFolder, createTrade, updateTrade } = useBookmarksStore();
+  const { location: currentLocation, historyEntry: currentHistoryEntry } = currentSearch;
 
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState<string | null>(null);
+  const titleValue = title ?? editMode?.trade.title ?? currentHistoryEntry?.title ?? "Custom Search";
+  const editFolderId = editMode?.folderId;
   const [selectedFolderId, setSelectedFolderId] = useState("");
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [newFolderTitle, setNewFolderTitle] = useState("");
-  const [currentLocation, setCurrentLocation] = useState<TradeLocationStruct | null>(null);
-  const [currentHistoryEntry, setCurrentHistoryEntry] = useState<TradeLocationHistoryStruct | null>(null);
   const [error, setError] = useState("");
 
-  // Fetch folders and lookup history entry when modal opens
+  // Reset user edits on open; defaults follow the current search as it loads.
   useEffect(() => {
     if (isOpen) {
       fetchFolders();
-      const location = getCurrentTradeLocation();
-      setCurrentLocation(location);
-
-      // Look up the history entry for this search to get title and query payload
-      const { entries } = useHistoryStore.getState();
-      const historyEntry = entries.find((e) => e.slug === location.slug) ?? null;
-      setCurrentHistoryEntry(historyEntry);
-
-      // In edit mode, use existing bookmark title; otherwise use history/fallback
-      if (editMode) {
-        setTitle(editMode.trade.title);
-        setSelectedFolderId(editMode.folderId);
-      } else if (historyEntry?.title) {
-        setTitle(historyEntry.title);
-      } else {
-        setTitle("Custom Search");
-      }
+      setTitle(null);
+      if (editFolderId) setSelectedFolderId(editFolderId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, editMode]);
+  }, [isOpen, editFolderId, fetchFolders]);
 
   // Auto-select first folder if available
   useEffect(() => {
@@ -94,7 +78,7 @@ export function BookmarkModal({ isOpen, onClose, editMode }: BookmarkModalProps)
   };
 
   const handleBookmark = async () => {
-    if (!title.trim()) {
+    if (!titleValue.trim()) {
       setError("Please enter a title");
       return;
     }
@@ -114,7 +98,7 @@ export function BookmarkModal({ isOpen, onClose, editMode }: BookmarkModalProps)
     if (editMode) {
       // Update existing bookmark
       await updateTrade(editMode.folderId, editMode.trade.id!, {
-        title: title.trim(),
+        title: titleValue.trim(),
         location: {
           version: currentLocation.version,
           type: currentLocation.type || "search",
@@ -129,7 +113,7 @@ export function BookmarkModal({ isOpen, onClose, editMode }: BookmarkModalProps)
     } else {
       // Create new bookmark
       await createTrade(selectedFolderId, {
-        title: title.trim(),
+        title: titleValue.trim(),
         location: {
           version: currentLocation.version,
           type: currentLocation.type || "search",
@@ -144,13 +128,13 @@ export function BookmarkModal({ isOpen, onClose, editMode }: BookmarkModalProps)
     }
 
     // Reset and close
-    setTitle("");
+    setTitle(null);
     setError("");
     onClose();
   };
 
   const handleClose = () => {
-    setTitle("");
+    setTitle(null);
     setError("");
     setIsCreatingFolder(false);
     setNewFolderTitle("");
@@ -188,7 +172,7 @@ export function BookmarkModal({ isOpen, onClose, editMode }: BookmarkModalProps)
 
         <Input
           label="Title"
-          value={title}
+          value={titleValue}
           onChange={(e) => {
             setTitle(e.target.value);
             setError("");

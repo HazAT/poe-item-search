@@ -32,7 +32,7 @@ const CURRENCY_ABBREVIATIONS: Record<string, string> = {
  * Extract max price info from a trade query payload.
  * Returns null if no max price is defined.
  */
-export function getPriceLabel(queryPayload?: TradeSearchQuery): PriceLabelResult | null {
+export function getPriceLabel(queryPayload?: Pick<TradeSearchQuery, "query">): PriceLabelResult | null {
   if (!queryPayload?.query?.filters) return null;
 
   // Navigate to price filter: query.filters.trade_filters.filters.price
@@ -44,8 +44,7 @@ export function getPriceLabel(queryPayload?: TradeSearchQuery): PriceLabelResult
   if (!innerFilters) return null;
 
   const price = innerFilters.price as { min?: number; max?: number; option?: string } | undefined;
-  // Only show badge if max is a valid number (not null, undefined, or NaN)
-  if (!price || price.max == null || typeof price.max !== "number") return null;
+  if (!price || typeof price.max !== "number" || !Number.isFinite(price.max)) return null;
 
   return {
     max: price.max,

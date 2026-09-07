@@ -1,15 +1,14 @@
-import type { Preview } from "@storybook/react";
+import type { Preview } from "@storybook/react-vite";
 import "../src/index.css";
 
 const preview: Preview = {
   parameters: {
     backgrounds: {
-      default: "poe-dark",
-      values: [
-        { name: "poe-dark", value: "#161616" },
-        { name: "poe-gray", value: "#373737" },
-        { name: "light", value: "#ffffff" },
-      ],
+      options: {
+        "poe-dark": { name: "poe-dark", value: "#161616" },
+        "poe-gray": { name: "poe-gray", value: "#373737" },
+        light: { name: "light", value: "#ffffff" },
+      },
     },
     controls: {
       matchers: {
@@ -18,6 +17,7 @@ const preview: Preview = {
       },
     },
   },
+  initialGlobals: { backgrounds: { value: "poe-dark" } },
 };
 
 export default preview;

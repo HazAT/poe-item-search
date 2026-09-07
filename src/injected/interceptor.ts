@@ -26,17 +26,11 @@ const TRADE_FETCH_PATTERN = /\/api\/trade2?\/fetch\/.+/;
 // Item cache for copy functionality
 const itemCache = new Map<string, TradeItem>();
 
-// Legacy alias for existing code
-const TRADE_API_PATTERN = TRADE_SEARCH_PATTERN;
-
 // Key for storing desired sort override
 const SORT_OVERRIDE_KEY = "poe-search-sort-override";
 
 // Key for pending sort click (to sync UI after results load)
 const PENDING_SORT_CLICK_KEY = "poe-search-pending-sort-click";
-
-// Selector for first item's image in results
-const PREVIEW_IMAGE_SELECTOR = ".results .row[data-id] img";
 
 /**
  * Click the sort element to sync the UI after results load.
@@ -111,55 +105,36 @@ function triggerSortUISync() {
  * Capture the first item's preview image URL after results render.
  * Uses MutationObserver with timeout fallback.
  */
-function capturePreviewImage(slug: string) {
-  const maxWaitTime = 5000; // 5 seconds max
-  const startTime = Date.now();
-
-  const tryCapture = (): string | null => {
-    const img = document.querySelector(PREVIEW_IMAGE_SELECTOR) as HTMLImageElement;
-    return img?.src || null;
-  };
+function capturePreviewImage(slug: string, firstResultId: string) {
+  // Old results may still be visible when the search response arrives.
+  const selector = `.results .row[data-id="${CSS.escape(firstResultId)}"] img`;
+  const tryCapture = () => document.querySelector<HTMLImageElement>(selector)?.src;
 
   const sendPreviewImage = (imageUrl: string) => {
-    window.postMessage(
-      {
-        type: "poe-search-preview-image",
-        payload: { slug, imageUrl },
-      },
-      "*"
-    );
+    window.postMessage({ type: "poe-search-preview-image", payload: { slug, imageUrl } }, "*");
     injectedLogger.log("Captured preview image: " + imageUrl.slice(0, 60) + "...");
   };
 
-  // Try immediately first (results might already be rendered)
   const immediate = tryCapture();
   if (immediate) {
     sendPreviewImage(immediate);
     return;
   }
 
-  // Set up MutationObserver to watch for results
-  const observer = new MutationObserver((_mutations, obs) => {
+  const observer = new MutationObserver(() => {
     const imageUrl = tryCapture();
     if (imageUrl) {
-      obs.disconnect();
+      observer.disconnect();
+      clearTimeout(timeout);
       sendPreviewImage(imageUrl);
-    } else if (Date.now() - startTime > maxWaitTime) {
-      obs.disconnect();
-      injectedLogger.log("Preview image capture timed out");
     }
   });
-
-  const resultsContainer = document.querySelector(".results") || document.body;
-  observer.observe(resultsContainer, {
-    childList: true,
-    subtree: true,
-  });
-
-  // Fallback timeout to disconnect observer
-  setTimeout(() => {
+  // Observe the body because a new search can replace the results container.
+  observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+  const timeout = setTimeout(() => {
     observer.disconnect();
-  }, maxWaitTime);
+    injectedLogger.log("Preview image capture timed out");
+  }, 5000);
 }
 
 export interface TradeSearchInterceptedPayload {
@@ -174,134 +149,144 @@ export interface TradeSearchInterceptedPayload {
   timestamp: number;
 }
 
+function isSearchResponse(value: unknown): value is TradeSearchInterceptedPayload["responseBody"] {
+  if (!value || typeof value !== "object") return false;
+  const body = value as Record<string, unknown>;
+  return !body.error &&
+    typeof body.id === "string" && body.id.trim().length > 0 &&
+    typeof body.total === "number" && Number.isFinite(body.total) && body.total >= 0 &&
+    (body.result === undefined || (Array.isArray(body.result) && body.result.every(id => typeof id === "string")));
+}
+
+function captureSearchResponse(
+  url: string,
+  requestBody: unknown,
+  responseBody: unknown,
+  status: number,
+  prefix = "",
+) {
+  if (status < 200 || status >= 300 || !isSearchResponse(responseBody)) {
+    injectedLogger.warn(prefix + "Ignoring unsuccessful search response", { url, status, responseBody });
+    return;
+  }
+
+  const payload: TradeSearchInterceptedPayload = {
+    url, method: "POST", requestBody, responseBody, timestamp: Date.now(),
+  };
+  window.postMessage({ type: "poe-search-intercepted", payload }, "*");
+  injectedLogger.log(prefix + "Captured search", { url, total: responseBody.total, id: responseBody.id });
+  triggerSortUISync();
+
+  const firstResultId = responseBody.result?.[0];
+  if (responseBody.total > 0 && firstResultId) capturePreviewImage(responseBody.id, firstResultId);
+}
+
 // Store original fetch
 const originalFetch = window.fetch;
 
-// Override fetch (cast to any to avoid TypeScript issues with fetch.preconnect)
-(window as any).fetch = async function (...args: Parameters<typeof fetch>) {
-  let [input, init] = args;
-  const url =
-    typeof input === "string"
-      ? input
-      : input instanceof URL
-        ? input.href
-        : input.url;
+// A proxy preserves fetch properties (for example preconnect) while intercepting calls.
+window.fetch = new Proxy(originalFetch, {
+  async apply(_target, thisArg, args: Parameters<typeof fetch>) {
+    const [input, originalInit] = args;
+    let init = originalInit;
+    const url =
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.href
+          : input.url;
 
-  // Check if this is a trade search POST
-  if (init?.method?.toUpperCase() === "POST" && TRADE_API_PATTERN.test(url)) {
-    let requestBody: unknown;
+    // Check if this is a trade search POST
+    if (init?.method?.toUpperCase() === "POST" && TRADE_SEARCH_PATTERN.test(url)) {
+      let requestBody: unknown;
 
-    // Parse request body
-    if (init.body) {
-      try {
-        requestBody = JSON.parse(init.body as string);
-      } catch {
-        requestBody = init.body;
-      }
-    }
-
-    // Check for sort override from history/bookmark execution (using localStorage)
-    const sortOverride = localStorage.getItem(SORT_OVERRIDE_KEY);
-    injectedLogger.log("Checking sort override", {
-      hasOverride: !!sortOverride,
-      override: sortOverride,
-      currentSort: (requestBody as { sort?: unknown })?.sort
-    });
-    if (sortOverride && requestBody && typeof requestBody === "object") {
-      try {
-        const overrideData = JSON.parse(sortOverride);
-        (requestBody as Record<string, unknown>).sort = overrideData;
-        // Update the init.body with modified payload
-        init = { ...init, body: JSON.stringify(requestBody) };
-        injectedLogger.log("Applied sort override", overrideData);
-
-        // Store pending sort click for UI sync after results load
-        const sortKeys = Object.keys(overrideData);
-        if (sortKeys.length > 0) {
-          const field = sortKeys[0];
-          const direction = overrideData[field];
-          localStorage.setItem(PENDING_SORT_CLICK_KEY, JSON.stringify({ field, direction }));
-          injectedLogger.log("Queued sort UI sync", { field, direction });
+      // Parse request body
+      if (init.body) {
+        try {
+          requestBody = JSON.parse(init.body as string);
+        } catch {
+          requestBody = init.body;
         }
-
-        // Clear after use (only apply once)
-        localStorage.removeItem(SORT_OVERRIDE_KEY);
-      } catch (e) {
-        injectedLogger.error("Failed to apply sort override", e);
       }
-    }
 
-    // Execute original fetch
-    const response = await originalFetch.apply(this, [input, init]);
-
-    // Clone response to read body without consuming it
-    const clonedResponse = response.clone();
-
-    try {
-      const responseBody = await clonedResponse.json();
-
-      // Send intercepted data to content script
-      window.postMessage(
-        {
-          type: "poe-search-intercepted",
-          payload: {
-            url,
-            method: "POST",
-            requestBody,
-            responseBody,
-            timestamp: Date.now(),
-          } as TradeSearchInterceptedPayload,
-        },
-        "*"
-      );
-
-      injectedLogger.log("Captured search", {
-        url,
-        total: responseBody.total,
-        id: responseBody.id,
+      // Check for sort override from history/bookmark execution (using localStorage)
+      const sortOverride = localStorage.getItem(SORT_OVERRIDE_KEY);
+      injectedLogger.log("Checking sort override", {
+        hasOverride: !!sortOverride,
+        override: sortOverride,
+        currentSort: (requestBody as { sort?: unknown })?.sort
       });
+      if (sortOverride && requestBody && typeof requestBody === "object") {
+        try {
+          const overrideData = JSON.parse(sortOverride);
+          (requestBody as Record<string, unknown>).sort = overrideData;
+          // Update the init.body with modified payload
+          init = { ...init, body: JSON.stringify(requestBody) };
+          injectedLogger.log("Applied sort override", overrideData);
 
-      // Trigger sort UI sync if we have a pending sort click
-      triggerSortUISync();
-
-      // Capture preview image from first result
-      capturePreviewImage(responseBody.id);
-    } catch (e) {
-      injectedLogger.error("Failed to parse response", e);
-    }
-
-    return response;
-  }
-
-  // Check if this is a trade fetch GET (item details)
-  if (TRADE_FETCH_PATTERN.test(url)) {
-    const response = await originalFetch.apply(this, args);
-    const clonedResponse = response.clone();
-
-    try {
-      const responseBody = (await clonedResponse.json()) as TradeFetchResponse;
-
-      // Cache items by ID for copy functionality
-      if (responseBody.result) {
-        for (const result of responseBody.result) {
-          if (result.item?.id) {
-            itemCache.set(result.item.id, result.item);
+          // Store pending sort click for UI sync after results load
+          const sortKeys = Object.keys(overrideData);
+          if (sortKeys.length > 0) {
+            const field = sortKeys[0];
+            const direction = overrideData[field];
+            localStorage.setItem(PENDING_SORT_CLICK_KEY, JSON.stringify({ field, direction }));
+            injectedLogger.log("Queued sort UI sync", { field, direction });
           }
-        }
-        injectedLogger.log("Cached " + responseBody.result.length + " items from fetch API");
 
-        // Wire up copy buttons for newly loaded items
-        wireCopyButtons();
+          // Clear after use (only apply once)
+          localStorage.removeItem(SORT_OVERRIDE_KEY);
+        } catch (e) {
+          injectedLogger.error("Failed to apply sort override", e);
+        }
       }
-    } catch (e) {
-      injectedLogger.error("Failed to parse fetch response", e);
+
+      // Execute original fetch
+      const response = await originalFetch.apply(thisArg, [input, init]);
+
+      // Clone response to read body without consuming it
+      const clonedResponse = response.clone();
+
+      try {
+        const responseBody = await clonedResponse.json();
+
+        captureSearchResponse(url, requestBody, responseBody, response.status);
+      } catch (e) {
+        injectedLogger.error("Failed to parse response", e);
+      }
+
+      return response;
     }
 
-    return response;
-  }
+    // Check if this is a trade fetch GET (item details)
+    if (TRADE_FETCH_PATTERN.test(url)) {
+      const response = await originalFetch.apply(thisArg, args);
+      const clonedResponse = response.clone();
 
-  return originalFetch.apply(this, args);
-};
+      try {
+        const responseBody = (await clonedResponse.json()) as TradeFetchResponse;
+
+        // Cache items by ID for copy functionality
+        if (responseBody.result) {
+          for (const result of responseBody.result) {
+            if (result.item?.id) {
+              itemCache.set(result.item.id, result.item);
+            }
+          }
+          injectedLogger.log("Cached " + responseBody.result.length + " items from fetch API");
+
+          // Wire up copy buttons for newly loaded items
+          wireCopyButtons();
+        }
+      } catch (e) {
+        injectedLogger.error("Failed to parse fetch response", e);
+      }
+
+      return response;
+    }
+
+    return originalFetch.apply(thisArg, args);
+  },
+});
 
 // Also intercept XMLHttpRequest for completeness
 const originalXHROpen = XMLHttpRequest.prototype.open;
@@ -364,7 +349,7 @@ XMLHttpRequest.prototype.send = function (
   if (
     xhr._poeMethod?.toUpperCase() === "POST" &&
     xhr._poeUrl &&
-    TRADE_API_PATTERN.test(xhr._poeUrl)
+    TRADE_SEARCH_PATTERN.test(xhr._poeUrl)
   ) {
     let requestBody: unknown;
 
@@ -411,31 +396,7 @@ XMLHttpRequest.prototype.send = function (
       try {
         const responseBody = JSON.parse(xhr.responseText);
 
-        window.postMessage(
-          {
-            type: "poe-search-intercepted",
-            payload: {
-              url: xhr._poeUrl,
-              method: "POST",
-              requestBody,
-              responseBody,
-              timestamp: Date.now(),
-            } as TradeSearchInterceptedPayload,
-          },
-          "*"
-        );
-
-        injectedLogger.log("[XHR] Captured search", {
-          url: xhr._poeUrl,
-          total: responseBody.total,
-          id: responseBody.id,
-        });
-
-        // Trigger sort UI sync if we have a pending sort click
-        triggerSortUISync();
-
-        // Capture preview image from first result
-        capturePreviewImage(responseBody.id);
+        captureSearchResponse(xhr._poeUrl!, requestBody, responseBody, xhr.status, "[XHR] ");
       } catch (e) {
         injectedLogger.error("[XHR] Failed to parse response", e);
       }
@@ -444,15 +405,6 @@ XMLHttpRequest.prototype.send = function (
 
   return originalXHRSend.call(this, body);
 };
-
-// Listen for sort override messages from content script
-window.addEventListener("message", (event) => {
-  if (event.source !== window) return;
-  if (event.data?.type === "poe-search-set-sort-override" && event.data.sort) {
-    sessionStorage.setItem(SORT_OVERRIDE_KEY, JSON.stringify(event.data.sort));
-    injectedLogger.log("Sort override set", event.data.sort);
-  }
-});
 
 /**
  * Show a brief visual feedback tooltip near the button.

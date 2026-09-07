@@ -13,16 +13,20 @@ const statIdLogger = {
     window.postMessage({ type: "poe-search-debug-log", payload: { level: "log", message: `[StatIdExtractor] ${message}`, data } }, "*"),
 };
 
+interface VueStatFilterElement extends HTMLElement {
+  __vue__?: { $props?: { filter?: { id?: unknown } } };
+}
+
 function extractStatIds(): void {
-  const filters = document.querySelectorAll('.filter.full-span');
+  const filters = document.querySelectorAll<VueStatFilterElement>('.filter.full-span');
   let extracted = 0;
   filters.forEach(filter => {
-    if ((filter as HTMLElement).dataset.statId) return;
+    if (filter.dataset.statId) return;
 
-    const vue = (filter as any).__vue__;
+    const vue = filter.__vue__;
     const statId = vue?.$props?.filter?.id;
-    if (statId) {
-      (filter as HTMLElement).dataset.statId = statId;
+    if (typeof statId === "string" && statId) {
+      filter.dataset.statId = statId;
       extracted++;
     }
   });
@@ -39,18 +43,20 @@ extractStatIds();
 // Set up observer on #trade or document.body
 function setupObserver(): void {
   const target = document.querySelector('#trade') || document.body;
+  let lastMutationLog = 0;
+  let extractionTimeout: ReturnType<typeof setTimeout> | undefined;
 
-  const observer = new MutationObserver((_mutations) => {
+  const observer = new MutationObserver(() => {
     // Only log occasionally to avoid spam
     const now = Date.now();
-    if (!((window as any).__lastMutationLog) || now - (window as any).__lastMutationLog > 1000) {
+    if (!lastMutationLog || now - lastMutationLog > 1000) {
       statIdLogger.log('Mutation detected, extracting...');
-      (window as any).__lastMutationLog = now;
+      lastMutationLog = now;
     }
 
     // Debounce
-    clearTimeout((window as any).__statIdExtractorTimeout);
-    (window as any).__statIdExtractorTimeout = setTimeout(extractStatIds, 100);
+    clearTimeout(extractionTimeout);
+    extractionTimeout = setTimeout(extractStatIds, 100);
   });
 
   observer.observe(target, { childList: true, subtree: true, attributes: true });
@@ -74,17 +80,15 @@ if (document.querySelector('#trade')) {
 
 // Also poll periodically as backup (MutationObserver can miss Vue updates)
 setInterval(() => {
-  const filters = document.querySelectorAll('.filter.full-span');
-  const needsExtraction = Array.from(filters).some(f => {
-    const el = f as HTMLElement;
-    return !el.dataset.statId && (f as any).__vue__;
-  });
+  const filters = document.querySelectorAll<VueStatFilterElement>('.filter.full-span');
+  const needsExtraction = Array.from(filters).some(filter => !filter.dataset.statId && filter.__vue__);
   if (needsExtraction) {
     extractStatIds();
   }
 }, 500);
 
 // Expose for debugging
-(window as any).__extractStatIds = extractStatIds;
+const statIdDebugWindow = window as Window & { __extractStatIds?: () => void };
+statIdDebugWindow.__extractStatIds = extractStatIds;
 
 statIdLogger.log('Initialized');

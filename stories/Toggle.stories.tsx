@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { CollapsedToggle } from "../src/components/panel/OverlayPanel";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { CollapsedToggle } from "../src/components/panel/CollapsedToggle";
 
 const meta: Meta<typeof CollapsedToggle> = {
   title: "Panel/CollapsedToggle",

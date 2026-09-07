@@ -3,6 +3,7 @@
     "target": "ES2020",
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": ["node", "bun", "chrome", "vite/client"],
     "module": "ESNext",
     "skipLibCheck": true,
 
@@ -22,15 +23,14 @@
     "noFallthroughCasesInSwitch": true,
 
     /* Paths */
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
 
     /* Allow JS files */
     "allowJs": true,
     "checkJs": false
   },
-  "include": ["src/**/*", "stories/**/*", "vite.config.ts", "manifest.json"],
+  "include": ["src/**/*", "stories/**/*", ".storybook/**/*.ts", "vite.config.ts"],
   "exclude": ["node_modules", "dist"]
 }

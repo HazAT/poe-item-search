@@ -1,19 +1,29 @@
 import fs from 'fs';
-import path from 'path';
-import archiver from 'archiver';
+import { ZipArchive } from 'archiver';
 import readline from 'readline';
 import { spawn } from 'child_process';
+import { finished } from 'node:stream/promises';
 
-// Create readline interface for user input
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
+const RELEASE_DIR = 'dist-release';
+const args = process.argv.slice(2);
+const unknownArgs = args.filter((arg) => arg !== '--no-prompt');
+
+if (unknownArgs.length) {
+    console.error(`Unknown option: ${unknownArgs.join(', ')}\nUsage: bun run package [--no-prompt]`);
+    process.exit(1);
+}
+
+const noPrompt = args.includes('--no-prompt');
 
 // Function to prompt for version
 function promptVersion(currentVersion) {
     return new Promise((resolve) => {
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        });
         rl.question(`Enter new version number (current: ${currentVersion}): `, (version) => {
+            rl.close();
             resolve(version || currentVersion);
         });
     });
@@ -37,7 +47,11 @@ function updateVersion(version) {
 function runBuild() {
     return new Promise((resolve, reject) => {
         console.log('🔨 Building extension...');
-        const build = spawn('bun', ['run', 'build'], { stdio: 'inherit' });
+        const build = spawn(process.execPath, ['run', 'build', '--outDir', RELEASE_DIR], {
+            stdio: 'inherit',
+            env: { ...process.env, BUILD_MODE: 'production' }
+        });
+        build.on('error', reject);
         build.on('close', (code) => {
             if (code === 0) {
                 resolve();
@@ -51,43 +65,36 @@ function runBuild() {
 // Main packaging function
 async function packageExtension() {
     try {
-        // 1. Get current version and prompt for new one
+        // 1. Reuse the current version in automation; prompt during interactive use.
         const currentVersion = getCurrentVersion();
-        const newVersion = await promptVersion(currentVersion);
+        const newVersion = noPrompt ? currentVersion : await promptVersion(currentVersion);
 
         // 2. Update package.json with new version
         if (newVersion !== currentVersion) {
             updateVersion(newVersion);
         }
 
-        // 3. Run the build (this generates dist/ with correct version in manifest)
+        // 3. Build the release separately from the installed dev extension in dist/.
         await runBuild();
 
-        // 4. Create the zip from dist/ contents (not the folder itself)
+        // 4. Create the zip from release contents (not the folder itself).
         const output = fs.createWriteStream('extension.zip');
-        const archive = archiver('zip', {
+        const archive = new ZipArchive({
             zlib: { level: 9 } // Maximum compression
         });
 
         archive.pipe(output);
 
-        archive.on('error', (err) => {
-            throw err;
-        });
+        archive.on('error', (error) => output.destroy(error));
 
-        output.on('close', () => {
-            console.log(`📦 Extension packaged successfully! (${archive.pointer()} bytes)`);
-            console.log(`📦 Version: ${newVersion}`);
-            rl.close();
-        });
-
-        // Add all files from dist/ to the root of the zip
+        // Add all release files to the root of the zip.
         console.log('📦 Packaging extension...');
-        archive.directory('dist/', false);
-        archive.finalize();
+        archive.directory(RELEASE_DIR, false);
+        await Promise.all([archive.finalize(), finished(output)]);
+        console.log(`📦 Extension packaged successfully! (${archive.pointer()} bytes)`);
+        console.log(`📦 Version: ${newVersion}`);
     } catch (error) {
         console.error('Error:', error);
-        rl.close();
         process.exit(1);
     }
 }

@@ -30,12 +30,13 @@ Copy buttons on search results let you copy the full item text, useful for shari
 Install directly from the [Chrome Web Store](https://chromewebstore.google.com/detail/poe-item-search/llckjinbnppadklomlhedpmllfjhjklh)
 
 ### Manual Installation
-1. Download the ZIP from this repo (click the green "Code" button, then "Download ZIP")
-2. Extract the contents
-3. Open Chrome and navigate to `chrome://extensions`
-4. Enable "Developer mode" in the top right
-5. Click "Load unpacked" and select the extracted folder
-6. Visit [pathofexile.com/trade](https://www.pathofexile.com/trade) or [pathofexile.com/trade2](https://www.pathofexile.com/trade2)
+1. Clone this repository or download and extract its source ZIP.
+2. In the project directory, run `bun install` and `bun run dev` to build into `dist/`.
+3. Open `chrome://extensions`, enable **Developer mode**, and disable the store copy while testing.
+4. Click **Load unpacked** and select the **dist** folder.
+5. Visit [pathofexile.com/trade](https://www.pathofexile.com/trade) or [pathofexile.com/trade2](https://www.pathofexile.com/trade2).
+
+See [local development and browser testing](docs/local-testing.md) for prerequisites and reload instructions.
 
 ## Usage
 
@@ -52,7 +53,7 @@ Install directly from the [Chrome Web Store](https://chromewebstore.google.com/d
 
 ## Attribution
 
-This project was inspired by [better-trading](https://github.com/exile-center/better-trading), an excellent trade companion for Path of Exile. Key differences from better-trading:
+This project was inspired by [better-trading](https://github.com/exile-center/better-trading), a trade companion for Path of Exile.
 
 ## Contributing
 

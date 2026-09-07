@@ -21,13 +21,7 @@ const version = __APP_VERSION__;
  * This must happen early to intercept all fetch/XHR requests.
  */
 function injectInterceptorScript(): void {
-  // Use different paths for development (CRXJS) vs production builds
-  // In dev: CRXJS serves from src/injected/interceptor.ts
-  // In prod: Built file is at interceptor.js (relative to dist/)
-  const interceptorPath = import.meta.env.DEV
-    ? "src/injected/interceptor.ts"
-    : "interceptor.js";
-  const scriptUrl = getExtensionUrl(interceptorPath);
+  const scriptUrl = getExtensionUrl("interceptor.js");
   if (!scriptUrl) {
     debug.warn("[Init] Cannot inject interceptor: not in extension context");
     return;
@@ -57,16 +51,22 @@ function waitForTradePage(): Promise<void> {
       return;
     }
 
+    if (document.querySelector("#trade")) {
+      resolve();
+      return;
+    }
+
     const checkInterval = setInterval(() => {
       const trade = document.querySelector("#trade");
       if (trade) {
         clearInterval(checkInterval);
+        clearTimeout(timeout);
         resolve();
       }
     }, 300);
 
     // Timeout after 30 seconds
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       clearInterval(checkInterval);
       reject(new Error("Timeout: Trade page not found"));
     }, 30000);

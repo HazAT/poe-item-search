@@ -82,11 +82,11 @@ export function SearchEntry({
   };
 
   return (
-    <li className="group">
+    <li className="group relative">
       <button
         onClick={handleClick}
         disabled={isExecuting}
-        className="relative w-full flex items-start gap-3 px-3 py-2 hover:bg-poe-gray transition-colors text-left disabled:opacity-50 disabled:cursor-wait"
+        className="w-full flex items-start gap-3 px-3 py-2 hover:bg-poe-gray transition-colors text-left disabled:opacity-50 disabled:cursor-wait focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-poe-gold"
       >
         {previewImageUrl && (
           <div className="shrink-0 w-8 h-8 rounded overflow-hidden bg-poe-dark">
@@ -120,7 +120,7 @@ export function SearchEntry({
             )}
             {statCount && (
               <span className="text-xs text-poe-gray-alt shrink-0">
-                {statCount} stats
+                {statCount} {statCount === 1 ? "stat" : "stats"}
               </span>
             )}
           </div>
@@ -138,93 +138,93 @@ export function SearchEntry({
             )}
           </div>
         </div>
-        <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-poe-gray from-60% to-transparent px-2">
-          {isExecuting ? (
-            <RefreshIcon className="w-4 h-4 text-poe-gold animate-spin" />
-          ) : (
-            <>
-              {canBookmark && (
-                <Button
-                  ref={bookmarkButtonRef}
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setShowFolderPicker(!showFolderPicker);
-                  }}
-                  title="Add to bookmarks"
-                >
-                  <BookmarkIcon className="w-4 h-4" />
-                </Button>
-              )}
-              {context === "bookmark" && onUpdate && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onUpdate();
-                  }}
-                  title="Update with current search"
-                >
-                  <SaveIcon className="w-4 h-4" />
-                </Button>
-              )}
-              {onMoveUp && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onMoveUp();
-                  }}
-                  title="Move up"
-                >
-                  <ChevronUpIcon className="w-4 h-4" />
-                </Button>
-              )}
-              {onMoveDown && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onMoveDown();
-                  }}
-                  title="Move down"
-                >
-                  <ChevronDownIcon className="w-4 h-4" />
-                </Button>
-              )}
+      </button>
+      <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 transition-opacity bg-gradient-to-l from-poe-gray from-60% to-transparent px-2">
+        {isExecuting ? (
+          <RefreshIcon className="w-4 h-4 text-poe-gold animate-spin" />
+        ) : (
+          <>
+            {canBookmark && (
+              <Button
+                ref={bookmarkButtonRef}
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowFolderPicker(!showFolderPicker);
+                }}
+                title="Add to bookmarks"
+              >
+                <BookmarkIcon className="w-4 h-4" />
+              </Button>
+            )}
+            {context === "bookmark" && onUpdate && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  onDelete();
+                  onUpdate();
                 }}
-                title="Delete"
+                title="Update with current search"
               >
-                <TrashIcon className="w-4 h-4" />
+                <SaveIcon className="w-4 h-4" />
               </Button>
-            </>
-          )}
-          {showFolderPicker && canBookmark && (
-            <FolderPickerDropdown
-              folders={folders}
-              anchorRef={bookmarkButtonRef}
-              onSelect={onBookmark}
-              onCreateFolder={onCreateFolder}
-              onClose={() => setShowFolderPicker(false)}
-            />
-          )}
-        </div>
-      </button>
+            )}
+            {onMoveUp && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onMoveUp();
+                }}
+                title="Move up"
+              >
+                <ChevronUpIcon className="w-4 h-4" />
+              </Button>
+            )}
+            {onMoveDown && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onMoveDown();
+                }}
+                title="Move down"
+              >
+                <ChevronDownIcon className="w-4 h-4" />
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onDelete();
+              }}
+              title="Delete"
+            >
+              <TrashIcon className="w-4 h-4" />
+            </Button>
+          </>
+        )}
+        {showFolderPicker && canBookmark && (
+          <FolderPickerDropdown
+            folders={folders}
+            anchorRef={bookmarkButtonRef}
+            onSelect={onBookmark}
+            onCreateFolder={onCreateFolder}
+            onClose={() => setShowFolderPicker(false)}
+          />
+        )}
+      </div>
     </li>
   );
 }

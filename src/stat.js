@@ -2,11 +2,11 @@ export function addRegexToStat(stat) {
   if (!stat) return null;
   let regexPattern = stat.text
     .replaceAll("+", "\\+")
-    .replaceAll("#", "(?:\\+|-)?(\\d+(?:.\\d+)?)?")
     .replace(/\[([^\]]+)\]/g, (_, group) => {
       const options = group.split("|");
       return `(?:${options.join("|")})`;
-    });
+    })
+    .replaceAll("#", "([+-]?\\d+(?:\\.\\d+)?)");
 
   // Check if the stat text contains '(implicit)' and set type accordingly
   let isImplicit = false;
@@ -34,15 +34,10 @@ export function addRegexToStat(stat) {
 }
 
 export function addRegexToStats(stats) {
-  // add regex to all entries and return new stats
-  const newEntries = [];
-  stats.result.map((category) => {
-    newEntries.push({
+  return {
+    result: stats.result.map(category => ({
       ...category,
-      entries: category.entries.map((entry) => {
-        return addRegexToStat(entry);
-      }),
-    });
-  });
-  return { result: newEntries };
+      entries: category.entries.map(addRegexToStat),
+    })),
+  };
 }

@@ -15,8 +15,8 @@ export function parseTradeLocation(url: string): TradeLocationStruct {
 
   const version: TradeSiteVersion = versionPart === "trade2" ? "2" : "1";
 
-  let league: string | null = null;
-  let slug: string | null = null;
+  let league: string | null;
+  let slug: string | null;
 
   // Check if third segment is a realm (poe2, xbox, sony)
   if (rest[0] && TRADE_REALMS.includes(rest[0])) {

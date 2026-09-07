@@ -1,12 +1,10 @@
 import { useState, useRef, useCallback } from "react";
 import { Textarea, Button, ClipboardIcon, SearchIcon } from "@/components/ui";
 import { useHistoryStore } from "@/stores/historyStore";
-import { parseTradeLocation } from "@/services/tradeLocation";
+import { searchItem } from "@/services/itemSearch";
 import { debug } from "@/utils/debug";
-import { logger, captureException } from "@/services/sentry";
+import { captureException } from "@/services/sentry";
 import { tryDecodeBase64ItemText } from "@/utils/base64";
-// Import the existing search logic
-import { getSearchQuery } from "@/item.js";
 
 interface PasteInputProps {
   onSearch?: (itemText: string) => void;
@@ -16,135 +14,34 @@ export function PasteInput({ onSearch }: PasteInputProps) {
   const [itemText, setItemText] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { addEntry } = useHistoryStore();
+  const searchInProgress = useRef(false);
+  const addEntry = useHistoryStore((state) => state.addEntry);
 
   const handleSearch = useCallback(async (textOverride?: string) => {
     const rawText = textOverride ?? itemText;
-    if (!rawText.trim()) return;
+    if (!rawText.trim() || searchInProgress.current) return;
 
     // Try to decode base64 (for pasting from Sentry logs)
     const searchText = tryDecodeBase64ItemText(rawText);
 
-    // Log pasted item to Sentry
-    // Include base64 for easy copy/paste (Sentry UI doesn't preserve newlines well)
-    logger.info("Item pasted for search", {
-      itemText: searchText,
-      itemTextBase64: btoa(unescape(encodeURIComponent(searchText))),
-      itemLength: searchText.length,
-    });
-
+    searchInProgress.current = true;
     setIsSearching(true);
     setError(null);
 
     try {
-      // Get current trade info from URL
-      const currentUrl = window.location.href;
-      const tradeVersion = currentUrl.includes("trade2") ? "trade2" : "trade";
-
-      // Extract path after trade/trade2, but strip any existing search ID
-      // URL format: /trade2/search/poe2/{league} or /trade2/search/poe2/{league}/{searchId}
-      const match = currentUrl.match(/\/(?:trade2?)(\/search\/[^/]+\/[^/]+)/);
-      const tradePath = match ? match[1] : "/search/poe2/Standard";
-
-      // Fetch stats from API
-      const statsResponse = await fetch(
-        `https://www.pathofexile.com/api/${tradeVersion}/data/stats`
-      );
-      const statsData = await statsResponse.json();
-
-      // Build the search query (getSearchQuery returns untyped JS object)
-      const query = getSearchQuery(searchText, statsData) as unknown as Record<string, unknown>;
-
-      // Check if no meaningful filters were applied - log for debugging
-      const hasNoFilters =
-        !query.term && // not a unique item search
-        !query.filters && // no type/category filters
-        (!query.stats || (query.stats as unknown[]).length === 0); // no stat filters
-
-      if (hasNoFilters) {
-        // Log to Sentry for debugging - include base64 for easy copy/paste
-        // (Sentry UI doesn't preserve newlines well, base64 decode to get original)
-        logger.warn("Item pasted with no filters applied", {
-          itemText: searchText,
-          itemTextBase64: btoa(unescape(encodeURIComponent(searchText))),
-          itemLength: searchText.length,
-        });
-        debug.warn("PasteInput", "no filters applied to search query", { query, itemText: searchText });
-      }
-
-      // Read user's status preference from PoE's localStorage
-      // PoE stores this in lscache-trade2state (for trade2) or lscache-tradestate (for trade)
-      const stateKey = tradeVersion === "trade2" ? "lscache-trade2state" : "lscache-tradestate";
-      let userStatus: string | undefined;
-      try {
-        const stateJson = localStorage.getItem(stateKey);
-        if (stateJson) {
-          const state = JSON.parse(stateJson);
-          userStatus = state.status;
-          debug.log("PasteInput", "read user status preference", { stateKey, userStatus });
-        }
-      } catch (e) {
-        debug.error("PasteInput", "failed to read status from localStorage", e);
-      }
-
-      // Include user's status preference in query if available
-      // This preserves their "Instant Buyout" / "In Person" setting
-      if (userStatus) {
-        query.status = { option: userStatus };
-      }
-
-      // Set flag so interceptor knows to skip this search (extension-initiated)
-      // This prevents duplicate history entries
-      localStorage.setItem("poe-search-extension-initiated", Date.now().toString());
-
-      // Execute the search
-      const searchResponse = await fetch(
-        `https://www.pathofexile.com/api/${tradeVersion}${tradePath}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ query }),
-        }
-      );
-
-      const searchResult = await searchResponse.json();
-
-      if (searchResult.id) {
-        // Extract title from item text (first line is usually the item name)
-        const lines = searchText.trim().split("\n");
-        const title = extractItemTitle(lines);
-
-        // Track in history with full query payload
-        const location = parseTradeLocation(
-          `https://www.pathofexile.com/${tradeVersion}${tradePath}/${searchResult.id}`
-        );
-
-        debug.log("PasteInput: adding to history", {
-          title,
-          slug: searchResult.id,
-          total: searchResult.total,
-        });
-
-        await addEntry(
-          location,
-          title,
-          { query },
-          searchResult.total ?? 0,
-          "extension"
-        );
-
-        // Redirect to results
-        window.location.href = `https://www.pathofexile.com/${tradeVersion}${tradePath}/${searchResult.id}`;
-      } else {
-        setError("No results found");
-      }
+      const result = await searchItem(searchText, window.location.href);
+      debug.log("PasteInput: adding to history", {
+        title: result.title,
+        slug: result.location.slug,
+        total: result.total,
+      });
+      await addEntry(result.location, result.title, result.queryPayload, result.total, "extension");
+      window.location.href = result.url;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Search failed");
       captureException(err, { context: "paste_search", itemTextLength: searchText.length });
     } finally {
+      searchInProgress.current = false;
       setIsSearching(false);
     }
 
@@ -155,6 +52,8 @@ export function PasteInput({ onSearch }: PasteInputProps) {
     (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
       const text = e.clipboardData.getData("text");
       if (text) {
+        e.preventDefault();
+        if (searchInProgress.current) return;
         setItemText(text);
         setError(null);
         // Auto-search on paste - pass text directly since state won't be updated yet
@@ -181,7 +80,7 @@ export function PasteInput({ onSearch }: PasteInputProps) {
         <span className="font-fontin text-sm text-poe-beige">Paste Item</span>
       </div>
       <Textarea
-        ref={textareaRef}
+        aria-label="Item text"
         value={itemText}
         onChange={(e) => {
           setItemText(e.target.value);
@@ -210,29 +109,4 @@ export function PasteInput({ onSearch }: PasteInputProps) {
       </div>
     </div>
   );
-}
-
-function extractItemTitle(lines: string[]): string {
-  // Try to find the item name by looking at the first few lines
-  // Format is usually:
-  // Item Class: X
-  // Rarity: Y
-  // Name (for unique items)
-  // Base Type
-
-  for (let i = 0; i < Math.min(lines.length, 6); i++) {
-    const line = lines[i].trim();
-    // Skip metadata lines
-    if (
-      line.startsWith("Item Class:") ||
-      line.startsWith("Rarity:") ||
-      line === "--------" ||
-      !line
-    ) {
-      continue;
-    }
-    return line;
-  }
-
-  return "Unknown Item";
 }

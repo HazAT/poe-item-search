@@ -1,6 +1,13 @@
 import { expect, test } from "bun:test";
 import { addRegexToStat } from "./stat.js";
 
+test("numeric placeholders reject missing values and non-decimal separators", () => {
+  for (const value of ["", "+", "1x25", "1 25", "1,25", "--5", "+-5"]) {
+    const { regex } = addRegexToStat({ text: "#% to Fire Resistance", type: "explicit" });
+    expect(regex.test(`${value}% to Fire Resistance`)).toBe(false);
+  }
+});
+
 test("explicit stats accept desecrated modifiers with LF and Windows CRLF", () => {
   for (const suffix of ["", " (desecrated)"]) {
     for (const lineEnding of ["\n", "\r\n"]) {
@@ -9,7 +16,7 @@ test("explicit stats accept desecrated modifiers with LF and Windows CRLF", () =
         type: "explicit",
       });
       const match = regex.exec(`+33% to Fire Resistance${suffix}${lineEnding}`);
-      expect(match?.[1]).toBe("33");
+      expect(Number(match?.[1])).toBe(33);
     }
   }
 });
@@ -24,72 +31,20 @@ test("desecrated matching preserves modifier type distinctions", () => {
     expect(regex.test("+33% to Fire Resistance (desecrated)")).toBe(false);
   }
   const implicitStat = addRegexToStat({ text: "#% to Fire Resistance", type: "implicit" });
-  expect(implicitStat.regex.exec("+22% to Fire Resistance (implicit)")?.[1]).toBe("22");
+  expect(Number(implicitStat.regex.exec("+22% to Fire Resistance (implicit)")?.[1])).toBe(22);
 });
 
-test("convertStatTextToItemText", () => {
-  expect(
-    addRegexToStat({
-      id: "explicit.stat_700317374",
-      text: "#% increased Amount Recovered",
-      type: "explicit",
-    })
-  ).toStrictEqual({
-    id: "explicit.stat_700317374",
-    regex: /^(?:\+|-)?(\d+(?:.\d+)?)?% increased Amount Recovered(?: \(desecrated\))?(?! \(implicit\))$/gm,
-    type: "explicit",
-    text: "#% increased Amount Recovered",
-  });
-
-  expect(
-    addRegexToStat({
-      id: "explicit.stat_2254480358",
-      text: "# to Level of all [Cold|Cold] [Spell|Spell] Skills",
-      type: "explicit",
-    })
-  ).toStrictEqual({
-    id: "explicit.stat_2254480358",
-    regex: /^(?:\+|-)?(\d+(?:.\d+)?)? to Level of all (?:Cold|Cold) (?:Spell|Spell) Skills(?: \(desecrated\))?(?! \(implicit\))$/gm,
-    type: "explicit",
-    text: "# to Level of all [Cold|Cold] [Spell|Spell] Skills",
-  });
-
-  expect(
-    addRegexToStat({
-      id: "explicit.stat_1873752457",
-      text: "Gains # Charges per Second",
-      type: "explicit",
-    })
-  ).toStrictEqual({
-    id: "explicit.stat_1873752457",
-    regex: /^Gains (?:\+|-)?(\d+(?:.\d+)?)? Charges per Second(?: \(desecrated\))?(?! \(implicit\))$/gm,
-    text: "Gains # Charges per Second",
-    type: "explicit",
-  });
-
-  expect(
-    addRegexToStat({
-      id: "explicit.stat_1054098949",
-      text: "+#% Monster Elemental Resistances",
-      type: "explicit",
-    })
-  ).toStrictEqual({
-    id: "explicit.stat_1054098949",
-    regex: /^\+(?:\+|-)?(\d+(?:.\d+)?)?% Monster Elemental Resistances(?: \(desecrated\))?(?! \(implicit\))$/gm,
-    text: "+#% Monster Elemental Resistances",
-    type: "explicit",
-  });
-
-  expect(
-    addRegexToStat({
-      id: "explicit.stat_1940865751",
-      text: "Adds # to # [Physical|Physical] Damage",
-      type: "explicit",
-    })
-  ).toStrictEqual({
-    id: "explicit.stat_1940865751",
-    regex: /^Adds (?:\+|-)?(\d+(?:.\d+)?)? to (?:\+|-)?(\d+(?:.\d+)?)? (?:Physical|Physical) Damage(?: \(desecrated\))?(?! \(implicit\))$/gm,
-    text: "Adds # to # [Physical|Physical] Damage",
-    type: "explicit",
-  });
+test.each([
+  ["#% increased Amount Recovered", "50% increased Amount Recovered", [50]],
+  ["# to Level of all [Cold|Cold] [Spell|Spell] Skills", "+2 to Level of all Cold Spell Skills", [2]],
+  ["Gains # Charges per Second", "Gains 0.25 Charges per Second", [0.25]],
+  ["+#% Monster Elemental Resistances", "+30% Monster Elemental Resistances", [30]],
+  ["Adds # to # [Physical|Physical] Damage", "Adds 10 to 20 Physical Damage", [10, 20]],
+  ["#% to Fire Resistance", "-12.5% to Fire Resistance", [-12.5]],
+])("matches numeric values in %s", (template, itemText, values) => {
+  const stat = addRegexToStat({ text: template, type: "explicit" });
+  const match = stat.regex.exec(itemText);
+  expect(match?.slice(1).map(Number)).toEqual(values);
+  expect(stat.text).toBe(template);
+  expect(stat.type).toBe("explicit");
 });

@@ -64,6 +64,17 @@ export function initSearchInterceptor() {
 async function handleInterceptedSearch(payload: TradeSearchInterceptedPayload) {
   const { url, requestBody, responseBody } = payload;
 
+  // Messages cross execution worlds, so validate before building a history URL.
+  if (
+    typeof url !== "string" || !responseBody || typeof responseBody !== "object" ||
+    ("error" in responseBody && responseBody.error) ||
+    typeof responseBody.id !== "string" || !responseBody.id.trim() ||
+    typeof responseBody.total !== "number" || !Number.isFinite(responseBody.total) || responseBody.total < 0
+  ) {
+    debug.warn("handleInterceptedSearch: ignoring invalid search response", { url, responseBody });
+    return;
+  }
+
   debug.log("handleInterceptedSearch: received", {
     url,
     total: responseBody.total,
@@ -119,6 +130,7 @@ async function handleInterceptedSearch(payload: TradeSearchInterceptedPayload) {
  * Tries to find: item name (term), category, or falls back to "Custom Search"
  */
 function extractTitleFromQuery(query: unknown): string {
+  if (!query || typeof query !== "object") return "Custom Search";
   const q = query as {
     query?: {
       term?: string;
