@@ -58,6 +58,8 @@ This project was inspired by [better-trading](https://github.com/exile-center/be
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+For local builds, loading the development extension, and connecting Chrome DevTools to your existing browser, see [Local development and browser testing](docs/local-testing.md).
+
 ## License
 
 [MIT License](LICENSE)

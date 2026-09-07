@@ -19,6 +19,10 @@ export function addRegexToStat(stat) {
   if (stat.type === "implicit" || isImplicit) {
     regexPattern += " \\(implicit\\)";
   } else {
+    // Desecrated modifiers still use explicit filters when searching similar items.
+    if (stat.type === "explicit") {
+      regexPattern += "(?: \\(desecrated\\))?";
+    }
     regexPattern += "(?! \\(implicit\\))";
   }
 

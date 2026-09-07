@@ -77,6 +77,22 @@ test("matchUnique", () => {
   expect(matchUniqueItem(charms1)).toBeUndefined();
 });
 
+test("unique item searches preserve the same name and filters with LF or Windows CRLF", () => {
+  for (const [itemText, name] of [[rings1, "Polcirkeln"], [charm2, "Nascent Hope"]]) {
+    const lfText = itemText.replace(/\r\n/g, "\n");
+    const crlfText = lfText.replace(/\n/g, "\r\n");
+    const lfQuery = getSearchQuery(lfText, stats);
+    const crlfQuery = getSearchQuery(crlfText, stats);
+
+    expect(matchUniqueItem(lfText)).toBe(name);
+    expect(matchUniqueItem(crlfText)).toBe(name);
+    expect(lfQuery.term).toBe(name);
+    expect(crlfQuery.term).toBe(name);
+    expect(crlfQuery.filters).toBeUndefined();
+    expect(crlfQuery).toEqual(lfQuery);
+  }
+});
+
 test("unique", () => {
   expect(getSearchQuery(rings1, stats)).toEqual(
     expect.objectContaining({
@@ -306,17 +322,21 @@ test("gloves2 - melee gloves with phys/fire/cold damage", () => {
     ])
   );
 
-  // Should match cold resistance (Fire Resistance has (desecrated) suffix so won't match)
+  // Both ordinary and desecrated resistances use the explicit trade filters.
   expect(matched).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         id: "explicit.stat_4220027924", // Cold Resistance
         value: { min: "39" },
       }),
+      expect.objectContaining({
+        id: "explicit.stat_3372524247", // Fire Resistance (desecrated)
+        value: { min: "40" },
+      }),
     ])
   );
 
-  // Check cold resistance uses explicit stat in weighted filter (fire won't be since it has desecrated suffix)
+  // Desecrated fire resistance contributes to the weighted minimum too.
   const query = getSearchQuery(gloves2, stats);
   expect(query.stats).toEqual(
     expect.arrayContaining([
@@ -329,13 +349,22 @@ test("gloves2 - melee gloves with phys/fire/cold damage", () => {
             value: { weight: 1, min: 39 },
             disabled: false,
           }),
-          // Other resistances disabled
           expect.objectContaining({
             id: "explicit.stat_3372524247", // Fire Resistance
+            value: { weight: 1, min: 40 },
+            disabled: false,
+          }),
+          // Other resistances remain disabled.
+          expect.objectContaining({
+            id: "explicit.stat_1671376347", // Lightning Resistance
+            disabled: true,
+          }),
+          expect.objectContaining({
+            id: "explicit.stat_2923486259", // Chaos Resistance
             disabled: true,
           }),
         ]),
-        value: { min: 39 }, // Only cold resistance contributes
+        value: { min: 79 }, // 39 cold + 40 desecrated fire
       }),
     ])
   );
@@ -416,23 +445,44 @@ test("sceptre1 - caster sceptre with spirit", () => {
   );
 });
 
-test("chest3 - corrupted body armour with implicit", () => {
+test("chest3 - searches all six desecrated modifiers and keeps the implicit separate", () => {
   const regexStats = addRegexToStats(stats);
   const matched = matchStatsOnItem(chest3, regexStats);
 
-  // Note: All explicit stats on this item have (desecrated) suffix which won't match
-  // Only the implicit stat matches
-  expect(matched).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        id: "implicit.stat_2251279027", // # to Level of all Corrupted Skill Gems
-        value: { min: "1" },
-      }),
-    ])
+  const andFilters = [
+    { id: "explicit.stat_3489782002", value: { min: "57" } }, // Energy Shield
+    { id: "explicit.stat_3523867985", value: { min: "110" } }, // Armour/Evasion/ES
+    { id: "explicit.stat_3981240776", value: { min: "30" } }, // Spirit
+    { id: "explicit.stat_3362812763", value: { min: "40" } }, // Armour applies to elemental
+    { id: "implicit.stat_2251279027", value: { min: "1" } }, // Corrupted skill gems
+  ];
+  const expectedMatches = [
+    ...andFilters,
+    { id: "explicit.stat_3372524247", value: { min: "33" } }, // Fire Resistance
+    { id: "explicit.stat_4220027924", value: { min: "44" } }, // Cold Resistance
+  ];
+  expect(matched.map(({ id, value }) => ({ id, value }))).toEqual(
+    expect.arrayContaining(expectedMatches)
   );
+  // The 36% rune modifier must not replace or duplicate the 110% explicit modifier.
+  expect(matched).toHaveLength(expectedMatches.length);
 
-  // Verify the length - only implicit should match since all explicits have (desecrated)
-  expect(matched).toHaveLength(1);
+  const query = getSearchQuery(chest3, stats);
+  expect(query.filters.type_filters.filters.category.option).toBe("armour.chest");
+  expect(query.stats).toHaveLength(2);
+  const andGroup = query.stats.find(group => group.type === "and");
+  expect(andGroup.filters).toEqual(expect.arrayContaining(andFilters));
+  expect(andGroup.filters).toHaveLength(andFilters.length);
+  expect(query.stats.find(group => group.type === "weight")).toEqual({
+    type: "weight",
+    filters: expect.arrayContaining([
+      { id: "explicit.stat_3372524247", value: { weight: 1, min: 33 }, disabled: false },
+      { id: "explicit.stat_4220027924", value: { weight: 1, min: 44 }, disabled: false },
+      { id: "explicit.stat_1671376347", value: { weight: 1 }, disabled: true },
+      { id: "explicit.stat_2923486259", value: { weight: 1 }, disabled: true },
+    ]),
+    value: { min: 77 },
+  });
 });
 
 test("quarterstaff - weapon with type filter", async () => {

@@ -284,7 +284,7 @@ export function getSearchQuery(item, stats) {
 }
 
 export function matchUniqueItem(item) {
-  const uniqueRegex = /Rarity: Unique\n([^\n]+)/;
+  const uniqueRegex = /Rarity: Unique\r?\n([^\r\n]+)/;
   const match = item.match(uniqueRegex);
 
   return match ? match[1] : undefined;
