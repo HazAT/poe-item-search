@@ -1,18 +1,27 @@
-// src/services/tierInjector.ts
-import { createRoot, Root } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import { createElement } from 'react';
 import { getTiersForStat, hasStatTiers, findTierForValue } from './tierData';
 import { TierDropdown } from '@/components/tiers/TierDropdown';
 import { getExtensionUrl } from '@/utils/extensionApi';
 import { debug } from '@/utils/debug';
 
-// Track React roots for cleanup
-const tierDropdownRoots = new Map<HTMLElement, Root>();
+const FILTER_SELECTOR = '.filter.full-span';
+const CATEGORY_SELECTOR = '.filter-property[data-stat-id="category"]';
+const IGNORED_SELECTOR = '.multiselect__content-wrapper, .results, .tier-dropdown-injected';
 
-/**
- * Inject a script into the main world to extract Vue stat IDs
- * and store them as data attributes on filter elements
- */
+interface TierControl {
+  statId: string;
+  itemClass: string | null;
+  input: HTMLInputElement;
+  wrapper: HTMLElement;
+  container: HTMLElement;
+  root: Root;
+  render: () => void;
+  originalPadding: string;
+}
+
+const tierControls = new Map<HTMLElement, TierControl>();
+
 export function injectStatIdExtractor(): void {
   debug.log('[TierInjector] injectStatIdExtractor called');
   const scriptUrl = getExtensionUrl('statIdExtractor.js');
@@ -34,47 +43,15 @@ export function injectStatIdExtractor(): void {
   (document.head || document.documentElement).appendChild(script);
 }
 
-/**
- * Find the Stat Filters group element
- */
-function findStatFiltersGroup(): Element | null {
-  const filterGroups = document.querySelectorAll('.filter-group');
-  for (const group of filterGroups) {
-    const header = group.querySelector('.filter-title');
-    if (header?.textContent?.includes('Stat Filters')) {
-      return group;
+function findStatFilters(): HTMLElement[] {
+  for (const group of document.querySelectorAll('.filter-group')) {
+    if (group.querySelector('.filter-title')?.textContent?.includes('Stat Filters')) {
+      return Array.from(group.querySelectorAll<HTMLElement>(FILTER_SELECTOR));
     }
   }
-  return null;
+  return [];
 }
 
-/**
- * Find all stat filter elements on the page
- */
-function findStatFilters(): HTMLElement[] {
-  const statFiltersGroup = findStatFiltersGroup();
-  if (!statFiltersGroup) {
-    debug.log('[TierInjector] findStatFilters: no group found');
-    return [];
-  }
-
-  // Get all stat filter rows
-  const filters = statFiltersGroup.querySelectorAll('.filter.full-span');
-  debug.log('[TierInjector] findStatFilters: found', filters.length, 'in group');
-  return Array.from(filters) as HTMLElement[];
-}
-
-/**
- * Get the stat ID from a filter element via data attribute
- * (set by injected main world script)
- */
-function getStatIdFromFilter(filterElement: HTMLElement): string | null {
-  return filterElement.dataset.statId || null;
-}
-
-/**
- * Get the current item class from the Type Filters
- */
 function getCurrentItemClass(): string | null {
   // Find the category filter in the Type Filters group
   const categoryFilter = document.querySelector('.filter-property[data-stat-id="category"]');
@@ -83,8 +60,6 @@ function getCurrentItemClass(): string | null {
   // The selected category is in the multiselect input's placeholder attribute
   const categoryInput = categoryFilter.querySelector('.multiselect__input') as HTMLInputElement | null;
   const text = categoryInput?.placeholder?.trim();
-
-  debug.log('[TierInjector] getCurrentItemClass: category text =', text);
 
   // Map common categories to our tier data item classes
   if (text?.includes('Gloves')) return 'Gloves';
@@ -99,201 +74,164 @@ function getCurrentItemClass(): string | null {
   return null;
 }
 
-/**
- * Update the min input value and dispatch events for Vue to pick up
- */
-function updateMinInput(minInput: HTMLInputElement, value: number): void {
-  // Set the value
-  minInput.value = String(value);
-
-  // Dispatch input event for Vue reactivity
-  minInput.dispatchEvent(new Event('input', { bubbles: true }));
-
-  // Also dispatch change event for good measure
-  minInput.dispatchEvent(new Event('change', { bubbles: true }));
-
-  debug.log('[TierInjector] Updated min input to', value);
+function removeControl(filter: HTMLElement, control: TierControl): void {
+  control.input.removeEventListener('input', control.render);
+  control.input.removeEventListener('change', control.render);
+  control.root.unmount();
+  control.container.remove();
+  // Vue may have replaced the min input while our wrapper was mounted.
+  control.wrapper.replaceWith(...control.wrapper.childNodes);
+  control.input.style.paddingRight = control.originalPadding;
+  tierControls.delete(filter);
+  debug.log('[TierInjector] Removed tier dropdown for', control.statId);
 }
 
-/**
- * Check if any stat filter has stat ID extracted
- */
-function hasStatIdsExtracted(): boolean {
+// Returns whether a selected row's Vue ID is still being initialized.
+function syncTierDropdowns(): boolean {
   const filters = findStatFilters();
-  if (filters.length === 0) return false;
-
-  const hasIds = filters.some(filter => !!filter.dataset.statId);
-  debug.log('[TierInjector] hasStatIdsExtracted:', hasIds, 'of', filters.length, 'filters');
-  return hasIds;
-}
-
-/**
- * Inject tier dropdowns into stat filters that we have tier data for
- */
-export function injectTierDropdowns(): void {
-  debug.log('[TierInjector] injectTierDropdowns called');
-
-  const statFiltersGroup = findStatFiltersGroup();
-  debug.log('[TierInjector] Stat Filters group:', statFiltersGroup ? 'found' : 'NOT FOUND');
-
-  if (!statFiltersGroup) return;
-
-  const filters = findStatFilters();
-  if (filters.length === 0) {
-    debug.log('[TierInjector] No stat filters found');
-    return;
-  }
-
-  // Check if stat IDs have been extracted yet
-  if (!hasStatIdsExtracted()) {
-    debug.log('[TierInjector] Stat IDs not extracted yet, will retry via observer');
-    return;
+  const currentFilters = new Set(filters);
+  for (const [filter, control] of tierControls) {
+    if (!currentFilters.has(filter) || !filter.contains(control.input) || !filter.contains(control.container)) {
+      removeControl(filter, control);
+    }
   }
 
   const itemClass = getCurrentItemClass();
-  debug.log('[TierInjector] Found', filters.length, 'stat filters, item class:', itemClass);
-
-  filters.forEach(filter => {
-    // Skip if already has tier dropdown
-    if (filter.querySelector('.tier-dropdown-injected')) {
-      debug.log('[TierInjector] Skipping filter - already has dropdown');
-      return;
+  let waitingForIds = false;
+  for (const filter of filters) {
+    const statId = filter.dataset.statId;
+    const input = filter.querySelector<HTMLInputElement>('input[placeholder="min"]');
+    const existing = tierControls.get(filter);
+    if (existing && existing.statId === statId && existing.itemClass === itemClass && existing.input === input) {
+      existing.render();
+      continue;
     }
-
-    const statId = getStatIdFromFilter(filter);
-    debug.log('[TierInjector] Processing filter, statId:', statId);
-
+    if (existing) removeControl(filter, existing);
+    if (!input) continue;
     if (!statId) {
-      debug.log('[TierInjector] Skipping - no statId');
-      return;
+      waitingForIds = true;
+      continue;
     }
-
-    const hasTiers = hasStatTiers(statId);
-    debug.log('[TierInjector] hasStatTiers:', hasTiers);
-
-    if (!hasTiers) {
-      debug.log('[TierInjector] Skipping - no tier data for', statId);
-      return;
-    }
-
+    if (!hasStatTiers(statId)) continue;
     const tiers = getTiersForStat(statId, itemClass || undefined);
-    debug.log('[TierInjector] Tiers for', statId, ':', tiers?.length || 0, 'tiers');
+    if (!tiers?.length) continue;
 
-    if (!tiers || tiers.length === 0) {
-      debug.log('[TierInjector] Skipping - no tiers available');
-      return;
-    }
-
-    const minInput = filter.querySelector('input[placeholder="min"]') as HTMLInputElement | null;
-    if (!minInput) {
-      debug.log('[TierInjector] Skipping - no min input found');
-      return;
-    }
-
-    // Create a wrapper around the min input for positioning
     const wrapper = document.createElement('span');
     wrapper.className = 'tier-input-wrapper';
     wrapper.style.cssText = 'position: relative; display: inline-block;';
+    input.parentNode?.insertBefore(wrapper, input);
+    wrapper.appendChild(input);
 
-    // Wrap the min input
-    minInput.parentNode?.insertBefore(wrapper, minInput);
-    wrapper.appendChild(minInput);
-
-    // Create tier dropdown container positioned inside the wrapper
     const container = document.createElement('span');
     container.className = 'tier-dropdown-injected';
     container.style.cssText = 'position: absolute; right: 2px; top: 50%; transform: translateY(-50%); z-index: 5;';
-
-    // Add padding to min input so text doesn't overlap with button
-    minInput.style.paddingRight = '28px';
-
     wrapper.appendChild(container);
-
-    // Function to render/re-render the dropdown with current value
-    const renderDropdown = () => {
-      const value = minInput.value ? parseFloat(minInput.value) : undefined;
-      const currentTier = value !== undefined && !isNaN(value)
-        ? findTierForValue(statId, value, itemClass || undefined)
-        : null;
-
-      const root = tierDropdownRoots.get(container) || createRoot(container);
-      if (!tierDropdownRoots.has(container)) {
-        tierDropdownRoots.set(container, root);
-      }
-
-      root.render(
-        createElement(TierDropdown, {
-          tiers,
-          onSelect: (avgMin: number) => {
-            updateMinInput(minInput, avgMin);
-            // Re-render to update tier display after selection
-            setTimeout(renderDropdown, 0);
-          },
-          containerElement: container,
-          currentTier,
-        })
-      );
+    const originalPadding = input.style.paddingRight;
+    input.style.paddingRight = '28px';
+    const root = createRoot(container);
+    let renderedTier: number | null | undefined;
+    const render = () => {
+      const value = input.value ? parseFloat(input.value) : NaN;
+      const currentTier = Number.isFinite(value) ? findTierForValue(statId, value, itemClass || undefined) : null;
+      if (currentTier === renderedTier) return;
+      renderedTier = currentTier;
+      root.render(createElement(TierDropdown, {
+        tiers,
+        onSelect: (avgMin: number) => {
+          input.value = String(avgMin);
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+          debug.log('[TierInjector] Updated min input to', avgMin);
+        },
+        containerElement: container,
+        currentTier,
+      }));
     };
 
-    // Initial render
-    renderDropdown();
-
-    // Listen for input changes to update tier display
-    minInput.addEventListener('input', renderDropdown);
-    minInput.addEventListener('change', renderDropdown);
-
+    tierControls.set(filter, { statId, itemClass, input, wrapper, container, root, render, originalPadding });
+    input.addEventListener('input', render);
+    input.addEventListener('change', render);
+    render();
     debug.log('[TierInjector] Injected tier dropdown for', statId);
+  }
+  return waitingForIds;
+}
+
+export function injectTierDropdowns(): void {
+  syncTierDropdowns();
+}
+
+function isRelevantMutation(record: MutationRecord): boolean {
+  const target = record.target instanceof Element ? record.target : null;
+  if (target?.closest(IGNORED_SELECTOR)) return false;
+  if (record.type === 'attributes') {
+    return record.attributeName === 'data-stat-id' && !!target?.matches(FILTER_SELECTOR) ||
+      record.attributeName === 'placeholder' && !!target?.closest(CATEGORY_SELECTOR);
+  }
+
+  return [...record.addedNodes, ...record.removedNodes].some(node => {
+    if (!(node instanceof Element) || node.matches(IGNORED_SELECTOR + ', .tier-input-wrapper')) return false;
+    // Moving our existing input into its wrapper is not a new host-page input.
+    if ([...tierControls.values()].some(control => control.input === node && node.parentElement === control.wrapper)) return false;
+    if (node.matches(FILTER_SELECTOR + ', ' + CATEGORY_SELECTOR) || node.querySelector(FILTER_SELECTOR + ', ' + CATEGORY_SELECTOR)) return true;
+    return !!target?.closest(FILTER_SELECTOR) &&
+      (node.matches('input[placeholder="min"]') || !!node.querySelector('input[placeholder="min"]'));
   });
 }
 
-/**
- * Observe for filter changes and inject dropdowns
- * Watches the #trade container to catch when filters are shown/hidden
- */
-export function observeFilterChanges(): MutationObserver | null {
-  // Watch the #trade container which always exists
+export function observeFilterChanges(): Pick<MutationObserver, 'disconnect'> | null {
   const tradeContainer = document.querySelector('#trade');
   if (!tradeContainer) {
     debug.log('[TierInjector] #trade container not found');
     return null;
   }
 
-  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-
-  const tryInjectWithRetry = () => {
-    injectTierDropdowns();
-    // If stat IDs weren't ready, retry a few times
-    const filters = findStatFilters();
-    if (filters.length > 0 && !hasStatIdsExtracted()) {
-      let retries = 0;
-      const retryInterval = setInterval(() => {
-        retries++;
-        if (hasStatIdsExtracted()) {
-          clearInterval(retryInterval);
-          debug.log('[TierInjector] Stat IDs extracted after', retries * 100, 'ms retry');
-          injectTierDropdowns();
-        } else if (retries >= 20) {
-          clearInterval(retryInterval);
-          debug.log('[TierInjector] Gave up waiting for stat IDs after 2s');
-        }
-      }, 100);
-    }
+  let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+  let retryInterval: ReturnType<typeof setInterval> | undefined;
+  const clearRetry = () => {
+    clearInterval(retryInterval);
+    retryInterval = undefined;
+  };
+  const synchronize = () => {
+    debounceTimer = undefined;
+    const waiting = syncTierDropdowns();
+    if (!waiting || retryInterval !== undefined) return;
+    let retries = 0;
+    retryInterval = setInterval(() => {
+      retries++;
+      const stillWaiting = syncTierDropdowns();
+      if (!stillWaiting || retries >= 20) {
+        clearRetry();
+        debug.log(stillWaiting ? '[TierInjector] Gave up waiting for stat IDs after 2s' : '[TierInjector] Stat IDs ready');
+      }
+    }, 100);
+  };
+  const schedule = () => {
+    clearRetry();
+    if (debounceTimer === undefined) debounceTimer = setTimeout(synchronize, 100);
   };
 
-  const observer = new MutationObserver(() => {
-    // Debounce to avoid excessive calls during DOM updates
-    if (debounceTimer) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(tryInjectWithRetry, 100);
+  const observer = new MutationObserver(records => {
+    if (records.some(isRelevantMutation)) schedule();
   });
-
-  observer.observe(tradeContainer, { childList: true, subtree: true });
-  debug.log('[TierInjector] Observing #trade for filter changes');
-
-  // Also listen for custom event from stat ID extractor
-  document.addEventListener('poe-stat-ids-extracted', (e) => {
-    debug.log('[TierInjector] Received stat-ids-extracted event:', (e as CustomEvent).detail);
-    injectTierDropdowns();
+  observer.observe(tradeContainer, {
+    childList: true, subtree: true, attributes: true, attributeFilter: ['data-stat-id', 'placeholder'],
   });
+  const onStatIds = () => {
+    debug.log('[TierInjector] Received stat-ids-extracted event');
+    schedule();
+  };
+  document.addEventListener('poe-stat-ids-extracted', onStatIds);
+  synchronize();
+  debug.log('[TierInjector] Observing #trade for selected stat changes');
 
-  return observer;
+  return {
+    disconnect() {
+      observer.disconnect();
+      clearTimeout(debounceTimer);
+      clearRetry();
+      document.removeEventListener('poe-stat-ids-extracted', onStatIds);
+      for (const [filter, control] of tierControls) removeControl(filter, control);
+    },
+  };
 }

@@ -74,6 +74,14 @@ The parser builds API queries; it does not populate the trade form by clicking i
 
 Rebuilding reloads all open trade tabs, which can trigger several API searches. If the API returns HTTP 429, wait for the `Retry-After` interval before retrying the paste. A successful query may legitimately return zero listings; verify its filters separately from its result count.
 
+## Verify stat-filter performance
+
+The trade site's **+ Add Stat Filter** autocomplete is separate from the extension's item-paste input. Test typing `shock` with selected stat filters already present, then clear and repeat. Check that the selected filters and their minimum values remain unchanged, and that tier buttons still update the corresponding minimum value.
+
+`TierInjection` Storybook interactions exercise the actual stat-ID observer and tier injector against a trade-form fixture. They check that autocomplete and result-list changes do not trigger tier rescans, while lazy Vue IDs and replaced controls still work. Bun tests also verify that pending IDs use at most one bounded retry timer and that disconnecting cancels pending work. These checks count work instead of imposing machine-dependent timing thresholds.
+
+For a reported CPU spike, record the affected tab while entering the exact text and verify that the capture includes those input events. Separate extension work from the host site's filtering and rendering; fixing unnecessary observer work alone does not prove it caused a reported freeze.
+
 ## Automated checks
 
 `bun run lint` checks JavaScript, TypeScript, and React Hooks with zero warnings allowed. `bun run lint:fix` applies available automatic fixes. `bun run check` also runs TypeScript and the Bun tests.

@@ -1,5 +1,6 @@
 import { addRegexToStats } from "./stat.js";
 import { buildTypeFilters } from "./itemClass.js";
+import { normalizeItemText } from "./itemText.js";
 
 // Group order and the order of disabled alternatives are reflected in the trade form.
 const WEIGHTED_STAT_GROUPS = [
@@ -75,6 +76,7 @@ export function matchUniqueItem(item) {
 }
 
 export function matchStatsOnItem(item, stats) {
+  const normalizedItem = normalizeItemText(item);
   const matched = [];
   for (const category of stats.result) {
     for (const entry of category.entries) {
@@ -82,7 +84,7 @@ export function matchStatsOnItem(item, stats) {
         continue;
       }
       let m;
-      while ((m = entry.regex.exec(item)) !== null) {
+      while ((m = entry.regex.exec(normalizedItem)) !== null) {
         // This is necessary to avoid infinite loops with zero-width matches
         if (m.index === entry.regex.lastIndex) {
           entry.regex.lastIndex++;

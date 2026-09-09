@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.7.1
+
+- Support advanced copied item text with roll ranges and modifier headers, preserving actual rolled values in trade searches.
+- Recognize implicit modifiers from their headers and match both singular and plural charm slots.
+- Reduce unnecessary tier-filter rescans while typing in the trade site's stat autocomplete and while results update.
+- Add regression coverage for advanced item copies and tier-filter updates.
+
 ## 2.7.0
 
 - Fix pasted Windows item text losing unique item names and desecrated modifiers in trade searches.

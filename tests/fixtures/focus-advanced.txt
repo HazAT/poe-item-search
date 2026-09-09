@@ -1,0 +1,28 @@
+Item Class: Foci
+Rarity: Rare
+Behemoth Weaver
+Leyline Focus
+-------------
+
+## Energy Shield: 143 (augmented)
+
+## Requires: Level 70, 99 Int
+
+## Sockets: S
+
+## Item Level: 79
+
+## +18% to Lightning Resistance (rune)
+
+{ Prefix Modifier "Cerulean" (Tier: 7) — Mana }
++62(55-64) to maximum Mana
+{ Prefix Modifier "Resolute" (Tier: 5) — Energy Shield }
+49(43-55)% increased Energy Shield
+{ Desecrated Prefix Modifier "Glittering" (Tier: 8) — Energy Shield }
++25(25-30) to maximum Energy Shield
+{ Suffix Modifier "of Legerdemain" (Tier: 2) — Caster, Speed }
+27(25-28)% increased Cast Speed
+{ Suffix Modifier "of Bliss" (Tier: 3) — Mana }
+47(40-49)% increased Mana Regeneration Rate
+{ Suffix Modifier "of the Enchanter" (Tier: 1) — Caster, Gem }
++2 to Level of all Spell Skills
