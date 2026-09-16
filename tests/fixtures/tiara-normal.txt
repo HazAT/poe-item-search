@@ -1,0 +1,12 @@
+Item Class: Helmets
+Rarity: Normal
+Ancestral Tiara
+---------------
+
+## Energy Shield: 109
+
+## Requires: Level 80, 115 Int
+
+## Item Level: 82
+
+Note: ~b/o 4 chaos

@@ -90,7 +90,7 @@ export async function searchItem(
   const statsResponse = await request(`https://www.pathofexile.com/api/${tradeVersion}/data/stats`);
   const stats = await readApiResponse(statsResponse, "Could not load trade stats");
   if (!Array.isArray(stats.result)) throw new Error("Could not load trade stats: invalid response from the trade API.");
-  const query = getSearchQuery(itemText, stats) as TradeSearchQuery["query"];
+  const query = getSearchQuery(itemText, stats, { poe2: location.version === "2" }) as TradeSearchQuery["query"];
 
   if (!query.term && !query.filters && !query.stats?.length) {
     logger.warn("Item pasted with no filters applied", itemDetails);

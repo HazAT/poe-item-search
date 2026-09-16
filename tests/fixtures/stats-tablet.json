@@ -1,0 +1,61 @@
+{
+  "result": [
+    {
+      "id": "explicit",
+      "label": "Explicit",
+      "entries": [
+        {
+          "id": "explicit.stat_395808938",
+          "text": "Area contains an additional Essence",
+          "type": "explicit"
+        },
+        {
+          "id": "explicit.stat_395808938",
+          "text": "Map contains an additional Essence",
+          "type": "explicit"
+        },
+        {
+          "id": "explicit.stat_2282052746",
+          "text": "Rerolling Favours at Ritual Altars in Area costs #% increased Tribute",
+          "type": "explicit"
+        },
+        {
+          "id": "explicit.stat_2282052746",
+          "text": "Rerolling Favours at Ritual Altars in Map costs #% increased Tribute",
+          "type": "explicit"
+        },
+        {
+          "id": "explicit.stat_1345835998",
+          "text": "Deferring Favours at Ritual Altars in Area costs #% increased Tribute",
+          "type": "explicit"
+        },
+        {
+          "id": "explicit.stat_1345835998",
+          "text": "Deferring Favours at Ritual Altars in Map costs #% increased Tribute",
+          "type": "explicit"
+        },
+        {
+          "id": "explicit.stat_2162684861",
+          "text": "Areas with Powerful Map Bosses contain an additional Essence",
+          "type": "explicit"
+        },
+        {
+          "id": "explicit.stat_2162684861",
+          "text": "Map contains an additional Essence",
+          "type": "explicit"
+        }
+      ]
+    },
+    {
+      "id": "implicit",
+      "label": "Implicit",
+      "entries": [
+        {
+          "id": "implicit.stat_3166002380",
+          "text": "Adds Ritual Altars to a Map \n# use remaining",
+          "type": "implicit"
+        }
+      ]
+    }
+  ]
+}

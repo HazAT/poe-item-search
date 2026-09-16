@@ -6,7 +6,7 @@
  * back via window.postMessage.
  */
 
-import { formatItemText } from "@/utils/itemFormatter";
+import { wireCopyButtons as wireItemCopyButtons } from "./itemCopy";
 import type { TradeItem, TradeFetchResponse } from "@/types/tradeItem";
 
 // Logger that forwards to content script via postMessage
@@ -406,109 +406,7 @@ XMLHttpRequest.prototype.send = function (
   return originalXHRSend.call(this, body);
 };
 
-/**
- * Show a brief visual feedback tooltip near the button.
- */
-function showCopyFeedback(button: HTMLElement, message: string) {
-  injectedLogger.log("showCopyFeedback called: " + message);
-
-  // Create tooltip element
-  const tooltip = document.createElement("div");
-  tooltip.textContent = message;
-  tooltip.setAttribute("data-poe-copy-tooltip", "true");
-  Object.assign(tooltip.style, {
-    position: "absolute",
-    background: "#1a1a1a",
-    color: "#8abd1c",
-    padding: "4px 8px",
-    borderRadius: "4px",
-    fontSize: "12px",
-    fontWeight: "bold",
-    zIndex: "10000",
-    pointerEvents: "none",
-    border: "1px solid #8abd1c",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
-  });
-
-  // Position tooltip above the button
-  const rect = button.getBoundingClientRect();
-  tooltip.style.left = `${rect.left + window.scrollX}px`;
-  tooltip.style.top = `${rect.top + window.scrollY - 30}px`;
-
-  document.body.appendChild(tooltip);
-  injectedLogger.log("Tooltip appended to body");
-
-  // Fade out and remove
-  setTimeout(() => {
-    tooltip.style.transition = "opacity 0.3s, transform 0.3s";
-    tooltip.style.opacity = "0";
-    tooltip.style.transform = "translateY(-10px)";
-  }, 1000);
-
-  setTimeout(() => tooltip.remove(), 1500);
-}
-
-/**
- * Wire up copy buttons on result rows.
- * Finds all .copy buttons, enables them, and adds click handlers.
- */
-function wireCopyButtons() {
-  const rows = document.querySelectorAll(".resultset .row[data-id]");
-
-  for (const row of rows) {
-    const itemId = (row as HTMLElement).dataset.id;
-    if (!itemId) continue;
-
-    const copyBtn = row.querySelector(".copy") as HTMLButtonElement;
-    if (!copyBtn) continue;
-
-    // Skip if already wired
-    if (copyBtn.dataset.poeWired === "true") continue;
-
-    // Enable the button
-    copyBtn.classList.remove("hidden");
-    copyBtn.style.display = "block";
-    copyBtn.dataset.poeWired = "true";
-
-    // Add click handler
-    copyBtn.addEventListener("click", async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const item = itemCache.get(itemId);
-      if (!item) {
-        injectedLogger.warn("Item not in cache: " + itemId);
-        copyBtn.title = "Item not loaded - try refreshing";
-        return;
-      }
-
-      try {
-        const text = formatItemText(item);
-        await navigator.clipboard.writeText(text);
-
-        // Send log to content script for Sentry logging
-        window.postMessage({
-          type: "poe-search-item-copied",
-          payload: {
-            itemText: text,
-            itemName: item.name || item.typeLine,
-            itemId: itemId,
-          },
-        }, "*");
-
-        // Visual feedback - show a temporary tooltip
-        showCopyFeedback(copyBtn, "Copied!");
-
-        injectedLogger.log("Copied item: " + (item.name || item.typeLine));
-      } catch (err) {
-        injectedLogger.error("Failed to copy", err);
-        showCopyFeedback(copyBtn, "Failed!");
-      }
-    });
-  }
-
-  injectedLogger.log("Wired copy buttons for " + rows.length + " rows");
-}
+const wireCopyButtons = () => wireItemCopyButtons(itemCache, injectedLogger);
 
 // Set up MutationObserver to wire copy buttons as new rows are added
 const resultsObserver = new MutationObserver((mutations) => {

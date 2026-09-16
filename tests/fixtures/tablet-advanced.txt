@@ -1,0 +1,22 @@
+Item Class: Tablet
+Rarity: Rare
+Ancient Mandate
+Ritual Tablet
+-------------
+
+## Item Level: 79
+
+{ Implicit Modifier }
+Adds Ritual Altars to a Map
+10 uses remaining
+-----------------
+
+{ Prefix Modifier "Crystallised" (Tier: 1) }
+Map contains an additional Essence — Unscalable Value
+{ Suffix Modifier "of Devotion" (Tier: 1) }
+Deferring Favours at Ritual Altars in Map costs 26(30-20)% reduced Tribute
+{ Suffix Modifier "of the Dogma" (Tier: 1) }
+Rerolling Favours at Ritual Altars in Map costs 21(30-20)% reduced Tribute
+--------------------------------------------------------------------------
+
+Can be used in a personal Map Device to add modifiers to a Map.

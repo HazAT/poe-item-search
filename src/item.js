@@ -1,6 +1,7 @@
 import { addRegexToStats } from "./stat.js";
 import { buildTypeFilters } from "./itemClass.js";
 import { normalizeItemText } from "./itemText.js";
+import { buildPropertyFilters } from "./itemProperties.js";
 
 // Group order and the order of disabled alternatives are reflected in the trade form.
 const WEIGHTED_STAT_GROUPS = [
@@ -38,15 +39,30 @@ function buildWeightedGroup(matched, ids) {
   return { type: "weight", filters, value: { min: minimum } };
 }
 
-export function getSearchQuery(item, stats) {
+export function getSearchQuery(item, stats, { poe2 = true } = {}) {
   const query = {};
   const unique = matchUniqueItem(item);
 
   if (unique) {
     query.term = unique;
   } else {
-    const typeFilters = buildTypeFilters(item);
-    if (typeFilters) query.filters = typeFilters;
+    // Normal items have a base name directly after rarity. Magic names include
+    // affixes, so those searches keep matching by category and modifiers.
+    const normalName = item.match(/^Rarity: Normal[ \t]*\r?\n([^\r\n]+)/m)?.[1].trim();
+    if (normalName && !/^-{3,}$/.test(normalName)) {
+      // Quality can decorate the copied name; the API requires the base type.
+      query.type = normalName.replace(/^(?:Superior|Exceptional) /, "");
+    }
+
+    const filters = buildPropertyFilters(item, { poe2 });
+    const categoryFilters = buildTypeFilters(item);
+    if (categoryFilters) {
+      filters.type_filters = { filters: {
+        ...categoryFilters.type_filters.filters,
+        ...filters.type_filters?.filters,
+      } };
+    }
+    if (Object.keys(filters).length > 0) query.filters = filters;
   }
 
   const matched = matchStatsOnItem(item, addRegexToStats(stats));
@@ -80,46 +96,50 @@ export function matchStatsOnItem(item, stats) {
   const matched = [];
   for (const category of stats.result) {
     for (const entry of category.entries) {
-      if (!entry || (entry.type !== "explicit" && entry.type !== "implicit")) {
+      if (!entry || !["explicit", "implicit", "enchant"].includes(entry.type)) {
         continue;
       }
-      let m;
-      while ((m = entry.regex.exec(normalizedItem)) !== null) {
-        // This is necessary to avoid infinite loops with zero-width matches
-        if (m.index === entry.regex.lastIndex) {
-          entry.regex.lastIndex++;
-        }
-        // Collect all captured numeric values (groups 1, 2, etc.)
-        const capturedValues = [];
-        for (let i = 1; i < m.length; i++) {
-          if (m[i] !== undefined) {
-            capturedValues.push(parseFloat(m[i]));
+      for (const [regex, multiplier] of [[entry.regex, 1], [entry.reducedRegex, -1]]) {
+        if (!regex) continue;
+        let m;
+        while ((m = regex.exec(normalizedItem)) !== null) {
+          // This is necessary to avoid infinite loops with zero-width matches
+          if (m.index === regex.lastIndex) {
+            regex.lastIndex++;
           }
-        }
+          // Collect all captured numeric values (groups 1, 2, etc.)
+          const capturedValues = [];
+          for (let i = 1; i < m.length; i++) {
+            if (m[i] !== undefined) {
+              capturedValues.push(parseFloat(m[i]));
+            }
+          }
 
-        if (capturedValues.length === 0) {
-          continue;
-        }
+          // Fixed modifiers are existence filters; option stats require a choice
+          // and cannot be inferred from their text alone.
+          if (capturedValues.length === 0 && entry.option) {
+            continue;
+          }
 
-        // Calculate the value to use:
-        // - For range stats (2 values like "Adds X to Y damage"), use the average
-        // - For single value stats, use that value
-        let minValue;
-        if (capturedValues.length === 2) {
-          // Average the two values for damage range stats
-          minValue = (capturedValues[0] + capturedValues[1]) / 2;
-        } else {
-          // Preserve the existing single-value trade query format.
-          minValue = m[1].replace(/^\+/, "");
-        }
+          // Damage ranges use their average; single rolls keep their existing
+          // string representation. Fixed modifiers have no numeric value.
+          let statValue;
+          if (capturedValues.length === 2) {
+            statValue = multiplier * (capturedValues[0] + capturedValues[1]) / 2;
+          } else if (capturedValues.length > 0) {
+            statValue = multiplier === 1 ? m[1].replace(/^\+/, "") : String(-capturedValues[0]);
+          }
 
-        // Create a shallow copy of entry for the match
-        const matchedEntry = { ...entry, value: { min: minValue } };
-        // Check if the stat text contains '(implicit)' and set type accordingly
-        if (entry.text.includes("(implicit)")) {
-          matchedEntry.type = "implicit";
+          const matchedEntry = {
+            ...entry,
+            ...(statValue !== undefined && { value: { [entry.valueBound ?? "min"]: statValue } }),
+          };
+          // Check if the stat text contains '(implicit)' and set type accordingly
+          if (entry.text.includes("(implicit)")) {
+            matchedEntry.type = "implicit";
+          }
+          matched.push(matchedEntry);
         }
-        matched.push(matchedEntry);
       }
     }
   }

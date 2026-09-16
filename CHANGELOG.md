@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.8.0
+
+- Fix search-result copying failing on the trade API's new structured modifier data.
+- Add a checked clipboard fallback and prevent the trade site's native copy handler from interfering.
+- Copy PoE2 results in the new advanced item format, including modifier names, tiers, and roll ranges supplied by the trade API.
+- Preserve modifier types and actual rolled values when copied results are pasted back into a search.
+- Support Ritual Tablet modifiers, reduced Tribute costs, and amulet enhancements with fixed modifiers.
+- Preserve normal item base types, normal and magic rarity, item levels, and Inscribed Ultimatum properties in searches.
+- Add clipboard, advanced formatting, parser, and Storybook regression coverage.
+
 ## 2.7.1
 
 - Support advanced copied item text with roll ranges and modifier headers, preserving actual rolled values in trade searches.

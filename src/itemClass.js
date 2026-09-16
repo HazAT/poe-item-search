@@ -74,9 +74,12 @@ export const ITEM_CLASS_TO_CATEGORY = {
 
   // Maps/Endgame
   "Waystones": "map.waystone",
+  "Tablet": "map.tablet",
+  "Tablets": "map.tablet",
   "Map Fragments": "map.fragment",
   "Expedition Logbooks": "map.logbook",
   "Breachstones": "map.breachstone",
+  "Inscribed Ultimatum": "map.ultimatum",
 
   // Currency
   "Runes": "currency.rune",
@@ -130,9 +133,11 @@ const CATEGORY_TEXT_TO_ITEM_CLASS = {
   "Meta Gem": "Meta Gems",
   "Any Jewel": "Jewels",
   "Waystone": "Waystones",
+  "Tablet": "Tablet",
   "Map Fragment": "Map Fragments",
   "Logbook": "Expedition Logbooks",
   "Breachstone": "Breachstones",
+  "Ultimatum Key": "Inscribed Ultimatum",
   "Rune": "Runes",
   "Soul Core": "Soul Cores",
   "Divination Card": "Divination Cards",

@@ -62,6 +62,8 @@ test("matchStats", () => {
           category: {
             option: "flask.life",
           },
+          rarity: { option: "magic" },
+          ilvl: { min: 48 },
         },
       },
     },

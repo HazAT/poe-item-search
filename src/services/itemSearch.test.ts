@@ -81,6 +81,47 @@ describe("searchItem", () => {
     },
   );
 
+  test("posts Ultimatum property filters even when there are no modifier stats", async () => {
+    const item = await Bun.file("tests/fixtures/ultimatum.txt").text();
+    const dependencies = setup(
+      [Response.json({ result: [] }), Response.json({ id: "ultimatum-search", total: 12 })],
+      { "lscache-trade2state": JSON.stringify({ status: "securable" }) },
+    );
+    const result = await searchItem(item, POE2_URL, dependencies);
+    expect(JSON.parse(dependencies.requests[1].init?.body as string)).toEqual({
+      query: {
+        stats: [],
+        status: { option: "securable" },
+        filters: {
+          type_filters: { filters: { category: { option: "map.ultimatum" } } },
+          misc_filters: { filters: { area_level: { min: 80 } } },
+          map_filters: { filters: { ultimatum_hint: { option: "Deadly" } } },
+        },
+      },
+    });
+    expect(result.title).toBe("Inscribed Ultimatum");
+    expect(result.url).toBe("https://www.pathofexile.com/trade2/search/poe2/Standard/ultimatum-search");
+  });
+
+  test.each([
+    [POE2_URL, "type_filters"],
+    ["https://www.pathofexile.com/trade/search/Standard", "misc_filters"],
+  ])("normal bases retain their type, rarity and item level when posted to %s", async (url, levelGroup) => {
+    const item = await Bun.file("tests/fixtures/tiara-normal.txt").text();
+    const dependencies = setup([Response.json({ result: [] }), Response.json({ id: "base-search", total: 3 })]);
+    const result = await searchItem(item, url, dependencies);
+    const payload = JSON.parse(dependencies.requests[1].init?.body as string);
+    expect(payload).toEqual(result.queryPayload);
+    expect(payload.query.type).toBe("Ancestral Tiara");
+    expect(payload.query.filters.type_filters.filters).toMatchObject({
+      category: { option: "armour.helmet" }, rarity: { option: "normal" },
+    });
+    expect(payload.query.filters[levelGroup].filters.ilvl).toEqual({ min: 82 });
+    const otherGroup = levelGroup === "type_filters" ? "misc_filters" : "type_filters";
+    expect(payload.query.filters[otherGroup]?.filters.ilvl).toBeUndefined();
+    expect(payload.query.stats).toEqual([]);
+  });
+
   test("reports stats rate limiting without posting a search", async () => {
     const dependencies = setup([new Response("", { status: 429 })]);
     await expect(searchItem(ITEM, POE2_URL, dependencies)).rejects.toThrow("Too many requests. Please wait and try again.");

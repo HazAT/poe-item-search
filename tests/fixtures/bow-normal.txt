@@ -1,0 +1,16 @@
+Item Class: Bows
+Rarity: Normal
+Gemini Bow
+----------
+
+Physical Damage: 39-72
+Critical Hit Chance: 5.00%
+Attacks per Second: 1.15
+------------------------
+
+## Requires: Level 78, 163 (unmet) Dex
+
+## Item Level: 82
+
+{ Implicit Modifier — Attack }
++50% Surpassing chance to fire an additional Arrow

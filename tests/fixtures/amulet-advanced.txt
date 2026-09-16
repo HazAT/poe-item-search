@@ -1,0 +1,15 @@
+Item Class: Amulets
+Rarity: Normal
+Distorted Amulet
+----------------
+
+## Item Level: 78
+
+{ Enhancement }
+Allocates Quick Fingers — Unscalable Value
+{ Enhancement }
+Allocates Exploit — Unscalable Value
+------------------------------------
+
+{ Implicit Modifier }
+-1 Suffix Modifier allowed

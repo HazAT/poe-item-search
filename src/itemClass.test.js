@@ -101,6 +101,11 @@ describe("getCategoryForItemClass", () => {
     expect(getCategoryForItemClass("Quarterstaves")).toBe("weapon.warstaff");
   });
 
+  test("maps Inscribed Ultimatum to map.ultimatum", () => {
+    expect(getCategoryForItemClass("Inscribed Ultimatum")).toBe("map.ultimatum");
+    expect(isItemClassSupported("Inscribed Ultimatum")).toBe(true);
+  });
+
   test("returns undefined for unknown class", () => {
     expect(getCategoryForItemClass("Unknown")).toBeUndefined();
     expect(getCategoryForItemClass("Charms")).toBeUndefined(); // Not in PoE2 trade
@@ -169,6 +174,20 @@ describe("buildTypeFilters", () => {
         filters: {
           category: {
             option: "armour.chest"
+          }
+        }
+      }
+    });
+  });
+
+  test.each(["Tablet", "Tablets"])("builds tablet category filter for Item Class: %s", (itemClass) => {
+    const itemText = `Item Class: ${itemClass}\nRarity: Rare\nAncient Mandate\nRitual Tablet`;
+
+    expect(buildTypeFilters(itemText)).toEqual({
+      type_filters: {
+        filters: {
+          category: {
+            option: "map.tablet"
           }
         }
       }

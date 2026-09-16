@@ -1,6 +1,7 @@
 const INLINE_MODIFIER_TAG = / \((?:implicit|explicit|desecrated|rune|crafted|fractured|mutated|enchant)\)\s*$/;
 
 function getHeaderType(header) {
+  if (header.trim() === "Enhancement") return "enchant";
   const kind = header.match(/^\s*(.*?)\s+Modifier(?:\s|$)/)?.[1];
   if (kind === "Implicit") return "implicit";
   if (["Prefix", "Suffix", "Explicit", "Desecrated", "Desecrated Prefix", "Desecrated Suffix"].includes(kind)) {
@@ -31,9 +32,9 @@ export function normalizeItemText(item) {
     }
 
     if (modifierType === "excluded") return "";
-    if (modifierType !== "implicit" || INLINE_MODIFIER_TAG.test(line)) return line;
+    if (!["implicit", "enchant"].includes(modifierType) || INLINE_MODIFIER_TAG.test(line)) return line;
 
     // Tag every line: one modifier can contain several stats or a multiline stat.
-    return `${line.trimEnd()} (implicit)`;
+    return `${line.trimEnd()} (${modifierType})`;
   }).join("");
 }

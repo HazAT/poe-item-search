@@ -1,0 +1,49 @@
+{
+  "implicitMods": [
+    {
+      "description": "+20% to Maximum [Quality]",
+      "domain": "implicit",
+      "hash": "stat.implicit.stat_2039822488",
+      "mods": [{ "level": 50, "magnitudes": [{ "min": "20", "max": "20" }] }]
+    }
+  ],
+  "explicitMods": [
+    {
+      "description": "+161 to maximum Mana",
+      "domain": "explicit",
+      "hash": "stat.explicit.stat_1050105434",
+      "mods": [{ "name": "Blue", "tier": "P2", "level": 70, "magnitudes": [{ "min": "150", "max": "164" }] }]
+    },
+    {
+      "description": "22% increased [Critical|Critical Hit Chance] for [Spell|Spells]",
+      "domain": "explicit",
+      "hash": "stat.explicit.stat_737908626",
+      "mods": [{ "name": "of Calamity", "tier": "S0", "level": 58, "magnitudes": [{ "min": "16", "max": "18" }] }]
+    },
+    {
+      "description": "29% increased [CriticalDamageBonus|Critical Spell Damage Bonus]",
+      "domain": "explicit",
+      "hash": "stat.explicit.stat_274716455",
+      "mods": [{ "name": "of Fury", "tier": "S0", "level": 57, "magnitudes": [{ "min": "18", "max": "21" }] }]
+    },
+    {
+      "description": "+10% to all [ElementalDamage|Elemental] [Resistances]",
+      "domain": "explicit",
+      "hash": "stat.explicit.stat_2901986750",
+      "mods": [{ "name": "of the Kaleidoscope", "tier": "S3", "level": 40, "magnitudes": [{ "min": "9", "max": "11" }] }]
+    },
+    {
+      "description": "29% increased Mana Cost [Efficiency] of [Spell|Spells]",
+      "domain": "explicit",
+      "hash": "stat.explicit.stat_2653231923",
+      "mods": [{ "name": "Sagacious", "tier": "P0", "level": 64, "magnitudes": [{ "min": "19", "max": "22" }] }]
+    },
+    {
+      "description": "[Spell|Spells] [Gain] 10% of Damage as extra [Chaos|Chaos] Damage",
+      "flags": { "desecrated": true },
+      "domain": "desecrated",
+      "hash": "stat.desecrated.stat_555706343",
+      "mods": [{ "name": "Soul Stealer's", "tier": "P0", "magnitudes": [{ "min": "8", "max": "12" }] }]
+    }
+  ]
+}

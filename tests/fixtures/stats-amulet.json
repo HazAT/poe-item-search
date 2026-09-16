@@ -1,0 +1,120 @@
+{
+  "result": [
+    {
+      "id": "explicit",
+      "label": "Explicit",
+      "entries": [
+        {
+          "id": "explicit.stat_718638445",
+          "text": "# Suffix Modifier allowed",
+          "type": "explicit"
+        },
+        {
+          "id": "explicit.stat_2954116742|48581",
+          "text": "Allocates Exploit the Elements",
+          "type": "explicit"
+        },
+        {
+          "id": "explicit.stat_2954116742|33542",
+          "text": "Allocates Quick Fingers",
+          "type": "explicit"
+        },
+        {
+          "id": "explicit.stat_2954116742|39050",
+          "text": "Allocates Exploit",
+          "type": "explicit"
+        }
+      ]
+    },
+    {
+      "id": "implicit",
+      "label": "Implicit",
+      "entries": [
+        {
+          "id": "implicit.stat_718638445",
+          "text": "# Suffix Modifier allowed",
+          "type": "implicit"
+        }
+      ]
+    },
+    {
+      "id": "fractured",
+      "label": "Fractured",
+      "entries": [
+        {
+          "id": "fractured.stat_718638445",
+          "text": "# Suffix Modifier allowed",
+          "type": "fractured"
+        },
+        {
+          "id": "fractured.stat_2954116742|48581",
+          "text": "Allocates Exploit the Elements",
+          "type": "fractured"
+        },
+        {
+          "id": "fractured.stat_2954116742|39050",
+          "text": "Allocates Exploit",
+          "type": "fractured"
+        }
+      ]
+    },
+    {
+      "id": "crafted",
+      "label": "Crafted",
+      "entries": [
+        {
+          "id": "crafted.stat_718638445",
+          "text": "# Suffix Modifier allowed",
+          "type": "crafted"
+        },
+        {
+          "id": "crafted.stat_2954116742|33542",
+          "text": "Allocates Quick Fingers",
+          "type": "crafted"
+        },
+        {
+          "id": "crafted.stat_2954116742|48581",
+          "text": "Allocates Exploit the Elements",
+          "type": "crafted"
+        },
+        {
+          "id": "crafted.stat_2954116742|39050",
+          "text": "Allocates Exploit",
+          "type": "crafted"
+        }
+      ]
+    },
+    {
+      "id": "enchant",
+      "label": "Enchant",
+      "entries": [
+        {
+          "id": "enchant.stat_2954116742|39050",
+          "text": "Allocates Exploit",
+          "type": "enchant"
+        },
+        {
+          "id": "enchant.stat_2954116742|48581",
+          "text": "Allocates Exploit the Elements",
+          "type": "enchant"
+        },
+        {
+          "id": "enchant.stat_2954116742|33542",
+          "text": "Allocates Quick Fingers",
+          "type": "enchant"
+        }
+      ]
+    },
+    {
+      "id": "rune",
+      "label": "Augment",
+      "entries": [
+        {
+          "id": "rune.stat_718638445",
+          "text": "# Suffix Modifier allowed",
+          "type": "augment"
+        }
+      ]
+    }
+  ]
+}

@@ -97,7 +97,7 @@ export async function buildSearchQuery(itemText, options = {}) {
   }
 
   const stats = providedStats ?? await getStats({ forceRefresh, poe2 });
-  return getSearchQuery(itemText, stats);
+  return getSearchQuery(itemText, stats, { poe2 });
 }
 
 /**
@@ -123,6 +123,7 @@ export async function buildTradeRequest(itemText, options = {}) {
       status: { option: "online" },
       stats: query.stats,
       ...(query.term && { term: query.term }),
+      ...(query.type && { type: query.type }),
       ...(query.filters && { filters: query.filters })
     },
     sort: { price: "asc" }

@@ -3,17 +3,27 @@ const STAT_NUMBER = "[+-]?\\d+(?:\\.\\d+)?";
 // Only capture the actual roll; damage-range filters average the captured values.
 const STAT_VALUE = `(${STAT_NUMBER})(?:\\(${STAT_NUMBER}-${STAT_NUMBER}\\))?`;
 
+function escapeRegex(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export function addRegexToStat(stat) {
   if (!stat) return null;
   let regexPattern = stat.text
-    .replaceAll("+", "\\+")
+    .replace(/[ \t]*\r?\n/g, "\n")
+    .split(/(\[[^\]]+\])/g)
+    .map(part => part.startsWith("[")
+      ? `(?:${part.slice(1, -1).split("|").map(escapeRegex).join("|")})`
+      : escapeRegex(part))
+    .join("")
     // The trade API uses singular "Charm Slot" even for rolls above one.
     .replace(/\bCharm Slots?\b/g, "Charm Slots?")
-    .replace(/\[([^\]]+)\]/g, (_, group) => {
-      const options = group.split("|");
-      return `(?:${options.join("|")})`;
-    })
+    // Tablet implicits similarly use singular "use" in the API template.
+    .replace(/\buses? remaining\b/g, "uses? remaining")
     .replaceAll("#", STAT_VALUE);
+
+  // Advanced copies annotate fixed modifiers; this is not part of the stat.
+  regexPattern += "(?: — Unscalable Value)?";
 
   // Check if the stat text contains '(implicit)' and set type accordingly
   let isImplicit = false;
@@ -22,14 +32,16 @@ export function addRegexToStat(stat) {
     isImplicit = true;
   }
 
-  // If the stat is implicit, require ' (implicit)' at the end; if explicit, forbid it
-  if (stat.type === "implicit" || isImplicit) {
+  // Implicits and enchantments must keep their type: identical text can also
+  // exist in the API's explicit group, where it describes a different modifier.
+  if (stat.type === "implicit" || isImplicit || stat.type === "enchant") {
+    const tag = stat.type;
     // Header-based copies label each line during normalization. Legacy copies
-    // can carry a single implicit label at the end of a multiline modifier.
-    regexPattern = regexPattern.replace(/\r?\n/g, "(?: \\(implicit\\))?\\r?\\n");
-    regexPattern += " \\(implicit\\)";
+    // can carry a single label at the end of a multiline modifier.
+    regexPattern = regexPattern.replace(/\r?\n/g, `(?: \\(${tag}\\))?[ \\t]*\\r?\\n`);
+    regexPattern += ` \\(${tag}\\)`;
   } else {
-    regexPattern = regexPattern.replace(/\r?\n/g, "\\r?\\n");
+    regexPattern = regexPattern.replace(/\r?\n/g, "[ \\t]*\\r?\\n");
     // Desecrated modifiers still use explicit filters when searching similar items.
     if (stat.type === "explicit") {
       regexPattern += "(?: \\(desecrated\\))?";
@@ -37,10 +49,17 @@ export function addRegexToStat(stat) {
     regexPattern += "(?! \\(implicit\\))";
   }
 
-  // Create the final regex with start/end anchors
+  const source = `^${regexPattern}$`;
+  // The API expresses Ritual Tribute costs as increases, even for reductions.
+  // Lower costs are better, so both spellings must use a maximum API value.
+  const tributeCost = /\bcosts #% increased Tribute$/.test(stat.text);
   return {
     ...stat,
-    regex: new RegExp(`^${regexPattern}$`, 'gm'),
+    regex: new RegExp(source, 'gm'),
+    ...(tributeCost && {
+      reducedRegex: new RegExp(source.replace("increased Tribute", "reduced Tribute"), 'gm'),
+      valueBound: "max",
+    }),
   };
 }
 

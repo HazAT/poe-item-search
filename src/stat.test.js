@@ -65,10 +65,10 @@ test.each([
 });
 
 test("advanced rolls preserve modifier suffix distinctions", () => {
-  for (const suffix of ["", " (desecrated)", " (implicit)", " (rune)", " (crafted)", " (fractured)", " (mutated)"]) {
-    for (const type of ["explicit", "implicit"]) {
+  for (const suffix of ["", " (desecrated)", " (implicit)", " (enchant)", " (rune)", " (crafted)", " (fractured)", " (mutated)"]) {
+    for (const type of ["explicit", "implicit", "enchant"]) {
       const { regex } = addRegexToStat({ text: "#% to Fire Resistance", type });
-      const expected = type === "implicit" ? suffix === " (implicit)" : ["", " (desecrated)"].includes(suffix);
+      const expected = type === "explicit" ? ["", " (desecrated)"].includes(suffix) : suffix === ` (${type})`;
       expect(regex.test(`+33(31-35)% to Fire Resistance${suffix}`)).toBe(expected);
     }
   }
@@ -81,11 +81,11 @@ test("advanced rolls reject malformed bounds instead of partially matching them"
   }
 });
 
-test("multiline implicit stats accept legacy and per-line implicit labels", () => {
+test.each(["implicit", "enchant"])("multiline %s stats accept legacy and per-line labels", (type) => {
   for (const lineEnding of ["\n", "\r\n"]) {
-    for (const intermediateSuffix of ["", " (implicit)"]) {
-      const { regex } = addRegexToStat({ text: "First #\nSecond #", type: "implicit" });
-      expect(regex.exec(`First 10(8-12)${intermediateSuffix}${lineEnding}Second 20(18-22) (implicit)`)?.slice(1)).toEqual(["10", "20"]);
+    for (const intermediateSuffix of ["", ` (${type})`]) {
+      const { regex } = addRegexToStat({ text: "First #\nSecond #", type });
+      expect(regex.exec(`First 10(8-12)${intermediateSuffix}${lineEnding}Second 20(18-22) (${type})`)?.slice(1)).toEqual(["10", "20"]);
     }
   }
 });
@@ -100,4 +100,19 @@ test("charm slot templates match singular and plural copied modifiers", () => {
       }
     }
   }
+});
+
+test("fixed modifier annotations preserve modifier type distinctions", () => {
+  for (const suffix of ["", " (desecrated)", " (implicit)", " (rune)"]) {
+    const { regex } = addRegexToStat({ text: "Map contains an additional Essence", type: "explicit" });
+    const match = regex.exec(`Map contains an additional Essence — Unscalable Value${suffix}`);
+    expect(Boolean(match)).toBe(["", " (desecrated)"].includes(suffix));
+    if (match) expect(match.slice(1)).toEqual([]);
+  }
+});
+
+test("literal parentheses do not become numeric capture groups", () => {
+  const { regex } = addRegexToStat({ text: "Grants [Fire|Cold] (Local)", type: "explicit" });
+  expect(regex.exec("Grants Fire (Local)")?.slice(1)).toEqual([]);
+  expect(regex.test("Grants Fire Local")).toBe(false);
 });

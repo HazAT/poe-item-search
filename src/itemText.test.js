@@ -84,3 +84,10 @@ test("inline excluded tags under an implicit header stay excluded", () => {
   const item = "{ Implicit Modifier }\n+25 to maximum Life (rune)\n+30 to maximum Life (crafted)";
   expect(matchStatsOnItem(item, lifeStats)).toEqual([]);
 });
+
+test("enhancement context preserves inline labels and resets at the next modifier header", () => {
+  const item = "{ Enhancement }\nAllocates Exploit (enchant)\nAllocates Quick Fingers\n{ Suffix Modifier }\n+40 to maximum Life\n{ Implicit Modifier }\n+25 to maximum Life";
+  expect(normalizeItemText(item)).toBe(
+    "{ Enhancement }\nAllocates Exploit (enchant)\nAllocates Quick Fingers (enchant)\n{ Suffix Modifier }\n+40 to maximum Life\n{ Implicit Modifier }\n+25 to maximum Life (implicit)",
+  );
+});

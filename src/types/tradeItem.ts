@@ -22,33 +22,41 @@ export interface TradeItemSocket {
   attr?: string; // Socket attribute (S for skill, etc.)
 }
 
-export interface TradeItemExtendedMod {
-  name: string;
-  tier: string;
-  level: number;
-  magnitudes: {
-    hash: string;
-    min: string;
-    max: string;
-  }[];
+export interface TradeItemModMagnitude {
+  hash?: string;
+  min: string;
+  max: string;
 }
+
+export interface TradeItemExtendedMod {
+  name?: string;
+  tier?: string;
+  level?: number;
+  magnitudes?: TradeItemModMagnitude[];
+}
+
+export type TradeItemModType = "explicit" | "implicit" | "fractured" | "desecrated" | "rune" | "enchant" | "crafted" | "mutated";
+
+// Current trade responses put each stat's metadata alongside its description.
+// Older responses instead provide string lines plus extended.mods/hashes.
+export interface TradeItemStructuredMod {
+  description: string;
+  domain?: TradeItemModType;
+  hash?: string;
+  flags?: Partial<Record<"desecrated" | "fractured" | "crafted" | "mutated", boolean>>;
+  mods?: TradeItemExtendedMod[];
+}
+
+export type TradeItemMod = string | TradeItemStructuredMod;
 
 export interface TradeItemExtended {
   ar?: number; // Armour
   ev?: number; // Evasion
   es?: number; // Energy Shield
-  mods?: {
-    explicit?: TradeItemExtendedMod[];
-    implicit?: TradeItemExtendedMod[];
-    fractured?: TradeItemExtendedMod[];
-    desecrated?: TradeItemExtendedMod[];
-    rune?: TradeItemExtendedMod[];
-    enchant?: TradeItemExtendedMod[];
-  };
-  hashes?: {
-    explicit?: [string, number[]][];
-    implicit?: [string, number[]][];
-  };
+  mods?: Partial<Record<TradeItemModType, TradeItemExtendedMod[]>>;
+  // Hash entries follow displayed stat order; their indices refer to mods,
+  // whose order can differ. A stat can combine multiple mods or have no index.
+  hashes?: Partial<Record<TradeItemModType, [string, number[] | null][]>>;
 }
 
 export interface TradeItem {
@@ -72,14 +80,14 @@ export interface TradeItem {
   requirements?: TradeItemRequirement[];
   sockets?: TradeItemSocket[];
   socketedItems?: unknown[];
-  implicitMods?: string[];
-  explicitMods?: string[];
-  fracturedMods?: string[];
-  desecratedMods?: string[];
-  mutatedMods?: string[];
-  runeMods?: string[];
-  enchantMods?: string[];
-  craftedMods?: string[];
+  implicitMods?: TradeItemMod[];
+  explicitMods?: TradeItemMod[];
+  fracturedMods?: TradeItemMod[];
+  desecratedMods?: TradeItemMod[];
+  mutatedMods?: TradeItemMod[];
+  runeMods?: TradeItemMod[];
+  enchantMods?: TradeItemMod[];
+  craftedMods?: TradeItemMod[];
   fractured?: boolean;
   desecrated?: boolean;
   mutated?: boolean;
